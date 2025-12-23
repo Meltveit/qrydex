@@ -6,9 +6,20 @@
 import OpenAI from 'openai';
 import type { QualityAnalysis, RegistryData } from '@/types/database';
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization to avoid build errors when API key is not set
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI | null {
+    if (!process.env.OPENAI_API_KEY) {
+        return null;
+    }
+    if (!openaiClient) {
+        openaiClient = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
+    }
+    return openaiClient;
+}
 
 interface WebsiteCheckResult {
     url: string;
@@ -168,7 +179,8 @@ async function analyzeWithAI(
     registryData: RegistryData
 ): Promise<AIAnalysisResult | null> {
     try {
-        if (!process.env.OPENAI_API_KEY) {
+        const openai = getOpenAIClient();
+        if (!openai) {
             console.warn('OpenAI API key not configured');
             return null;
         }
