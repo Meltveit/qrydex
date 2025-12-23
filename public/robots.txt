@@ -1,0 +1,13 @@
+# Qrydex Robots.txt
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://qrydex.com/sitemap.xml
+
+# Disallow API endpoints and internal paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /verify  # Only allow verified businesses in search results
