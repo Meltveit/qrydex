@@ -1,8 +1,6 @@
 import SearchBar from '@/components/SearchBar';
 import BusinessCard from '@/components/BusinessCard';
 import { searchBusinesses } from '@/lib/search';
-import { getLocationFromIP, getCountryFlag } from '@/lib/geo/ip-location';
-import { headers } from 'next/headers';
 import Link from 'next/link';
 
 interface SearchPageProps {
@@ -16,12 +14,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     const params = await searchParams;
     const query = params.q || '';
     const page = params.page ? parseInt(params.page, 10) : 1;
-
-    // Get user location
-    const headersList = await headers();
-    const forwardedFor = headersList.get('x-forwarded-for');
-    const ip = forwardedFor?.split(',')[0];
-    const location = await getLocationFromIP(ip);
 
     const results = await searchBusinesses(query, {}, page);
 
@@ -52,11 +44,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <div className="mb-4">
                     <p className="text-sm text-[var(--color-text-secondary)]">
                         Viser {results.total} resultater {query && `for "${query}"`}
-                        {location && (
-                            <span className="ml-2">
-                                · 📍 Sortert fra {location.city}, {location.country} {getCountryFlag(location.countryCode)}
-                            </span>
-                        )}
                     </p>
                 </div>
 
@@ -67,7 +54,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                             <BusinessCard
                                 key={business.id}
                                 business={business}
-                                distance={127} // TODO: Calculate real distance
                             />
                         ))}
                     </div>

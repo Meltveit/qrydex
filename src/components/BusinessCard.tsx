@@ -1,3 +1,5 @@
+'use client';
+
 import { Business } from '@/types/database';
 import { formatTrustScore } from '@/lib/trust-engine';
 import Link from 'next/link';
@@ -62,7 +64,7 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
 
                     {/* Trust Score */}
                     <span className={`font-medium ${trustScore.score >= 70 ? 'text-[var(--color-verified)]' :
-                            trustScore.score >= 40 ? 'text-[var(--color-warning)]' : 'text-[var(--color-text-secondary)]'
+                        trustScore.score >= 40 ? 'text-[var(--color-warning)]' : 'text-[var(--color-text-secondary)]'
                         }`}>
                         ⭐ {trustScore.score}/100
                     </span>

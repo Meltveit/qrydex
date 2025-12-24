@@ -72,6 +72,22 @@ export async function searchBusinesses(
             throw error;
         }
 
+        // Log search analytics (fire and forget)
+        if (query && query.trim()) {
+            (async () => {
+                try {
+                    await supabase.from('search_analytics').insert({
+                        query: query.trim(),
+                        filters: filters,
+                        results_count: count || data?.length || 0,
+                        // session_id and ip_city would ideally be passed from the server component
+                    });
+                } catch (e) {
+                    console.error('Analytics log failed:', e);
+                }
+            })();
+        }
+
         return {
             businesses: data || [],
             total: count || 0,

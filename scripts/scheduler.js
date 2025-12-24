@@ -18,19 +18,19 @@ const supabase = createClient(
 const BOTS = [
     {
         name: 'web-discovery',
-        script: 'scripts/bots/web-discovery.js',
-        args: ['5'], // 5 iterations = ~10 min
-        cycleDuration: 10 * 60 * 1000, // 10 minutes
+        script: 'scripts/bots/discovery-consumer.js',
+        args: [],
+        cycleDuration: 10 * 60 * 1000,
     },
     {
         name: 'registry-crawler',
-        script: 'scripts/simple-crawler.js',
+        script: 'scripts/bots/registry-consumer.js',
         args: [],
         cycleDuration: 10 * 60 * 1000,
     },
     {
         name: 'website-indexer',
-        script: 'scripts/index-websites.js',
+        script: 'scripts/bots/indexer-consumer.js',
         args: [],
         cycleDuration: 10 * 60 * 1000,
     },
