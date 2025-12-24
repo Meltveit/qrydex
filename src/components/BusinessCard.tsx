@@ -80,7 +80,7 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
             </div>
 
             {/* Action buttons (Higher z-index and pointer-events-auto) */}
-            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[var(--color-border)] relative z-20">
+            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[var(--color-border)] relative z-20 pointer-events-auto">
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
