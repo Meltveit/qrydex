@@ -73,6 +73,8 @@ export async function searchBusinesses(
         }
 
         // Log search analytics (fire and forget)
+        // MEMO: Re-enable this after running migration 005_search_engine_v1.sql
+        /*
         if (query && query.trim()) {
             (async () => {
                 try {
@@ -80,13 +82,13 @@ export async function searchBusinesses(
                         query: query.trim(),
                         filters: filters,
                         results_count: count || data?.length || 0,
-                        // session_id and ip_city would ideally be passed from the server component
                     });
                 } catch (e) {
                     console.error('Analytics log failed:', e);
                 }
             })();
         }
+        */
 
         return {
             businesses: data || [],
