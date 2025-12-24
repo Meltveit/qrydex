@@ -13,7 +13,6 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
     const trustScore = formatTrustScore(business);
 
     return (
-    return (
         <div
             className="p-5 bg-white rounded-xl border border-[var(--color-border)]
                        hover:border-[var(--color-primary-light)] hover:shadow-md
