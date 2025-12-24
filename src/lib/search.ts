@@ -73,8 +73,6 @@ export async function searchBusinesses(
         }
 
         // Log search analytics (fire and forget)
-        // MEMO: Re-enable this after running migration 005_search_engine_v1.sql
-        /*
         if (query && query.trim()) {
             (async () => {
                 try {
@@ -88,10 +86,9 @@ export async function searchBusinesses(
                 }
             })();
         }
-        */
 
         return {
-            businesses: data || [],
+            businesses: JSON.parse(JSON.stringify(data || [])), // Ensure strictly serializable
             total: count || 0,
             page,
             pageSize,

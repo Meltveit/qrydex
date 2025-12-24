@@ -13,11 +13,20 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
     const trustScore = formatTrustScore(business);
 
     return (
-        <Link href={`/business/${business.org_number}`}>
-            <div className="p-5 bg-white rounded-xl border border-[var(--color-border)]
-        hover:border-[var(--color-primary-light)] hover:shadow-md
-        transition-all duration-200 cursor-pointer group">
+    return (
+        <div
+            className="p-5 bg-white rounded-xl border border-[var(--color-border)]
+                       hover:border-[var(--color-primary-light)] hover:shadow-md
+                       transition-all duration-200 cursor-pointer group relative"
+        >
+            {/* Main Clickable Area linked via invisible overlaid Link for SEO */}
+            <Link
+                href={`/business/${business.org_number}`}
+                className="absolute inset-0 z-0"
+                aria-label={`Gå til ${business.legal_name}`}
+            />
 
+            <div className="relative z-10 pointer-events-none">
                 {/* Header row */}
                 <div className="flex items-start justify-between gap-4 mb-2">
                     <div className="flex items-center gap-2 min-w-0">
@@ -69,37 +78,40 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
                         ⭐ {trustScore.score}/100
                     </span>
                 </div>
-
-                {/* Action buttons */}
-                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[var(--color-border)]">
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            // Open contact (website or email)
-                            const url = business.quality_analysis?.website_url || business.domain;
-                            if (url) window.open(url.startsWith('http') ? url : `https://${url}`, '_blank');
-                        }}
-                        className="px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] 
-              hover:bg-[var(--color-primary)] hover:text-white
-              rounded-lg border border-[var(--color-primary)] transition-colors"
-                    >
-                        Kontakt
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            // TODO: Add to comparison
-                        }}
-                        className="px-3 py-1.5 text-sm font-medium text-[var(--color-text-secondary)]
-              hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        Sammenlign
-                    </button>
-                    <span className="ml-auto text-sm text-[var(--color-primary)] group-hover:underline">
-                        Se profil →
-                    </span>
-                </div>
             </div>
-        </Link>
+
+            {/* Action buttons (Higher z-index and pointer-events-auto) */}
+            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[var(--color-border)] relative z-20">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // Open contact (website or email)
+                        const url = business.quality_analysis?.website_url || business.domain;
+                        if (url) window.open(url.startsWith('http') ? url : `https://${url}`, '_blank');
+                    }}
+                    className="px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] 
+              hover:bg-[var(--color-primary)] hover:text-white
+              rounded-lg border border-[var(--color-primary)] transition-colors cursor-pointer"
+                >
+                    Kontakt
+                </button>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // TODO: Add to comparison
+                    }}
+                    className="px-3 py-1.5 text-sm font-medium text-[var(--color-text-secondary)]
+              hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                >
+                    Sammenlign
+                </button>
+                <Link
+                    href={`/business/${business.org_number}`}
+                    className="ml-auto text-sm text-[var(--color-primary)] group-hover:underline cursor-pointer"
+                >
+                    Se profil →
+                </Link>
+            </div>
+        </div>
     );
 }
