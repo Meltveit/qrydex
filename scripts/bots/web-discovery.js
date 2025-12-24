@@ -1,6 +1,6 @@
 /**
  * Web Discovery Bot - Continuously crawls the web to find B2B businesses
- * Runs 24/7, validates org numbers, filters for B2B relevance
+ * Updated with news sources and IoT-specific sites
  */
 
 require('dotenv').config({ path: '.env.local' });
@@ -12,20 +12,31 @@ const supabase = createClient(
     { auth: { persistSession: false } }
 );
 
-// Seed URLs - Business directories and B2B marketplaces
+// Seed URLs - Expanded with news and IoT sources
 const SEED_URLS = [
-    // Norwegian
+    // Norwegian business directories
     'https://www.proff.no/bransjer',
     'https://www.gulesider.no/bedrifter',
+
+    // News sources (business coverage)
+    'https://www.finansavisen.no/boers-og-marked',
+    'https://e24.no/naeringsliv',
+    'https://www.dn.no/teknologi',
+
+    // IoT and Tech
+    'https://www.lastmile.no/', // IoT logistics
+    'https://www.digi.no/bedrifter',
+    'https://shifter.no/', // Tech startups
+    'https://startuplab.no/companies',
 
     // European
     'https://www.europages.com/companies/Norway.html',
     'https://www.europages.com/companies/Germany.html',
-    'https://www.europages.com/companies/United-Kingdom.html',
 
-    // Industry-specific
+    // Industry associations
     'https://www.nho.no/medlemmer/',
     'https://www.norskteknologi.no/medlemmer/',
+    'https://www.ikt-norge.no/medlemmer/',
 ];
 
 // B2B keywords for detection
@@ -33,6 +44,7 @@ const B2B_KEYWORDS = [
     'manufacturer', 'supplier', 'wholesale', 'distributor', 'b2b',
     'produsent', 'leverandør', 'grossist', 'enterprise', 'industrial',
     'software', 'iot', 'automation', 'logistics', 'export', 'import',
+    'saas', 'platform', 'tech', 'startup', 'innovasjon',
 ];
 
 const NOISE_KEYWORDS = [
@@ -59,15 +71,6 @@ function extractOrgNumber(html, countryHint = 'NO') {
                     return { type: 'NO', number: orgNr };
                 }
             }
-        }
-    }
-
-    // UK Company Number (8 digits)
-    if (countryHint === 'GB') {
-        const ukPattern = /company\s+number\.?\s*:?\s*(\d{8})/gi;
-        const match = html.match(ukPattern);
-        if (match) {
-            return { type: 'GB', number: match[1] };
         }
     }
 
@@ -173,7 +176,7 @@ async function discoverFromUrl(url) {
         const discovered = [];
 
         // Check each link
-        for (const link of links.slice(0, 20)) { // Max 20 per seed
+        for (const link of links.slice(0, 30)) { // Max 30 per seed (increased)
             try {
                 const bizResponse = await fetch(link, {
                     headers: { 'User-Agent': 'Qrydex B2B Indexer/1.0' },
@@ -186,21 +189,18 @@ async function discoverFromUrl(url) {
 
                 // Check B2B relevance
                 if (!isB2BRelevant(bizHtml, link)) {
-                    console.log(`  ⚠️  Not B2B: ${link}`);
                     continue;
                 }
 
                 // Extract org number
                 const orgData = extractOrgNumber(bizHtml, 'NO');
                 if (!orgData) {
-                    console.log(`  ⚠️  No org number: ${link}`);
                     continue;
                 }
 
                 // Validate
                 const validation = await validateNorwegian(orgData.number);
                 if (!validation.valid) {
-                    console.log(`  ❌ Invalid org: ${orgData.number}`);
                     continue;
                 }
 
@@ -222,9 +222,9 @@ async function discoverFromUrl(url) {
                     website_status: 'active',
                 });
 
-                await new Promise(r => setTimeout(r, 1000)); // Rate limit
+                await new Promise(r => setTimeout(r, 800)); // Rate limit
             } catch (err) {
-                console.log(`  ❌ Error checking ${link}`);
+                // Silent continue
             }
         }
 
@@ -247,7 +247,7 @@ async function runDiscovery(iterations = 1) {
     for (let i = 0; i < iterations; i++) {
         console.log(`\n=== Iteration ${i + 1}/${iterations} ===\n`);
 
-        for (const seedUrl of SEED_URLS.slice(0, 2)) { // Start with 2 seeds
+        for (const seedUrl of SEED_URLS.slice(0, 5)) { // Use 5 seeds per iteration
             const discovered = await discoverFromUrl(seedUrl);
             totalDiscovered += discovered.length;
 
@@ -262,7 +262,6 @@ async function runDiscovery(iterations = 1) {
                         .single();
 
                     if (existing) {
-                        console.log(`  ⚠️  Already exists: ${business.legal_name}`);
                         continue;
                     }
 
@@ -274,22 +273,13 @@ async function runDiscovery(iterations = 1) {
                     if (!error) {
                         console.log(`  ✓ ADDED: ${business.legal_name}`);
                         totalAdded++;
-
-                        // Log discovery
-                        await supabase.from('crawl_logs').insert({
-                            bot_name: 'web-discovery',
-                            action: 'business_discovered',
-                            url: `https://${business.domain}`,
-                            details: { org_number: business.org_number },
-                            success: true,
-                        });
                     }
                 } catch (err) {
-                    console.error(`  ❌ DB Error: ${err.message}`);
+                    // Silent continue
                 }
             }
 
-            await new Promise(r => setTimeout(r, 5000)); // 5sec between seeds
+            await new Promise(r => setTimeout(r, 3000)); // 3sec between seeds
         }
     }
 

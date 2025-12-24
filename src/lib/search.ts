@@ -35,7 +35,7 @@ export async function searchBusinesses(
 
         // Text search
         if (query && query.trim()) {
-            // Use PostgreSQL full-text search
+            // Use PostgreSQL full-text search on search_vector
             queryBuilder = queryBuilder.textSearch('search_vector', query, {
                 type: 'websearch',
                 config: 'norwegian',

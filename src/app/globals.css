@@ -1,68 +1,76 @@
 /* Font - Inter (must be first) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-@import "tailwindcss";
+/* Tailwind base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Qrydex Design Tokens */
-:root {
-  /* Primary Colors */
-  --color-primary: #1E3A8A;
-  --color-primary-light: #3B82F6;
-  --color-primary-dark: #1E40AF;
+@layer base {
+  :root {
+    /* Primary Colors */
+    --color-primary: #1E3A8A;
+    --color-primary-light: #3B82F6;
+    --color-primary-dark: #1E40AF;
 
-  /* Accent - Trust/Verified */
-  --color-verified: #10B981;
-  --color-verified-light: #34D399;
-  --color-verified-bg: #ECFDF5;
+    /* Accent - Trust/Verified */
+    --color-verified: #10B981;
+    --color-verified-light: #34D399;
+    --color-verified-bg: #ECFDF5;
 
-  /* Neutral */
-  --color-background: #F9FAFB;
-  --color-surface: #FFFFFF;
-  --color-text: #111827;
-  --color-text-secondary: #6B7280;
-  --color-border: #E5E7EB;
+    /* Neutral */
+    --color-background: #F9FAFB;
+    --color-surface: #FFFFFF;
+    --color-text: #111827;
+    --color-text-secondary: #6B7280;
+    --color-border: #E5E7EB;
 
-  /* Warning/Pending */
-  --color-warning: #F59E0B;
-  --color-warning-bg: #FFFBEB;
+    /* Warning/Pending */
+    --color-warning: #F59E0B;
+    --color-warning-bg: #FFFBEB;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --shadow-focus: 0 0 0 3px rgba(30, 58, 138, 0.15);
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-focus: 0 0 0 3px rgba(30, 58, 138, 0.15);
 
-  /* Spacing */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-full: 9999px;
+    /* Spacing */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-full: 9999px;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--color-background);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
-body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--color-background);
-  color: var(--color-text);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@layer components {
 
-/* Focus styles */
-*:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-focus);
-}
+  /* Focus styles */
+  *:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
 
-/* Verified badge styling */
-.verified-badge {
-  color: var(--color-verified);
-}
+  /* Verified badge styling */
+  .verified-badge {
+    color: var(--color-verified);
+  }
 
-/* Trust score colors */
-.trust-high {
-  color: var(--color-verified);
-}
+  /* Trust score colors */
+  .trust-high {
+    color: var(--color-verified);
+  }
 
-.trust-medium {
-  color: var(--color-warning);
+  .trust-medium {
+    color: var(--color-warning);
+  }
 }
