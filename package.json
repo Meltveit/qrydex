@@ -6,25 +6,32 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "crawler": "node scripts/simple-crawler.js",
+    "crawler:web": "node scripts/web-crawler.js",
+    "indexer": "node scripts/index-websites.js",
+    "bot:discovery": "node scripts/bots/web-discovery.js",
+    "bot:discovery:continuous": "node scripts/bots/web-discovery.js 999"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.89.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.1",
+    "@vercel/analytics": "^1.4.1",
+    "dotenv": "^17.2.3",
     "next": "16.1.1",
-    "openai": "^6.15.0",
-    "pg": "^8.16.3",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "openai": "^4.76.1",
+    "pg": "^8.14.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.11.10",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
-    "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }
