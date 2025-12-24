@@ -1,10 +1,12 @@
+/* Tailwind v4 - Source files to scan */
+@source "../../src/app/**/*.{js,ts,jsx,tsx}";
+@source "../../src/components/**/*.{js,ts,jsx,tsx}";
+
 /* Font - Inter (must be first) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* Tailwind base styles */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Qrydex Design Tokens */
 @layer base {
