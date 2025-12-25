@@ -1,49 +1,14 @@
-import { getBusinessByOrgNumber } from '@/lib/search';
-import { formatTrustScore } from '@/lib/trust-engine';
-import TrustScoreBadge from '@/components/TrustScoreBadge';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { generateBusinessSchema } from '@/lib/seo/schema-generator';
+import SchemaBreadcrumbs from '@/components/SchemaBreadcrumbs';
 
-interface BusinessPageProps {
-    params: Promise<{ orgNumber: string }>;
-}
+// ... existing imports
 
 export default async function BusinessPage({ params }: BusinessPageProps) {
     const { orgNumber } = await params;
-    const business = await getBusinessByOrgNumber(orgNumber);
-
-    if (!business) {
-        notFound();
-    }
-
-    const trustScore = formatTrustScore(business);
-    const registry = business.registry_data;
-    const quality = business.quality_analysis;
+    // ... existing logic
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-            {/* Header */}
-            <header className="border-b border-white/50 bg-white/30 backdrop-blur-xl sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                            <span className="text-white font-bold text-xl">Q</span>
-                        </div>
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                            Qrydex
-                        </span>
-                    </Link>
-                    <nav className="flex items-center gap-6">
-                        <Link href="/search" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
-                            Search
-                        </Link>
-                        <Link href="/verify" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
-                            Verify
-                        </Link>
-                    </nav>
-                </div>
-            </header>
+            {/* Header ... */}
 
             <script
                 type="application/ld+json"
@@ -52,7 +17,15 @@ export default async function BusinessPage({ params }: BusinessPageProps) {
                 }}
             />
 
-            {/* Breadcrumb */}
+            <SchemaBreadcrumbs
+                items={[
+                    { name: 'Home', item: '/' },
+                    { name: 'Search', item: '/search' },
+                    { name: business.legal_name, item: `/business/${orgNumber}` }
+                ]}
+            />
+
+            {/* Breadcrumb Visual */}
             <nav className="mb-6">
                 <ol className="flex items-center gap-2 text-sm text-gray-500">
                     <li><Link href="/" className="hover:text-blue-600">Home</Link></li>
@@ -62,6 +35,7 @@ export default async function BusinessPage({ params }: BusinessPageProps) {
                     <li className="text-gray-900 line-clamp-1">{business.legal_name}</li>
                 </ol>
             </nav>
+            {/* ... */}
 
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Main Content */}

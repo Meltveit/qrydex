@@ -33,16 +33,35 @@ export interface SearchResult {
 /**
  * Search businesses with filters and ranking
  */
+
+export interface AnalyticsContext {
+    country?: string;
+    region?: string;
+    sessionId?: string;
+}
+
+/**
+ * Search businesses with filters and ranking
+ */
 export async function searchBusinesses(
     query: string,
     filters?: SearchFilters,
     page = 1,
-    pageSize = 20
+    pageSize = 20,
+    context?: AnalyticsContext
 ): Promise<SearchResult> {
     try {
         let businessQueryBuilder = supabase
             .from('businesses')
             .select('*', { count: 'exact' });
+
+        // ... existing query logic ... (re-verify that we don't overwrite lines 43-98 unnecessarily, but I need to insert imports or interface above)
+        // Wait, I am replacing a large chunk to inject 'context' param in signature.
+        // It is safer to replace the signature and the logging block separately?
+        // No, I can do it in one go if I am careful.
+
+        // Let's replace the signature first.
+
 
         // Text search
         if (query && query.trim()) {
@@ -102,17 +121,20 @@ export async function searchBusinesses(
             throw businessError;
         }
 
-        // Log search analytics (fire and forget)
+        // Log search analytics (fire and forget) - Bot B Pulse
         if (query && query.trim()) {
             (async () => {
                 try {
-                    await supabase.from('search_analytics').insert({
+                    await supabase.from('search_logs').insert({
                         query: query.trim(),
                         filters: filters,
-                        results_count: count || businessData?.length || 0,
+                        result_count: count || businessData?.length || 0,
+                        location_country: context?.country || 'Unknown',
+                        location_region: context?.region,
+                        anonymized_session_id: context?.sessionId
                     });
                 } catch (e) {
-                    console.error('Analytics log failed:', e);
+                    console.error('Pulse logging failed:', e);
                 }
             })();
         }

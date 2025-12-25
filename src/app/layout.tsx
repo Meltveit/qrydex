@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import SchemaOrganization from '@/components/SchemaOrganization';
 
 export const metadata: Metadata = {
   title: "Qrydex - Finn verifiserte leverandører",
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="no">
       <body className="antialiased">
+        <SchemaOrganization />
         {children}
         <Analytics />
       </body>

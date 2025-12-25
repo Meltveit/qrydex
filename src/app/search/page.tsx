@@ -2,6 +2,8 @@ import SearchBar from '@/components/SearchBar';
 import BusinessCard from '@/components/BusinessCard';
 import { searchBusinesses } from '@/lib/search';
 import Link from 'next/link';
+import { headers } from 'next/headers';
+import crypto from 'crypto';
 
 interface SearchPageProps {
     searchParams: Promise<{
@@ -15,7 +17,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     const query = params.q || '';
     const page = params.page ? parseInt(params.page, 10) : 1;
 
-    const results = await searchBusinesses(query, {}, page);
+    // Analytics Context (Bot B)
+    const headersList = await headers();
+    const ip = headersList.get('x-forwarded-for') || '127.0.0.1';
+    const country = headersList.get('x-vercel-ip-country') || 'NO'; // Fallback to NO for dev
+    const region = headersList.get('x-vercel-ip-city') || undefined;
+    const ua = headersList.get('user-agent') || '';
+    const date = new Date().toISOString().split('T')[0];
+    const sessionId = crypto.createHash('sha256').update(`${ip}${ua}${date}`).digest('hex').substring(0, 16);
+
+    const results = await searchBusinesses(query, {}, page, 20, {
+        country,
+        region,
+        sessionId
+    });
 
     return (
         <div className="min-h-screen bg-[var(--color-background)]">
