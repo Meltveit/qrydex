@@ -52,7 +52,7 @@ export async function searchFinlandRegistry(query: string): Promise<RegistryData
         return {
             org_nr: result.businessId,
             legal_name: result.name,
-            country_code: 'FI',
+
             registration_date: result.registrationDate,
             company_status: 'Active', // Default
             last_verified_registry: new Date().toISOString(),

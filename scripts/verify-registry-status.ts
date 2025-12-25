@@ -46,7 +46,7 @@ async function runVerificationJob(limit = 10) {
 
             if (result) {
                 // Update business with fresh data
-                const status = result.status === 'active' ? 'verified' : 'flagged';
+                const status = result.status === 'active' ? 'verified' : 'failed';
 
                 // Merge registry data cautiously
                 const updatedRegistryData = {
