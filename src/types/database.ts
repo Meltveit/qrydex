@@ -52,6 +52,28 @@ export interface Database {
     public: {
         Tables: {
             businesses: {
+                Update: {
+                    id?: string;
+                    org_number?: string;
+                    legal_name?: string;
+                    country_code?: string;
+                    domain?: string | null;
+                    registry_data?: RegistryData;
+                    quality_analysis?: QualityAnalysis;
+                    news_signals?: NewsSignal[];
+                    trust_score?: number;
+                    trust_score_breakdown?: TrustScoreBreakdown;
+                    updated_at?: string;
+                    last_verified_at?: string | null;
+                    verification_status?: 'pending' | 'verified' | 'failed';
+                    // Enhanced fields
+                    logo_url?: string | null;
+                    company_description?: string | null;
+                    social_media?: Json | null;
+                    opening_hours?: Json | null;
+                    geo_coordinates?: Json | null;
+                    product_categories?: string[] | null;
+                };
                 Row: {
                     id: string;
                     org_number: string;
@@ -68,6 +90,13 @@ export interface Database {
                     last_verified_at: string | null;
                     verification_status: 'pending' | 'verified' | 'failed';
                     search_vector: string | null;
+                    // Enhanced fields
+                    logo_url: string | null;
+                    company_description: string | null;
+                    social_media: Json | null;
+                    opening_hours: Json | null;
+                    geo_coordinates: Json | null;
+                    product_categories: string[] | null;
                 };
                 Insert: {
                     id?: string;
@@ -84,21 +113,49 @@ export interface Database {
                     updated_at?: string;
                     last_verified_at?: string | null;
                     verification_status?: 'pending' | 'verified' | 'failed';
+                    // Enhanced fields
+                    logo_url?: string | null;
+                    company_description?: string | null;
+                    social_media?: Json | null;
+                    opening_hours?: Json | null;
+                    geo_coordinates?: Json | null;
+                    product_categories?: string[] | null;
+                };
+            };
+            news_sources: {
+                Row: {
+                    id: string;
+                    source_name: string;
+                    source_url: string;
+                    country_code: string;
+                    category: string | null;
+                    coverage_area: string | null;
+                    crawl_enabled: boolean;
+                    last_crawled_at: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    source_name: string;
+                    source_url: string;
+                    country_code: string;
+                    category?: string | null;
+                    coverage_area?: string | null;
+                    crawl_enabled?: boolean;
+                    last_crawled_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
                 };
                 Update: {
-                    id?: string;
-                    org_number?: string;
-                    legal_name?: string;
+                    source_name?: string;
+                    source_url?: string;
                     country_code?: string;
-                    domain?: string | null;
-                    registry_data?: RegistryData;
-                    quality_analysis?: QualityAnalysis;
-                    news_signals?: NewsSignal[];
-                    trust_score?: number;
-                    trust_score_breakdown?: TrustScoreBreakdown;
+                    category?: string | null;
+                    coverage_area?: string | null;
+                    crawl_enabled?: boolean;
+                    last_crawled_at?: string | null;
                     updated_at?: string;
-                    last_verified_at?: string | null;
-                    verification_status?: 'pending' | 'verified' | 'failed';
                 };
             };
             verification_logs: {

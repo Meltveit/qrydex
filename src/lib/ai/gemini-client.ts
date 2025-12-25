@@ -1,0 +1,31 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// Initialize Gemini API
+const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+
+if (!apiKey) {
+    console.warn('⚠️ GOOGLE_GEMINI_API_KEY is not set in environment variables.');
+}
+
+const genAI = new GoogleGenerativeAI(apiKey || '');
+
+// Models
+// 'gemini-pro' is good for text analysis
+// 'gemini-pro-vision' is good for image analysis (if we send screenshots later)
+export const geminiModel = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+/**
+ * Helper to generate text from a prompt
+ */
+export async function generateText(prompt: string): Promise<string | null> {
+    try {
+        if (!apiKey) return null;
+
+        const result = await geminiModel.generateContent(prompt);
+        const response = await result.response;
+        return response.text();
+    } catch (error) {
+        console.error('Gemini generation error:', error);
+        return null; // Fail gracefully
+    }
+}
