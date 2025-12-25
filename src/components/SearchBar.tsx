@@ -8,13 +8,15 @@ interface SearchBarProps {
     className?: string;
     size?: 'default' | 'large';
     autoFocus?: boolean;
+    placeholder?: string;
 }
 
 export default function SearchBar({
     defaultQuery = '',
     className = '',
     size = 'default',
-    autoFocus = false
+    autoFocus = false,
+    placeholder = 'Søk etter produkter, tjenester eller bedrifter...'
 }: SearchBarProps) {
     const [suggestions, setSuggestions] = useState<Array<{ label: string; value: string; logo: string | null }>>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -78,7 +80,7 @@ export default function SearchBar({
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => query.length >= 2 && setShowSuggestions(true)}
                     onBlur={handleBlur}
-                    placeholder="Søk etter produkter, tjenester eller bedrifter..."
+                    placeholder={placeholder}
                     autoFocus={autoFocus}
                     className={`w-full rounded-full border border-gray-200 bg-white
             focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-lg

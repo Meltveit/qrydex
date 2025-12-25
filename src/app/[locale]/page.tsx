@@ -1,8 +1,11 @@
 import SearchBar from '@/components/SearchBar';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { headers } from 'next/headers';
 import { createServerClient } from '@/lib/supabase';
 import SchemaWebsite from '@/components/SchemaWebsite';
+import { getTranslations } from 'next-intl/server';
+
+// ... (keep helper functions)
 
 async function getLocationFromIP(ip: string | null) {
   if (!ip || ip === '127.0.0.1' || ip === '::1') {
@@ -11,7 +14,7 @@ async function getLocationFromIP(ip: string | null) {
 
   try {
     const res = await fetch(`https://ipapi.co/${ip}/json/`, {
-      next: { revalidate: 3600 } // Cache for 1 hour
+      next: { revalidate: 3600 }
     });
     if (!res.ok) throw new Error('IP lookup failed');
     const data = await res.json();
@@ -40,7 +43,6 @@ async function getBusinessCount() {
 }
 
 export default async function Home() {
-  // Get user location (server-side, safe)
   const headersList = await headers();
   const forwardedFor = headersList.get('x-forwarded-for');
   const ip = forwardedFor?.split(',')[0] || null;
@@ -50,9 +52,10 @@ export default async function Home() {
     getBusinessCount()
   ]);
 
+  const t = await getTranslations('HomePage');
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full px-4">
-      {/* Minimal header - just logo */}
       <div className="absolute top-4 left-4">
         <Link href="/" className="inline-flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center">
@@ -63,42 +66,40 @@ export default async function Home() {
 
       <SchemaWebsite />
 
-      {/* Centered content - Google style */}
       <div className="flex flex-col items-center justify-center w-full max-w-4xl">
-        {/* Logo */}
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-[var(--color-primary)]">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-2">
             Qrydex
           </h1>
+          <p className="text-[var(--color-text-secondary)] text-lg">
+            {t('title')}
+          </p>
         </div>
 
-        {/* Search bar */}
         <div className="w-full max-w-xl mb-6">
-          <SearchBar size="large" autoFocus />
+          <SearchBar size="large" autoFocus placeholder={t('searchPlaceholder')} />
         </div>
 
-        {/* Location hint */}
         {location.city && (
           <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-            📍 Søker fra <span className="font-medium">{location.city}, {location.countryName}</span>
+            📍 {t('locationPrefix')} <span className="font-medium">{location.city}, {location.countryName}</span>
           </p>
         )}
 
-        {/* Trust indicators */}
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-[var(--color-text-secondary)]">
           {businessCount > 0 && (
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[var(--color-verified)]" />
-              {businessCount.toLocaleString('no-NO')} verifiserte bedrifter
+              {t('verifiedBusinesses', { count: businessCount.toLocaleString() })}
             </span>
           )}
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
-            Europa & USA
+            {t('regionLabel')}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[var(--color-primary-light)]" />
-            Oppdatert daglig
+            {t('updatedLabel')}
           </span>
         </div>
       </div>
