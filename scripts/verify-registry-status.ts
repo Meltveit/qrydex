@@ -44,16 +44,17 @@ async function runVerificationJob(limit = 10) {
             // Call the unified registry verifier (supports NO, DK, FI, SE)
             const result = await verifyBusiness(business.country_code, business.org_number);
 
-            if (result) {
+            if (result.success && result.data) {
+                const data = result.data;
                 // Update business with fresh data
-                const status = result.status === 'active' ? 'verified' : 'failed';
+                const status = data.company_status === 'Active' ? 'verified' : 'failed';
 
                 // Merge registry data cautiously
                 const updatedRegistryData = {
                     ...business.registry_data,
-                    company_status: result.status,
-                    vat_registered: result.vat_registered,
-                    last_checked: new Date().toISOString()
+                    company_status: data.company_status,
+                    vat_status: data.vat_status,
+                    last_verified_registry: new Date().toISOString()
                 };
 
                 const { error: updateError } = await supabase

@@ -43,6 +43,7 @@ export interface WebsiteData {
         FI?: string[];
         SE?: string[];
     };
+    sitelinks?: { title: string; url: string }[];
 }
 
 /**
@@ -425,4 +426,38 @@ export async function batchScrapeBusinesses(limit: number = 10) {
     }
 
     console.log(`\n✅ Enhancement complete: ${scraped} scraped, ${failed} failed`);
+}
+
+/**
+ * Extract sitelinks from internal links
+ * Heuristic: Short, navigation-like links (About, Contact, Services)
+ */
+function extractSitelinks(links: string[]): { title: string; url: string }[] {
+    const commonTitles = ['About', 'Contact', 'Services', 'Products', 'Team', 'Careers', 'News', 'Blog', 'Om oss', 'Kontakt', 'Tjenester', 'Produkter', 'Jobb', 'Aktuelt'];
+
+    // This is a simplified extraction. In reality, we'd need to fetch the titles of these pages.
+    // For now, we'll try to guess title from URL slug if it matches common patterns.
+
+    const sitelinks: { title: string; url: string }[] = [];
+
+    for (const link of links) {
+        try {
+            const urlObj = new URL(link);
+            const path = urlObj.pathname.split('/').filter(p => p).pop(); // Get last segment
+
+            if (path) {
+                // capitalize first letter
+                const title = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
+
+                // Check if it looks like a main navigation item
+                if (title.length < 20 && !title.includes('.')) {
+                    sitelinks.push({ title, url: link });
+                }
+            }
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    return sitelinks.slice(0, 6); // Limit to 6
 }

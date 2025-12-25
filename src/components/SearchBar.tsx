@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface SearchBarProps {
@@ -18,20 +18,28 @@ export default function SearchBar({
 }: SearchBarProps) {
     const [suggestions, setSuggestions] = useState<Array<{ label: string; value: string; logo: string | null }>>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [query, setQuery] = useState(defaultQuery);
+    const router = useRouter();
+    const isLarge = size === 'large';
 
     // Debounce search suggestions
     const [debouncedQuery, setDebouncedQuery] = useState(defaultQuery);
 
-    // Update debounced query
+    // Handle input change
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
-        setQuery(val);
-        // Basic debounce via timeout in effect would be better, but let's just trigger here with delay or use effect
+        setQuery(e.target.value);
+    };
+
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        if (query.trim()) {
+            router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+            setShowSuggestions(false);
+        }
     };
 
     // Effect for fetching suggestions
-    import { useEffect, useRef } from 'react';
-    // ... hooks inside component ...
+    // Effect for fetching suggestions
     useEffect(() => {
         const timer = setTimeout(async () => {
             if (query.trim().length >= 2) {

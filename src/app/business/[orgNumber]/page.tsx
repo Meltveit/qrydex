@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Business } from '@/types/database';
+import { Business, NewsSignal } from '@/types/database';
 import TrustScoreBadge from '@/components/TrustScoreBadge';
 import { generateBusinessSchema } from '@/lib/seo/schema-generator';
 import { formatTrustScore } from '@/lib/trust-engine';
@@ -202,7 +202,7 @@ export default async function BusinessPage({ params }: BusinessPageProps) {
                                         Red Flags Detected
                                     </h3>
                                     <ul className="space-y-1">
-                                        {quality.red_flags.map((flag, i) => (
+                                        {(quality.red_flags as string[]).map((flag, i) => (
                                             <li key={i} className="text-sm text-red-700">• {flag}</li>
                                         ))}
                                     </ul>
@@ -212,7 +212,7 @@ export default async function BusinessPage({ params }: BusinessPageProps) {
                     )}
 
                     {/* News Signals */}
-                    {business.news_signals && business.news_signals.length > 0 && (
+                    {(business.news_signals as unknown as NewsSignal[]) && (business.news_signals as unknown as NewsSignal[]).length > 0 && (
                         <div className="p-6 bg-white rounded-2xl border border-gray-100 shadow-lg">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,7 +221,7 @@ export default async function BusinessPage({ params }: BusinessPageProps) {
                                 Recent News
                             </h2>
                             <div className="space-y-3">
-                                {business.news_signals.map((signal, i) => (
+                                {(business.news_signals as unknown as NewsSignal[]).map((signal, i) => (
                                     <div
                                         key={i}
                                         className={`p-4 rounded-xl ${signal.sentiment === 'positive' ? 'bg-green-50' :

@@ -100,7 +100,7 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
             </div>
 
             {/* Sitelinks - Google Style Navigation */}
-            {Array.isArray(business.sitelinks) && business.sitelinks.length > 0 && (
+            {Array.isArray(business.sitelinks) && (business.sitelinks as any[]).length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4 relative z-20">
                     {(business.sitelinks as Array<{ title: string; url: string }>).slice(0, 6).map((link, i) => (
                         <a
