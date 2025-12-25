@@ -1,0 +1,30 @@
+{
+    "HomePage": {
+        "title": "The B2B Index - Find your next business partner",
+        "searchPlaceholder": "Search for products, services or companies...",
+        "locationPrefix": "Searching from",
+        "verifiedBusinesses": "{count} verified businesses",
+        "regionLabel": "Europe & USA",
+        "updatedLabel": "Live Updates (24/7)"
+    },
+    "Navigation": {
+        "search": "Search",
+        "privacy": "Privacy",
+        "about": "About us"
+    },
+    "Footer": {
+        "copyright": "© {year} Qrydex. All rights reserved.",
+        "privacyLink": "Privacy Policy"
+    },
+    "PrivacyPage": {
+        "title": "Privacy at Qrydex",
+        "badge": "🛡️ No tracking. No cookies.",
+        "noTrackingTitle": "We don't track you",
+        "noTrackingText": "Qrydex is a business search engine built on trust. We do not believe in monitoring our users. When you search with us, we do not log your IP address, we do not store your search history linked to you personally, and we do not sell any behavioral data to third parties.",
+        "noCookiesTitle": "No Cookies",
+        "noCookiesText": "We use no functional cookies or marketing cookies.",
+        "publicDataTitle": "Public Data",
+        "publicDataText": "The information we display about companies is based solely on publicly available data from registries and open websites.",
+        "contactText": "Questions? Contact us at privacy@qrydex.com"
+    }
+}

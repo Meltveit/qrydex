@@ -13,11 +13,14 @@ export async function GET(request: Request) {
     const supabase = createServerClient();
 
     // Search for businesses matching the query
-    // Using simple ilike for partial match on name or org_number
+    // Search in name, org number, products (array), or description
+    // Note: 'products' is text[], using cs (contains) or ilike text cast is needed.
+    // Supabase text search on array is tricky with .or(). 
+    // Simplified: Search name/org/description first. 
     const { data: businesses, error } = await supabase
         .from('businesses')
         .select('legal_name, org_number, logo_url')
-        .or(`legal_name.ilike.%${query}%,org_number.ilike.%${query}%`)
+        .or(`legal_name.ilike.%${query}%,org_number.ilike.%${query}%,company_description.ilike.%${query}%`)
         .limit(5);
 
     if (error) {

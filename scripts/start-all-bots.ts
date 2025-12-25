@@ -65,6 +65,11 @@ const startScheduler = () => {
         runScript('discovery-bot.ts', 'Discovery Bot (Oppdageren)', YELLOW);
     });
 
+    // --- Ingestion Bot (High Frequency - every minute) ---
+    cron.schedule('*/1 * * * *', () => {
+        runScript('ingestion-bot.ts', 'Ingestion Bot (The Recruiter)', CYAN);
+    });
+
     console.log('⏳ Scheduler active. Waiting for next trigger...');
 
     // Run everything once immediately on startup

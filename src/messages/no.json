@@ -1,0 +1,30 @@
+{
+    "HomePage": {
+        "title": "B2B Indeksen - Finn din neste businesspartner",
+        "searchPlaceholder": "Søk etter produkter, tjenester eller bedrifter...",
+        "locationPrefix": "Søker fra",
+        "verifiedBusinesses": "{count} verifiserte bedrifter",
+        "regionLabel": "Europa & USA",
+        "updatedLabel": "Oppdateres Live (24/7)"
+    },
+    "Navigation": {
+        "search": "Søk",
+        "privacy": "Personvern",
+        "about": "Om oss"
+    },
+    "Footer": {
+        "copyright": "© {year} Qrydex. Alle rettigheter reservert.",
+        "privacyLink": "Personvernerklæring"
+    },
+    "PrivacyPage": {
+        "title": "Personvern hos Qrydex",
+        "badge": "🛡️ Ingen sporing. Ingen cookies.",
+        "noTrackingTitle": "Vi tracker deg ikke",
+        "noTrackingText": "Qrydex er en bedrifts-søkemotor bygget på tillit. Vi tror ikke på å overvåke brukerne våre. Når du søker hos oss, logger vi ikke IP-adressen din, vi lagrer ikke søkehistorikken din knyttet til deg som person, og vi selger ingen data om din adferd til tredjeparter.",
+        "noCookiesTitle": "Ingen Cookies",
+        "noCookiesText": "Vi bruker ingen funksjonelle cookies eller markedsførings-cookies.",
+        "publicDataTitle": "Offentlig Data",
+        "publicDataText": "Informasjonen vi viser om bedrifter er utelukkende basert på offentlig tilgjengelig data fra registre og åpne nettsider.",
+        "contactText": "Har du spørsmål? Kontakt oss på privacy@qrydex.com"
+    }
+}
