@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import "../../globals.css"; // Fixed path
+import "../globals.css";
 import SchemaOrganization from '@/components/SchemaOrganization';
 import Footer from '@/components/Footer';
 import { NextIntlClientProvider } from 'next-intl';
