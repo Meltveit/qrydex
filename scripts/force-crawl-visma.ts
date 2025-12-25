@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
-import { WebsiteScraper } from '../src/lib/crawler/website-scraper';
+import { scrapeWebsite } from '../src/lib/crawler/website-scraper';
 import { analyzeWebsite } from '../src/lib/ai/website-analyzer';
 
 // Env loaded via CLI flag, but keep this for safety if run normally
@@ -39,16 +39,15 @@ async function forceCrawlVisma() {
 
     // 2. Scrape
     console.log('🕸️ Scraping website...');
-    const scraper = new WebsiteScraper();
-    const scrapedData = await scraper.scrape(business.domain);
+    const scrapedData = await scrapeWebsite(business.domain!, 5);
 
     if (!scrapedData) {
         console.error('❌ Scraping failed (no data returned).');
         return;
     }
 
-    console.log('✅ Scraped successfully. Pages:', scrapedData.pages.length);
-    console.log('📄 Main Text snippet:', scrapedData.mainText.substring(0, 100) + '...');
+    console.log('✅ Scraped successfully. Subpages:', scrapedData.subpages.length);
+    console.log('📄 Main Text snippet:', scrapedData.homepage.content.substring(0, 100) + '...');
 
     // 3. Analyze (AI)
     console.log('🧠 Analyzing with AI (Gemini)...');

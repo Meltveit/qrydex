@@ -9,14 +9,15 @@ export async function generateSitemaps() {
     return [{ id: 0 }, { id: 1 }, { id: 2 }];
 }
 
-export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap({ id }: { id: Promise<number> }): Promise<MetadataRoute.Sitemap> {
+    const sitemapId = await id;
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
     const limit = 10000;
-    const start = id * limit;
+    const start = sitemapId * limit;
     const end = start + limit - 1;
 
     // Static pages (only on first sitemap)
-    const staticPages: MetadataRoute.Sitemap = id === 0 ? [
+    const staticPages: MetadataRoute.Sitemap = sitemapId === 0 ? [
         {
             url: baseUrl,
             lastModified: new Date(),
