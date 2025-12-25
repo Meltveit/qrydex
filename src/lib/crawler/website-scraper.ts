@@ -298,7 +298,7 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 5): P
         let description = extractDescription(homepage.html);
         const socialMedia = extractSocialMedia(homepage.html);
         const potentialBusinessIds = extractBusinessIds(homepage.content);
-        const sitelinks = extractSitelinks(homepage.links);
+        const sitelinks = extractSitelinks(homepage.html, normalizedUrl);
 
         // Deep Scan AI Summarization (Bot A intelligence)
         if (!description || description.length < 50) {
@@ -429,35 +429,54 @@ export async function batchScrapeBusinesses(limit: number = 10) {
 }
 
 /**
- * Extract sitelinks from internal links
- * Heuristic: Short, navigation-like links (About, Contact, Services)
+ * Extract sitelinks from internal links using Anchor Text
+ * Looks for navigation-like links (About, Contact, Services)
  */
-function extractSitelinks(links: string[]): { title: string; url: string }[] {
-    const commonTitles = ['About', 'Contact', 'Services', 'Products', 'Team', 'Careers', 'News', 'Blog', 'Om oss', 'Kontakt', 'Tjenester', 'Produkter', 'Jobb', 'Aktuelt'];
-
-    // This is a simplified extraction. In reality, we'd need to fetch the titles of these pages.
-    // For now, we'll try to guess title from URL slug if it matches common patterns.
-
+function extractSitelinks(html: string, baseUrl: string): { title: string; url: string }[] {
     const sitelinks: { title: string; url: string }[] = [];
+    const seenUrls = new Set<string>();
 
-    for (const link of links) {
+    // Regex to find <a> tags with href and text
+    // Capture group 1: href, Group 2: properties (optional), Group 3: text
+    const linkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+    let match;
+
+    while ((match = linkRegex.exec(html)) !== null) {
+        let href = match[1];
+        let text = match[2]
+            .replace(/<[^>]+>/g, '') // Strip tags inside anchor (e.g. spans)
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (!text || text.length > 30 || text.length < 2) continue; // Skip empty or too long text
+        if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) continue;
+
         try {
-            const urlObj = new URL(link);
-            const path = urlObj.pathname.split('/').filter(p => p).pop(); // Get last segment
+            const absoluteUrl = href.startsWith('http') ? href : new URL(href, baseUrl).toString();
 
-            if (path) {
-                // capitalize first letter
-                const title = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
+            // Internal links only
+            if (new URL(absoluteUrl).hostname !== new URL(baseUrl).hostname) continue;
 
-                // Check if it looks like a main navigation item
-                if (title.length < 20 && !title.includes('.')) {
-                    sitelinks.push({ title, url: link });
-                }
+            // Deduplicate
+            if (seenUrls.has(absoluteUrl)) continue;
+
+            const lowerText = text.toLowerCase();
+            const relevantKeywords = [
+                'about', 'contact', 'services', 'products', 'pricing', 'team', 'careers', 'news', 'blog', 'support', 'login',
+                // Norwegian
+                'om oss', 'kontakt', 'tjenester', 'produkter', 'priser', 'ansatte', 'jobb', 'aktuelt', 'kundeservice', 'logg inn',
+                'regnskap', 'lønn', 'programvare', 'software' // Visma specific
+            ];
+
+            // Heuristic: If text matches keywords OR is very short & distinct (CamelCase?)
+            if (relevantKeywords.some(k => lowerText.includes(k)) || (text.length < 20 && /^[A-ZÅÆØ]/.test(text))) {
+                sitelinks.push({ title: text, url: absoluteUrl });
+                seenUrls.add(absoluteUrl);
             }
         } catch (e) {
-            // ignore
+            // Invalid URL
         }
     }
 
-    return sitelinks.slice(0, 6); // Limit to 6
+    return sitelinks.slice(0, 8); // Limit to top 8
 }
