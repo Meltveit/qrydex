@@ -51,6 +51,12 @@ const startBots = async () => {
 
     runScript('run-deep-scan-bot.ts', 'Bot A (Deep Scan)', CYAN);
 
+    // New: Maintenance Bot
+    runScript('maintenance-bot.ts', 'Maintenance Bot (Vaktmester)', PURPLE);
+
+    // New: Discovery Bot
+    runScript('discovery-bot.ts', 'Discovery Bot (Oppdageren)', YELLOW);
+
     // Bot B is passive (Pulse), it runs inside the Next.js app.
     console.log(`${YELLOW}⚡ Bot B (Pulse) is ACTIVE (Integrated into Search Engine)${'\x1b[0m'}`);
 };

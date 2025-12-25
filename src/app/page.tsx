@@ -51,20 +51,20 @@ export default async function Home() {
   ]);
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] flex flex-col">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] w-full px-4">
       {/* Minimal header - just logo */}
-      <header className="p-4">
+      <div className="absolute top-4 left-4">
         <Link href="/" className="inline-flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center">
             <span className="text-white font-bold text-lg">Q</span>
           </div>
         </Link>
-      </header>
+      </div>
 
       <SchemaWebsite />
 
       {/* Centered content - Google style */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 -mt-20">
+      <div className="flex flex-col items-center justify-center w-full max-w-4xl">
         {/* Logo */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-[var(--color-primary)]">
@@ -101,14 +101,7 @@ export default async function Home() {
             Oppdatert daglig
           </span>
         </div>
-      </main>
-
-      {/* Minimal footer */}
-      <footer className="p-4 text-center">
-        <p className="text-xs text-[var(--color-text-secondary)]">
-          ✓ Alle bedrifter verifisert mot offisielle registre
-        </p>
-      </footer>
+      </div>
     </div>
   );
 }

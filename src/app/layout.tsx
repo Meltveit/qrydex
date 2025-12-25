@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import SchemaOrganization from '@/components/SchemaOrganization';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: "Qrydex - Finn verifiserte leverandører",
@@ -21,9 +22,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="no">
-      <body className="antialiased">
+      <body className="antialiased min-h-screen flex flex-col bg-[var(--color-background)] text-[var(--color-text)]">
         <SchemaOrganization />
-        {children}
+        <main className="flex-1 w-full">
+          {children}
+        </main>
+        <Footer />
         <Analytics />
       </body>
     </html>

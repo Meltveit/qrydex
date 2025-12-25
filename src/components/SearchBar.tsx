@@ -78,7 +78,7 @@ export default function SearchBar({
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => query.length >= 2 && setShowSuggestions(true)}
                     onBlur={handleBlur}
-                    placeholder="Søk etter bedriftsnavn eller org.nummer..."
+                    placeholder="Søk etter produkter, tjenester eller bedrifter..."
                     autoFocus={autoFocus}
                     className={`w-full rounded-full border border-gray-200 bg-white
             focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-lg
