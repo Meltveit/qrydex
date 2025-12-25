@@ -73,6 +73,7 @@ export interface Database {
                     opening_hours?: Json | null;
                     geo_coordinates?: Json | null;
                     product_categories?: string[] | null;
+                    sitelinks?: Json | null;
                 };
                 Row: {
                     id: string;
@@ -97,6 +98,7 @@ export interface Database {
                     opening_hours: Json | null;
                     geo_coordinates: Json | null;
                     product_categories: string[] | null;
+                    sitelinks: Json | null;
                 };
                 Insert: {
                     id?: string;
