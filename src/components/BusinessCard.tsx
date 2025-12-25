@@ -99,51 +99,74 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
                 </div>
             </div>
 
-            {/* Action Buttons - Interactive */}
-            <div className="flex items-center gap-3 pt-4 border-t border-gray-100 relative z-20 pointer-events-auto">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        const url = business.quality_analysis?.website_url || business.domain;
-                        if (url) window.open(url.startsWith('http') ? url : `https://${url}`, '_blank');
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 
+            {/* Sitelinks - Google Style Navigation */}
+            {Array.isArray(business.sitelinks) && business.sitelinks.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4 relative z-20">
+                    {(business.sitelinks as Array<{ title: string; url: string }>).slice(0, 6).map((link, i) => (
+                        <a
+                            key={i}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 
+                                         hover:bg-blue-100 hover:text-blue-800 rounded-md transition-colors border border-blue-100"
+                        >
+                            {link.title}
+                            <svg className="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    ))}
+                </div>
+            )}
+        </div>
+
+            {/* Action Buttons - Interactive */ }
+    <div className="flex items-center gap-3 pt-4 border-t border-gray-100 relative z-20 pointer-events-auto">
+        <button
+            onClick={(e) => {
+                e.stopPropagation();
+                const url = business.quality_analysis?.website_url || business.domain;
+                if (url) window.open(url.startsWith('http') ? url : `https://${url}`, '_blank');
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 
                              hover:bg-blue-600 hover:text-white
                              rounded-lg border border-blue-600 transition-all duration-200
                              hover:shadow-md active:scale-95"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                    Besøk nettside
-                </button>
+        >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            Besøk nettside
+        </button>
 
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // TODO: Add to comparison
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600
+        <button
+            onClick={(e) => {
+                e.stopPropagation();
+                // TODO: Add to comparison
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600
                              hover:bg-gray-100 rounded-lg transition-all duration-200
                              hover:text-gray-900 active:scale-95"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    Sammenlign
-                </button>
+        >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Sammenlign
+        </button>
 
-                <Link
-                    href={`/business/${business.org_number}`}
-                    className="ml-auto flex items-center gap-1 text-sm font-medium text-blue-600 
+        <Link
+            href={`/business/${business.org_number}`}
+            className="ml-auto flex items-center gap-1 text-sm font-medium text-blue-600 
                              hover:text-blue-700 transition-colors group/link"
-                >
-                    Se profil
-                    <svg className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                </Link>
-            </div>
-        </div>
+        >
+            Se profil
+            <svg className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+        </Link>
+    </div>
+        </div >
     );
 }

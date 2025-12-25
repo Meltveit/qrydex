@@ -5,6 +5,7 @@
 
 import { createServerClient } from '@/lib/supabase';
 import type { Business } from '@/types/database';
+import { generateText } from '@/lib/ai/gemini-client';
 
 interface PageData {
     url: string;
@@ -293,9 +294,24 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 5): P
         // Extract enhanced data from homepage
         const contactInfo = extractContactInfo(homepage.html);
         const logoUrl = extractLogo(homepage.html, normalizedUrl);
-        const description = extractDescription(homepage.html);
+        let description = extractDescription(homepage.html);
         const socialMedia = extractSocialMedia(homepage.html);
         const potentialBusinessIds = extractBusinessIds(homepage.content);
+        const sitelinks = extractSitelinks(homepage.links);
+
+        // Deep Scan AI Summarization (Bot A intelligence)
+        if (!description || description.length < 50) {
+            try {
+                const prompt = `Summarize the business activity and services of this company based on their website content in Norwegian. Keep it professional and under 200 characters. Content: ${homepage.content.slice(0, 2000)}`;
+                const aiSummary = await generateText(prompt);
+                if (aiSummary) {
+                    description = aiSummary;
+                    console.log('✨ Generated AI Deep Scan summary');
+                }
+            } catch (aiError) {
+                console.warn('Failed to generate AI summary:', aiError);
+            }
+        } // New call implementation
 
         // Find product/service pages
         const productPageUrls = identifyProductPages(homepage.links).slice(0, maxPages);
@@ -383,12 +399,14 @@ export async function batchScrapeBusinesses(limit: number = 10) {
                         logo_url: websiteData.logoUrl,
                         company_description: websiteData.description || 'Ingen beskrivelse funnet',
                         social_media: websiteData.socialMedia,
+                        sitelinks: websiteData.sitelinks, // Save Sitelinks
                         // Update existing JSONB fields
                         quality_analysis: {
                             website_scraped: true,
                             scraped_at: new Date().toISOString(),
                             contact_info: websiteData.contactInfo,
                             subpage_count: websiteData.subpages.length,
+                            potential_ids: websiteData.potentialBusinessIds,
                         },
                     })
                     .eq('id', business.id);
