@@ -1,14 +1,15 @@
-
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cron from 'node-cron';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Helper to run a script
 const runScript = (scriptName: string, label: string, color: string) => {
-    console.log(`${color}🚀 Starting ${label}...${'\x1b[0m'}`);
+    console.log(`${color}🚀[${new Date().toLocaleTimeString()}] Starting ${label}...${'\x1b[0m'} `);
     const scriptPath = path.resolve(__dirname, scriptName);
 
     // Using 'npx tsx' to execute typescript files directly
@@ -19,7 +20,7 @@ const runScript = (scriptName: string, label: string, color: string) => {
     });
 
     child.on('close', (code) => {
-        console.log(`${color}🏁 ${label} finished with code ${code}${'\x1b[0m'}`);
+        console.log(`${color}🏁[${new Date().toLocaleTimeString()}] ${label} finished(code ${code})${'\x1b[0m'} `);
     });
 
     return child;
@@ -30,48 +31,50 @@ const CYAN = '\x1b[36m';
 const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
 const PURPLE = '\x1b[35m';
+const RED = '\x1b[31m';
 
-console.log(`\n\x1b[1m🤖 Qrydex Bot Orchestrator - Initializing...\x1b[0m\n`);
+console.log(`\n\x1b[1m🤖 Qrydex Bot Scheduler - 24 / 7 Operations Mode\x1b[0m\n`);
+console.log(`${GREEN}✅ News Bot:       Every 15 minutes${'\x1b[0m'} `);
+console.log(`${CYAN}✅ Deep Scan:      Every hour${'\x1b[0m'} `);
+console.log(`${PURPLE}✅ Maintenance:    Daily at 03:00${'\x1b[0m'} `);
+console.log(`${YELLOW}✅ Discovery:      Daily at 04:00${'\x1b[0m'} `);
+console.log('--------------------------------------------------\n');
 
-// 1. Bot A: Data Ingestion (Seeding) - Run first to ensure data exists
-// Note: In a real "fire up" scenario, we might skipped seeding if data exists, 
-// but for demo we run it or assume it's done. 
-// "Fire up all bots" usually implies running the continuous/periodic ones.
-// But let's run Deep Scan and Verification.
+// 1. Define Jobs
+const startScheduler = () => {
 
-const startBots = async () => {
-    // Start Bot C (Guardian) - Parallel
-    runScript('verify-registry-status.ts', 'Bot C (The Guardian)', GREEN);
+    // --- News Bot (Every 15 minutes) ---
+    cron.schedule('*/15 * * * *', () => {
+        if (fs.existsSync(path.resolve(__dirname, 'run-news-bot.ts'))) {
+            runScript('run-news-bot.ts', 'News Bot (Global)', GREEN);
+        }
+    });
 
-    // Start News Crawler - Parallel
-    // Note: ensure we have a script for this. We have news-crawler.ts but need a runner?
-    // We created 'scripts/news-runner.ts' in Phase 4? Let me check file list first or just assume and create if missing.
-    // I recall creating a runner but I should verify. I'll create 'run-news-bot.ts' if needed.
-    // For now, let's assume 'run-deep-scan-bot.ts' covers Bot A.
+    // --- Deep Scan (Every Hour) ---
+    cron.schedule('0 * * * *', () => {
+        runScript('run-deep-scan-bot.ts', 'Bot A (Deep Scan)', CYAN);
+    });
 
-    runScript('run-deep-scan-bot.ts', 'Bot A (Deep Scan)', CYAN);
+    // --- Maintenance Bot (Daily at 03:00) ---
+    cron.schedule('0 3 * * *', () => {
+        runScript('maintenance-bot.ts', 'Maintenance Bot (Vaktmester)', PURPLE);
+    });
 
-    // New: Maintenance Bot
-    runScript('maintenance-bot.ts', 'Maintenance Bot (Vaktmester)', PURPLE);
+    // --- Discovery Bot (Daily at 04:00) ---
+    cron.schedule('0 4 * * *', () => {
+        runScript('discovery-bot.ts', 'Discovery Bot (Oppdageren)', YELLOW);
+    });
 
-    // New: Discovery Bot
-    runScript('discovery-bot.ts', 'Discovery Bot (Oppdageren)', YELLOW);
+    console.log('⏳ Scheduler active. Waiting for next trigger...');
 
-    // Bot B is passive (Pulse), it runs inside the Next.js app.
-    console.log(`${YELLOW}⚡ Bot B (Pulse) is ACTIVE (Integrated into Search Engine)${'\x1b[0m'}`);
+    // Run everything once immediately on startup
+    console.log('🔥 Performing initial run...');
+    runScript('run-news-bot.ts', 'News Bot (Initial Run)', GREEN);
+    // runScript('run-deep-scan-bot.ts', 'Bot A (Deep Scan)', CYAN); // Optional, maybe too heavy to run all at once?
+    // Let's run just news and maintenance for now to show activity
 };
 
-// Check for news runner
-import fs from 'fs';
-const newsRunnerPath = path.resolve(__dirname, 'run-news-bot.ts');
+startScheduler();
 
-if (fs.existsSync(newsRunnerPath)) {
-    runScript('run-news-bot.ts', 'News Bot (Global)', PURPLE);
-} else {
-    // If specific runner missing, maybe create it or run the library file?
-    // I'll create a dedicated runner for news in the next step to be sure.
-    console.log(`${PURPLE}⚠️  News Bot runner not found.${'\x1b[0m'}`);
-}
-
-startBots();
-
+// Keep process alive
+process.stdin.resume();
