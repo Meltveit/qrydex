@@ -36,6 +36,48 @@ export interface WebsiteData {
     };
     openingHours?: Record<string, { open: string; close: string }>;
     images: string[];
+    potentialBusinessIds: {
+        NO?: string[];
+        DK?: string[];
+        FI?: string[];
+        SE?: string[];
+    };
+}
+
+/**
+ * Extract potential business identifiers for Nordic countries
+ */
+function extractBusinessIds(text: string): WebsiteData['potentialBusinessIds'] {
+    const ids: WebsiteData['potentialBusinessIds'] = {};
+
+    // Norway: 9 digits, often org.nr: 123 456 789 or 123456789
+    const noMatches = text.match(/(?:org\.?\s?nr\.?|foretaksregisteret)\D*(\d{3}\s?\d{3}\s?\d{3}|\d{9})/gi);
+    if (noMatches) {
+        ids.NO = [...new Set(noMatches.map(m => m.replace(/\D/g, '')))];
+    }
+
+    // Denmark: CVR followed by 8 digits
+    const dkMatches = text.match(/cvr\D*(\d{8})/gi);
+    if (dkMatches) {
+        ids.DK = [...new Set(dkMatches.map(m => m.replace(/\D/g, '')))];
+    }
+
+    // Finland: Y-tunnus 1234567-8
+    const fiMatches = text.match(/(?:y-tunnus|y-code)\D*(\d{7}-\d)/gi);
+    if (fiMatches) {
+        ids.FI = [...new Set(fiMatches.map(m => {
+            const clean = m.match(/(\d{7}-\d)/);
+            return clean ? clean[1] : m;
+        }))];
+    }
+
+    // Sweden: 10 digits 123456-7890 (Org.nr)
+    const seMatches = text.match(/(?:org\.?\s?nr\.?)\D*(\d{6}-\d{4})/gi);
+    if (seMatches) {
+        ids.SE = [...new Set(seMatches.map(m => m.match(/(\d{6}-\d{4})/)![1]))];
+    }
+
+    return ids;
 }
 
 /**
@@ -253,6 +295,7 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 5): P
         const logoUrl = extractLogo(homepage.html, normalizedUrl);
         const description = extractDescription(homepage.html);
         const socialMedia = extractSocialMedia(homepage.html);
+        const potentialBusinessIds = extractBusinessIds(homepage.content);
 
         // Find product/service pages
         const productPageUrls = identifyProductPages(homepage.links).slice(0, maxPages);
@@ -293,7 +336,8 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 5): P
             description,
             socialMedia,
             images: [], // Placeholder for extracted images
-            openingHours: undefined
+            openingHours: undefined,
+            potentialBusinessIds
         };
     } catch (error) {
         console.error('Error in website scraping:', error);

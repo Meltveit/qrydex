@@ -12,8 +12,19 @@ export interface SearchFilters {
     verifiedOnly?: boolean;
 }
 
+export interface NewsArticle {
+    id: string;
+    title: string;
+    summary: string | null;
+    url: string;
+    source_id: string; // uuid
+    published_at: string | null;
+    sentiment?: 'positive' | 'negative' | 'neutral';
+}
+
 export interface SearchResult {
     businesses: Business[];
+    articles?: NewsArticle[];
     total: number;
     page: number;
     pageSize: number;
@@ -29,14 +40,13 @@ export async function searchBusinesses(
     pageSize = 20
 ): Promise<SearchResult> {
     try {
-        let queryBuilder = supabase
+        let businessQueryBuilder = supabase
             .from('businesses')
             .select('*', { count: 'exact' });
 
         // Text search
         if (query && query.trim()) {
-            // Use PostgreSQL full-text search on search_vector
-            queryBuilder = queryBuilder.textSearch('search_vector', query, {
+            businessQueryBuilder = businessQueryBuilder.textSearch('search_vector', query, {
                 type: 'websearch',
                 config: 'norwegian',
             });
@@ -44,32 +54,52 @@ export async function searchBusinesses(
 
         // Apply filters
         if (filters?.country) {
-            queryBuilder = queryBuilder.eq('country_code', filters.country.toUpperCase());
+            businessQueryBuilder = businessQueryBuilder.eq('country_code', filters.country.toUpperCase());
         }
 
         if (filters?.minTrustScore) {
-            queryBuilder = queryBuilder.gte('trust_score', filters.minTrustScore);
+            businessQueryBuilder = businessQueryBuilder.gte('trust_score', filters.minTrustScore);
         }
 
         if (filters?.verifiedOnly) {
-            queryBuilder = queryBuilder.eq('verification_status', 'verified');
+            businessQueryBuilder = businessQueryBuilder.eq('verification_status', 'verified');
         }
 
         if (filters?.industry) {
-            // Search in quality_analysis.industry_category
-            queryBuilder = queryBuilder.ilike('quality_analysis->>industry_category', `%${filters.industry}%`);
+            businessQueryBuilder = businessQueryBuilder.ilike('quality_analysis->>industry_category', `%${filters.industry}%`);
         }
 
         // Order by trust score (primary) and relevance
-        queryBuilder = queryBuilder
+        businessQueryBuilder = businessQueryBuilder
             .order('trust_score', { ascending: false })
             .range((page - 1) * pageSize, page * pageSize - 1);
 
-        const { data, error, count } = await queryBuilder;
+        // Execute queries
+        // If we have a query string, we also search for news
+        let newsPromise = Promise.resolve({ data: [], error: null });
 
-        if (error) {
-            console.error('Search error:', error);
-            throw error;
+        if (query && query.trim()) {
+            // Simple ILIKE search for news since we don't have FTS column setup in client types yet
+            // Limiting news to 5 for relevance mix
+            newsPromise = supabase
+                .from('news_articles')
+                .select('*')
+                .or(`title.ilike.%${query}%,summary.ilike.%${query}%`)
+                .order('published_at', { ascending: false })
+                .limit(5) as any;
+        }
+
+        const [businessResult, newsResult] = await Promise.all([
+            businessQueryBuilder,
+            newsPromise
+        ]);
+
+        const { data: businessData, error: businessError, count } = businessResult;
+        const { data: newsData, error: newsError } = newsResult;
+
+        if (businessError) {
+            console.error('Search error (business):', businessError);
+            throw businessError;
         }
 
         // Log search analytics (fire and forget)
@@ -79,7 +109,7 @@ export async function searchBusinesses(
                     await supabase.from('search_analytics').insert({
                         query: query.trim(),
                         filters: filters,
-                        results_count: count || data?.length || 0,
+                        results_count: count || businessData?.length || 0,
                     });
                 } catch (e) {
                     console.error('Analytics log failed:', e);
@@ -88,7 +118,8 @@ export async function searchBusinesses(
         }
 
         return {
-            businesses: JSON.parse(JSON.stringify(data || [])), // Ensure strictly serializable
+            businesses: JSON.parse(JSON.stringify(businessData || [])),
+            articles: newsData ? JSON.parse(JSON.stringify(newsData)) : [],
             total: count || 0,
             page,
             pageSize,
@@ -97,6 +128,7 @@ export async function searchBusinesses(
         console.error('Error searching businesses:', error);
         return {
             businesses: [],
+            articles: [],
             total: 0,
             page,
             pageSize,

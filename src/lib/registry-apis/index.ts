@@ -8,6 +8,9 @@ import { lookupBrregEnhet } from './bronnoy';
 import { validateVatNumber, isEUCountry } from './vies';
 import { lookupCompaniesHouse } from './companies-house';
 import { lookupSecEdgar, lookupUsStateRegistry } from './usa';
+import { searchDenmarkRegistry } from './denmark';
+import { searchFinlandRegistry } from './finland';
+import { searchSwedenRegistry } from './sweden';
 
 export interface VerificationResult {
     success: boolean;
@@ -37,6 +40,39 @@ export async function verifyBusiness(
                 data,
                 source: 'Brønnøysundregistrene',
             };
+        }
+
+        // Denmark - CVR
+        if (country === 'DK') {
+            const data = await searchDenmarkRegistry(identifier);
+            return {
+                success: data !== null,
+                data,
+                source: 'CVR (cvrapi.dk)',
+            };
+        }
+
+        // Finland - PRH / YTJ
+        if (country === 'FI') {
+            const data = await searchFinlandRegistry(identifier);
+            return {
+                success: data !== null,
+                data,
+                source: 'YTJ (PRH)',
+            };
+        }
+
+        // Sweden - Bolagsverket (Placeholder)
+        if (country === 'SE') {
+            const data = await searchSwedenRegistry(identifier);
+            if (data) {
+                return {
+                    success: true,
+                    data,
+                    source: 'Bolagsverket (Mock)',
+                };
+            }
+            // Fallback to VIES for Sweden if mock returns null (which it does currently)
         }
 
         // UK - Companies House
