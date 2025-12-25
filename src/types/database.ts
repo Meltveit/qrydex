@@ -119,7 +119,7 @@ export interface Database {
                     social_media?: Json | null;
                     opening_hours?: Json | null;
                     geo_coordinates?: Json | null;
-                    geo_coordinates?: Json | null;
+
                     product_categories?: string[] | null;
                     sitelinks?: Json | null; // Sitelinks
                 };

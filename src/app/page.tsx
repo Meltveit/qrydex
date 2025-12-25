@@ -2,6 +2,7 @@ import SearchBar from '@/components/SearchBar';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import { createServerClient } from '@/lib/supabase';
+import SchemaWebsite from '@/components/SchemaWebsite';
 
 async function getLocationFromIP(ip: string | null) {
   if (!ip || ip === '127.0.0.1' || ip === '::1') {
@@ -59,6 +60,8 @@ export default async function Home() {
           </div>
         </Link>
       </header>
+
+      <SchemaWebsite />
 
       {/* Centered content - Google style */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 -mt-20">

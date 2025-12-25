@@ -8,9 +8,15 @@ export default function robots(): MetadataRoute.Robots {
             {
                 userAgent: '*',
                 allow: '/',
-                disallow: ['/api/', '/_next/', '/verify'],
+                disallow: ['/api/', '/_next/'], // Disallow API and internal Next.js paths
             },
+            {
+                userAgent: 'Googlebot',
+                allow: '/',
+                disallow: '/api/',
+            }
         ],
         sitemap: `${baseUrl}/sitemap.xml`,
+        host: baseUrl, // Explicitly state host
     };
 }

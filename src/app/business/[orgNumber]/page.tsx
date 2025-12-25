@@ -1,10 +1,33 @@
 import SchemaBreadcrumbs from '@/components/SchemaBreadcrumbs';
 
-// ... existing imports
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
+import { Business } from '@/types/database';
+import TrustScoreBadge from '@/components/TrustScoreBadge';
+import { generateBusinessSchema } from '@/lib/seo/schema-generator';
+import { formatTrustScore } from '@/lib/trust-engine';
+
+interface BusinessPageProps {
+    params: Promise<{ orgNumber: string }>;
+}
 
 export default async function BusinessPage({ params }: BusinessPageProps) {
     const { orgNumber } = await params;
-    // ... existing logic
+    const { data: business } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('org_number', orgNumber)
+        .single();
+
+    if (!business) {
+        notFound();
+    }
+
+    const registry = business.registry_data;
+    const quality = business.quality_analysis;
+    const trustScore = formatTrustScore(business);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -276,7 +299,7 @@ export default async function BusinessPage({ params }: BusinessPageProps) {
                     </div>
                 </div>
             </div>
-        </main>
+
         </div >
     );
 }
