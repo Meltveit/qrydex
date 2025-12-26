@@ -78,9 +78,8 @@ export async function searchBusinesses(
             // Construct a robust OR filter
             // This searches: Name OR Description OR Address OR City OR Country
             const orConditions = [
-                `search_vector.fts.${cleanQuery}`, // Valid Full Text Search syntax? Or just use .textSearch() combined?
-                // Supabase mix of fts and column search can be tricky.
-                // Let's stick to .or() with ilike for broad coverage if FTS is failing specific words
+                // Removing explicit FTS from OR to prevent syntax errors with spaces. 
+                // We rely on specific field ILIKEs which are safer and cover most cases.
                 `legal_name.ilike.%${cleanQuery}%`,
                 `company_description.ilike.%${cleanQuery}%`,
                 `registry_data->>visiting_address.ilike.%${cleanQuery}%`,
