@@ -341,8 +341,10 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 10): 
                 const prompt = `Analyze this website content and extract key business data. Return strictly valid JSON with this structure:
 {
   "description": "Professional summary under 200 chars in Norwegian",
-  "services": ["Service 1", "Service 2"],
-  "products": ["Product 1", "Product 2"],
+  "services": ["Service 1 (Norwegian)", "Service 2 (Norwegian)"],
+  "services_en": ["Service 1 (English)", "Service 2 (English)"],
+  "products": ["Product 1 (Norwegian)", "Product 2 (Norwegian)"],
+  "products_en": ["Product 1 (English)", "Product 2 (English)"],
   "industry_category": "Main Industry Category"
 }
 Content: ${homepage.content.slice(0, 3000)}`;
@@ -359,15 +361,20 @@ Content: ${homepage.content.slice(0, 3000)}`;
                         if (Array.isArray(data.services)) websiteData.services = data.services;
                         if (Array.isArray(data.products)) websiteData.products = data.products;
 
+                        // Store English data in temporary augmentation properties (need to cast or extend interface if strict)
+                        // For simplicity, we just attach them to data object to be used in batchScrape
+                        (websiteData as any).services_en = Array.isArray(data.services_en) ? data.services_en : [];
+                        (websiteData as any).products_en = Array.isArray(data.products_en) ? data.products_en : [];
+
                         // We also get industry category which is great
                         if (data.industry_category) {
                             // We will merge this into quality_analysis later
                             (websiteData as any).industry_category = data.industry_category;
                         }
 
-                        console.log('✨ Generated AI Deep Scan data:', {
-                            services: data.services?.length,
-                            products: data.products?.length
+                        console.log('✨ Generated AI Deep Scan data (Multilingual):', {
+                            services_no: data.services?.length,
+                            services_en: data.services_en?.length
                         });
                     } catch (parseError) {
                         console.warn('Failed to parse AI JSON:', parseError);
@@ -425,8 +432,12 @@ Content: ${homepage.content.slice(0, 3000)}`;
             // Security & Performance
             hasSSL,
             securityHeaders,
-            responseTime
-        };
+            responseTime,
+            // Pass through augmented data
+            services_en: (websiteData as any).services_en,
+            products_en: (websiteData as any).products_en,
+            industry_category: (websiteData as any).industry_category
+        } as any; // Cast to any to bypass strict interface for new fields temporarily
     } catch (error) {
         console.error('Error in website scraping:', error);
         return null;
@@ -461,7 +472,7 @@ export async function batchScrapeBusinesses(limit: number = 10) {
         try {
             console.log(`Scraping: ${business.legal_name} (${business.domain})`);
 
-            const websiteData = await scrapeWebsite(business.domain!, 5);
+            const websiteData: any = await scrapeWebsite(business.domain!, 5);
 
             if (websiteData) {
                 // Update business with enhanced data
@@ -481,7 +492,9 @@ export async function batchScrapeBusinesses(limit: number = 10) {
                             potential_ids: websiteData.potentialBusinessIds,
                             services: websiteData.services,
                             products: websiteData.products,
-                            industry_category: (websiteData as any).industry_category || null
+                            services_en: websiteData.services_en, // English
+                            products_en: websiteData.products_en, // English
+                            industry_category: websiteData.industry_category || null
                         },
                     })
                     .eq('id', business.id);
