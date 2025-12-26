@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
     const [businessRes, categoryRes] = await Promise.all([businessPromise, categoryPromise]);
 
-    const suggestions = [];
+    const suggestions: { label: string; value: string; type: string; logo: string | null }[] = [];
 
     // Process Categories first (so they appear at top or mixed? User usually wants specific first? 
     // Let's put categories first if they are exact matches, otherwise mixed.
