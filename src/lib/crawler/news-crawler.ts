@@ -1,24 +1,73 @@
-const RSSParser = require('rss-parser');
-import { createServerClient } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
 
-const parser = new RSSParser();
+// Load environment variables
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-interface NewsArticleInsert {
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+interface NewsArticle {
     source_id: string;
     url: string;
     title: string;
     summary?: string;
-    content?: string;
-    author?: string;
     published_at?: string;
-    sentiment?: 'neutral'; // Default
+    sentiment?: 'neutral';
 }
 
-export async function crawlAllNewsSources() {
-    const supabase = createServerClient();
-    console.log('📰 Starting news crawl...');
+// Simple RSS parser using native fetch and XML parsing
+async function parseRSSFeed(url: string): Promise<any[]> {
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Qrydex News Bot/1.0'
+            }
+        });
 
-    // 1. Get enabled sources
+        if (!response.ok) {
+            console.warn(`Failed to fetch ${url}: ${response.status}`);
+            return [];
+        }
+
+        const xmlText = await response.text();
+
+        // Extract items using regex (simple but effective)
+        const itemMatches = xmlText.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi);
+        const items: any[] = [];
+
+        for (const match of itemMatches) {
+            const itemXml = match[1];
+
+            const title = itemXml.match(/<title[^>]*>(.*?)<\/title>/i)?.[1]?.replace(/<!\[CDATA\[(.*?)\]\]>/, '$1').trim();
+            const link = itemXml.match(/<link[^>]*>(.*?)<\/link>/i)?.[1]?.trim();
+            const description = itemXml.match(/<description[^>]*>(.*?)<\/description>/i)?.[1]?.replace(/<!\[CDATA\[(.*?)\]\]>/, '$1').trim();
+            const pubDate = itemXml.match(/<pubDate[^>]*>(.*?)<\/pubDate>/i)?.[1]?.trim();
+
+            if (title && link) {
+                items.push({
+                    title,
+                    link,
+                    description,
+                    pubDate: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString()
+                });
+            }
+        }
+
+        return items;
+    } catch (error) {
+        console.error(`Error parsing RSS feed ${url}:`, error);
+        return [];
+    }
+}
+
+async function crawlAllNewsSources() {
+    console.log('📰 Starting news crawl (Native Parser)...');
+
+    // Get enabled sources
     const { data: sources, error } = await supabase
         .from('news_sources')
         .select('*')
@@ -30,31 +79,24 @@ export async function crawlAllNewsSources() {
     }
 
     console.log(`Found ${sources.length} enabled news sources.`);
+    let totalArticles = 0;
 
     for (const source of sources) {
-        console.log(`\nProcessing source: ${source.source_name} (${source.source_url})`);
+        console.log(`\n📡 Processing: ${source.source_name}`);
 
         try {
-            const feed = await parser.parseURL(source.source_url);
-            console.log(`Fetched ${feed.items.length} items from feed.`);
+            const items = await parseRSSFeed(source.source_url);
+            console.log(`   Fetched ${items.length} items`);
 
-            const newArticles: NewsArticleInsert[] = [];
+            const newArticles: NewsArticle[] = items.map(item => ({
+                source_id: source.id,
+                url: item.link,
+                title: item.title,
+                summary: item.description?.substring(0, 500) || '',
+                published_at: item.pubDate,
+                sentiment: 'neutral' as const
+            }));
 
-            for (const item of feed.items) {
-                if (!item.link || !item.title) continue;
-
-                newArticles.push({
-                    source_id: source.id,
-                    url: item.link,
-                    title: item.title,
-                    summary: item.contentSnippet || item.content || '',
-                    author: item.creator,
-                    published_at: item.isoDate ? new Date(item.isoDate).toISOString() : new Date().toISOString(),
-                    sentiment: 'neutral',
-                });
-            }
-
-            // Batch insert with onConflict ignore
             if (newArticles.length > 0) {
                 const { error: insertError } = await supabase
                     .from('news_articles')
@@ -64,9 +106,10 @@ export async function crawlAllNewsSources() {
                     });
 
                 if (insertError) {
-                    console.error(`Error inserting articles for ${source.source_name}:`, insertError);
+                    console.error(`   ❌ Insert error:`, insertError.message);
                 } else {
-                    console.log(`✅ Processed ${newArticles.length} articles.`);
+                    console.log(`   ✅ Inserted ${newArticles.length} articles`);
+                    totalArticles += newArticles.length;
                 }
             }
 
@@ -76,10 +119,26 @@ export async function crawlAllNewsSources() {
                 .update({ last_crawled_at: new Date().toISOString() })
                 .eq('id', source.id);
 
-        } catch (err) {
-            console.error(`❌ Failed to process items for ${source.source_name}:`, err);
+        } catch (err: any) {
+            console.error(`   ❌ Failed:`, err.message);
         }
+
+        // Rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    console.log('\n📰 News crawl completed.');
+    console.log(`\n✅ News crawl completed. Total new articles: ${totalArticles}`);
 }
+
+// Run if executed directly
+if (require.main === module) {
+    crawlAllNewsSources().then(() => {
+        console.log('News bot finished.');
+        process.exit(0);
+    }).catch(err => {
+        console.error('News bot failed:', err);
+        process.exit(1);
+    });
+}
+
+export { crawlAllNewsSources };
