@@ -31,7 +31,7 @@ export default async function BusinessPage(props: any) {
     const trustScore = formatTrustScore(business);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
             {/* Header ... */}
 
             <script
@@ -65,7 +65,7 @@ export default async function BusinessPage(props: any) {
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Header Card */}
-                    <div className="p-8 bg-white rounded-2xl border border-gray-100 shadow-lg relative overflow-hidden">
+                    <div className="p-8 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-lg relative overflow-hidden">
                         {/* Background texture/logo hint if available */}
                         {business.logo_url && (
                             <div className="absolute -right-10 -top-10 w-40 h-40 opacity-5 pointer-events-none">
@@ -85,7 +85,7 @@ export default async function BusinessPage(props: any) {
                                     )}
 
                                     <div>
-                                        <h1 className="text-3xl font-bold text-gray-900 leading-tight">{business.legal_name}</h1>
+                                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight">{business.legal_name}</h1>
                                         <div className="flex items-center gap-2 mt-1">
                                             {business.verification_status === 'verified' && (
                                                 <span className="px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-semibold flex items-center gap-1 border border-green-200">
