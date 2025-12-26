@@ -18,7 +18,7 @@ export default function SearchBar({
     autoFocus = false,
     placeholder = 'Søk etter produkter, tjenester eller bedrifter...'
 }: SearchBarProps) {
-    const [suggestions, setSuggestions] = useState<Array<{ label: string; value: string; logo: string | null }>>([]);
+    const [suggestions, setSuggestions] = useState<Array<{ label: string; value: string; type: string; logo: string | null }>>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [query, setQuery] = useState(defaultQuery);
     const router = useRouter();
@@ -132,8 +132,8 @@ export default function SearchBar({
                             className="w-full text-left px-5 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors border-b border-gray-50 dark:border-slate-700 last:border-0"
                         >
                             <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold overflow-hidden ${item.type === 'category'
-                                    ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                    : 'bg-gray-100 dark:bg-slate-700 text-gray-400'
+                                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                : 'bg-gray-100 dark:bg-slate-700 text-gray-400'
                                 }`}>
                                 {item.type === 'category' ? (
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
