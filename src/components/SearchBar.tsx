@@ -83,6 +83,7 @@ export default function SearchBar({
                     placeholder={placeholder}
                     autoFocus={autoFocus}
                     className={`w-full rounded-full border border-gray-200 bg-white
+            dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-gray-400
             focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-lg
             outline-none transition-all hover:shadow-md
             ${isLarge ? 'px-6 py-5 text-lg pr-14' : 'px-5 py-3 pr-12'}`}
@@ -91,6 +92,7 @@ export default function SearchBar({
                     type="submit"
                     className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full
             text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all
+            dark:text-gray-500 dark:hover:text-blue-400 dark:hover:bg-slate-700
             ${isLarge ? 'right-3' : 'right-2'}`}
                     aria-label="Søk"
                 >
@@ -112,7 +114,7 @@ export default function SearchBar({
 
             {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 z-50 overflow-hidden">
                     {suggestions.map((item) => (
                         <button
                             key={item.value}
@@ -121,9 +123,9 @@ export default function SearchBar({
                                 setQuery(item.label);
                                 setShowSuggestions(false);
                             }}
-                            className="w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors border-b border-gray-50 last:border-0"
+                            className="w-full text-left px-5 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors border-b border-gray-50 dark:border-slate-700 last:border-0"
                         >
-                            <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 text-xs text-gray-400 font-bold overflow-hidden">
+                            <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 text-xs text-gray-400 font-bold overflow-hidden">
                                 {item.logo ? (
                                     <img src={item.logo} alt="" className="w-full h-full object-contain" />
                                 ) : (
@@ -131,8 +133,8 @@ export default function SearchBar({
                                 )}
                             </div>
                             <div>
-                                <div className="font-medium text-gray-900">{item.label}</div>
-                                <div className="text-xs text-gray-500">Org.nr: {item.value}</div>
+                                <div className="font-medium text-gray-900 dark:text-gray-100">{item.label}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">Org.nr: {item.value}</div>
                             </div>
                         </button>
                     ))}

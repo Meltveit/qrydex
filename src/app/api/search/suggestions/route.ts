@@ -17,6 +17,8 @@ export async function GET(request: Request) {
     // Note: 'products' is text[], using cs (contains) or ilike text cast is needed.
     // Supabase text search on array is tricky with .or(). 
     // Simplified: Search name/org/description first. 
+    console.log(`🔍 Suggestion Query: "${query}"`);
+
     const { data: businesses, error } = await supabase
         .from('businesses')
         .select('legal_name, org_number, logo_url')
@@ -24,8 +26,11 @@ export async function GET(request: Request) {
         .limit(5);
 
     if (error) {
+        console.error('❌ Suggestion Error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    console.log(`✅ Found ${businesses?.length || 0} suggestions`);
 
     // Format suggestions
     const suggestions = (businesses || []).map(b => ({

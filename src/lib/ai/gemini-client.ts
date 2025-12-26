@@ -10,9 +10,8 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey || '');
 
 // Models
-// 'gemini-pro' is good for text analysis
-// 'gemini-pro-vision' is good for image analysis (if we send screenshots later)
-export const geminiModel = genAI.getGenerativeModel({ model: 'gemini-pro' });
+// 'gemini-1.5-flash' is faster and cheaper
+export const geminiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 /**
  * Helper to generate text from a prompt

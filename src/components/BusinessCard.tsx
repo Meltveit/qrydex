@@ -19,8 +19,8 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
 
     return (
         <div
-            className="group relative p-6 bg-white rounded-xl border border-gray-200
-                       hover:border-blue-400 hover:shadow-xl
+            className="group relative p-6 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700
+                       hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xl dark:hover:shadow-lg dark:hover:shadow-blue-900/10
                        transition-all duration-300 ease-out cursor-pointer
                        hover:-translate-y-1"
         >
@@ -46,8 +46,8 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
                         )}
 
                         {/* Company Name */}
-                        <h3 className="font-semibold text-lg text-gray-900 truncate 
-                                     group-hover:text-blue-600 transition-colors duration-200">
+                        <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate 
+                                     group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
                             {business.legal_name}
                         </h3>
                     </div>
@@ -61,15 +61,15 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
 
                 {/* AI Description */}
                 {business.quality_analysis?.ai_summary && (
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 leading-relaxed">
                         {business.quality_analysis.ai_summary}
                     </p>
                 )}
 
                 {/* Metadata Row */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
                     {/* Location */}
-                    <span className="flex items-center gap-1.5 hover:text-gray-700 transition-colors">
+                    <span className="flex items-center gap-1.5 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -89,7 +89,7 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
 
                     {/* Distance */}
                     {distance !== undefined && (
-                        <span className="flex items-center gap-1.5 text-blue-600">
+                        <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
@@ -109,18 +109,18 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="group flex flex-col gap-0.5 px-3 py-2 text-sm bg-blue-50 
-                                         hover:bg-blue-100 rounded-lg transition-all border border-blue-100 hover:border-blue-200
+                            className="group flex flex-col gap-0.5 px-3 py-2 text-sm bg-blue-50 dark:bg-slate-700/50 
+                                         hover:bg-blue-100 dark:hover:bg-slate-700 rounded-lg transition-all border border-blue-100 dark:border-slate-600 hover:border-blue-200
                                          hover:shadow-sm max-w-[200px]"
                         >
-                            <div className="flex items-center gap-1.5 font-medium text-blue-700 group-hover:text-blue-800">
+                            <div className="flex items-center gap-1.5 font-medium text-blue-700 dark:text-blue-300 group-hover:text-blue-800 dark:group-hover:text-blue-200">
                                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                 </svg>
                                 <span className="truncate">{link.title}</span>
                             </div>
                             {link.description && (
-                                <span className="text-xs text-blue-600/70 group-hover:text-blue-700/80 line-clamp-1">
+                                <span className="text-xs text-blue-600/70 dark:text-blue-300/70 group-hover:text-blue-700/80 dark:group-hover:text-blue-200/80 line-clamp-1">
                                     {link.description}
                                 </span>
                             )}
@@ -131,16 +131,16 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
 
 
             {/* Action Buttons - Interactive */}
-            <div className="flex items-center gap-3 pt-4 border-t border-gray-100 relative z-20 pointer-events-auto">
+            <div className="flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-slate-700 relative z-20 pointer-events-auto">
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         const url = business.quality_analysis?.website_url || business.domain;
                         if (url) window.open(url.startsWith('http') ? url : `https://${url}`, '_blank');
                     }}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 
-                             hover:bg-blue-600 hover:text-white
-                             rounded-lg border border-blue-600 transition-all duration-200
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400
+                             hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white
+                             rounded-lg border border-blue-600 dark:border-blue-500 transition-all duration-200
                              hover:shadow-md active:scale-95"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,9 +154,9 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
                         e.stopPropagation();
                         // TODO: Add to comparison
                     }}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600
-                             hover:bg-gray-100 rounded-lg transition-all duration-200
-                             hover:text-gray-900 active:scale-95"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400
+                             hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-all duration-200
+                             hover:text-gray-900 dark:hover:text-gray-200 active:scale-95"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -166,8 +166,8 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
 
                 <Link
                     href={`/business/${business.org_number}`}
-                    className="ml-auto flex items-center gap-1 text-sm font-medium text-blue-600 
-                             hover:text-blue-700 transition-colors group/link"
+                    className="ml-auto flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400
+                             hover:text-blue-700 dark:hover:text-blue-300 transition-colors group/link"
                 >
                     Se profil
                     <svg className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

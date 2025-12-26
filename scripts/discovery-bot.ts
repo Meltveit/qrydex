@@ -1,27 +1,90 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-import { createServerClient } from '@/lib/supabase';
-import { generateText } from '@/lib/ai/gemini-client';
+// Load environment variables from .env.local
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
-// Mock search function (Replace with SerperDev/Google API in production)
+// Helper to validate if a URL is reachable
+async function validateUrl(url: string): Promise<boolean> {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+        const response = await fetch(url, {
+            method: 'HEAD',
+            signal: controller.signal,
+            headers: {
+                'User-Agent': 'Qrydex/1.0 (Business Discovery Bot)'
+            }
+        });
+        clearTimeout(timeoutId);
+
+        return response.ok || (response.status >= 300 && response.status < 400);
+    } catch (e) {
+        return false;
+    }
+}
+
+// AI-based search function
 async function searchForDomain(companyName: string, orgNumber: string, country: string): Promise<string | null> {
-    console.log(`🔍 Searching for domain: ${companyName} (${country})...`);
+    console.log(`🔍 AI Searching for domain: ${companyName} (${country})...`);
 
-    // Heuristic: specific overrides for demo
-    if (companyName.toLowerCase().includes('dnb')) return 'dnb.no';
-    if (companyName.toLowerCase().includes('telenor')) return 'telenor.no';
-    if (companyName.toLowerCase().includes('equinor')) return 'equinor.com';
-    if (companyName.toLowerCase().includes('gjensidige')) return 'gjensidige.no';
+    // Dynamic import for Gemini client
+    const { generateText } = await import('@/lib/ai/gemini-client');
 
-    // In real implementation:
-    // const results = await googleSearch(`${companyName} ${orgNumber} offisiell side`);
-    // return results[0].link;
+    const prompt = `What is the official website URL for the company "${companyName}" (Org Nr: ${orgNumber}) located in ${country}? 
+    Return ONLY the URL starting with https:// or http://. 
+    If you are not at least 80% sure, or if the company likely does not have a website, return "null".
+    Do not return social media links (Facebook, LinkedIn) unless it is their primary homepage.
+    Return strictly just the URL or "null", no text.`;
 
-    return null;
+    try {
+        const result = await generateText(prompt);
+        if (!result) throw new Error('Empty response from AI');
+
+        let url = result?.trim();
+
+        if (!url || url.toLowerCase() === 'null' || url.includes(' ')) {
+            return null;
+        }
+
+        // Cleanup markdown if AI wraps it
+        url = url.replace(/`/g, '').replace(/\n/g, '');
+
+        // Basic validation
+        if (!url.startsWith('http')) {
+            url = `https://${url}`;
+        }
+
+        console.log(`🤖 AI Suggested: ${url}. Verifying...`);
+        const isValid = await validateUrl(url);
+
+        if (isValid) {
+            console.log(`✅ URL Verified: ${url}`);
+            return url;
+        } else {
+            console.log(`❌ URL Unreachable: ${url}`);
+            return null;
+        }
+
+    } catch (e: any) {
+        if (e.message?.includes('404') || e.message?.includes('403')) {
+            console.error('⚠️ AI Model Error (Check API Key/Model):', e.message);
+        } else {
+            console.error('AI Discovery Error:', e);
+        }
+        return null;
+    }
 }
 
 async function runDiscoveryJob() {
     console.log('🕵️‍♂️ Starting Discovery Bot (Oppdageren)...');
 
+    // Dynamic import for Supabase client
+    const { createServerClient } = await import('@/lib/supabase');
     const supabase = createServerClient();
 
     // Find businesses without domain
@@ -29,7 +92,7 @@ async function runDiscoveryJob() {
         .from('businesses')
         .select('*')
         .is('domain', null)
-        .limit(20);
+        .limit(10); // Batch size
 
     if (error) {
         console.error('Error:', error);
@@ -51,17 +114,27 @@ async function runDiscoveryJob() {
         if (domain) {
             console.log(`🎉 Found domain for ${business.legal_name}: ${domain}`);
 
+            // Remove protocol for display domain, but keep full url in metadata if needed?
+            // Existing schema uses 'domain' text field, usually just 'example.com' or full url?
+            // Looking at existing data, usually 'example.com'.
+
+            let displayDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
             await supabase
                 .from('businesses')
-                .update({ domain: domain })
+                .update({
+                    domain: displayDomain,
+                    // Optional: could save full url in a new field if schema permitted
+                })
                 .eq('id', business.id);
 
             found++;
         } else {
-            console.log(`Searching failed for ${business.legal_name}`);
+            console.log(`Searching failed/not found for ${business.legal_name}`);
         }
 
-        await new Promise(r => setTimeout(r, 1000));
+        // Respect rate limits & politeness
+        await new Promise(r => setTimeout(r, 2000));
     }
 
     console.log(`\n🕵️‍♂️ Discovery complete. Found ${found} new domains.`);

@@ -37,7 +37,7 @@ console.log(`\n\x1b[1m🤖 Qrydex Bot Scheduler - 24 / 7 Operations Mode\x1b[0m\
 console.log(`${GREEN}✅ News Bot:       Every 15 minutes${'\x1b[0m'} `);
 console.log(`${CYAN}✅ Deep Scan:      Every hour${'\x1b[0m'} `);
 console.log(`${PURPLE}✅ Maintenance:    Daily at 03:00${'\x1b[0m'} `);
-console.log(`${YELLOW}✅ Discovery:      Daily at 04:00${'\x1b[0m'} `);
+console.log(`${CYAN}✅ Ingestion:      Daily at 06:00${'\x1b[0m'} `);
 console.log('--------------------------------------------------\n');
 
 // 1. Define Jobs
@@ -65,8 +65,8 @@ const startScheduler = () => {
         runScript('discovery-bot.ts', 'Discovery Bot (Oppdageren)', YELLOW);
     });
 
-    // --- Ingestion Bot (Every hour at :00) ---
-    cron.schedule('0 * * * *', () => {
+    // --- Ingestion Bot (Daily at 06:00) ---
+    cron.schedule('0 6 * * *', () => {
         runScript('ingestion-bot.ts', 'Ingestion Bot (The Recruiter)', CYAN);
     });
 
