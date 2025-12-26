@@ -31,6 +31,7 @@ const CYAN = '\x1b[36m';
 const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
 const PURPLE = '\x1b[35m';
+const MAGENTA = '\x1b[35m'; // Alias for consistency
 const RED = '\x1b[31m';
 
 console.log(`\n\x1b[1m🤖 Qrydex Bot Scheduler - 24 / 7 Operations Mode\x1b[0m\n`);
