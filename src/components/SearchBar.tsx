@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 interface SearchBarProps {
     defaultQuery?: string;
@@ -82,6 +82,7 @@ export default function SearchBar({
                     onBlur={handleBlur}
                     placeholder={placeholder}
                     autoFocus={autoFocus}
+                    name="q"
                     className={`w-full rounded-full border border-gray-200 bg-white text-gray-900
             dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-gray-400
             focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-lg
