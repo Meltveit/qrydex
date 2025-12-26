@@ -60,9 +60,9 @@ const startScheduler = () => {
         runScript('maintenance-bot.ts', 'Maintenance Bot (Vaktmester)', PURPLE);
     });
 
-    // --- Discovery Bot (Daily at 04:00) ---
-    cron.schedule('0 4 * * *', () => {
-        runScript('discovery-bot.ts', 'Discovery Bot (Oppdageren)', YELLOW);
+    // --- Discovery Bot (Every 2 minutes, 1 item at a time) ---
+    cron.schedule('*/2 * * * *', () => {
+        runScript('discovery-bot.ts', 'Discovery Bot (The Explorer)', MAGENTA);
     });
 
     // --- Ingestion Bot (Daily at 06:00) ---

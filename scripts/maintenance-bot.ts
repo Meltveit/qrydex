@@ -61,13 +61,52 @@ async function runMaintenanceJob() {
                     .eq('id', business.id);
 
                 updated++;
-                console.log(`✅ Updated: ${business.legal_name}`);
+                console.log(`✅ Updated registry data for: ${business.legal_name}`);
+
+                // --- DEEP SCAN INTEGRAION ---
+                // If the business is active, check if we need to freshen up the website data
+                // Condition: Never scraped OR Scraped > 30 days ago
+                const lastScraped = business.quality_analysis?.scraped_at ? new Date(business.quality_analysis.scraped_at) : null;
+                const daysSinceScrape = lastScraped ? (new Date().getTime() - lastScraped.getTime()) / (1000 * 3600 * 24) : 999;
+
+                if (business.domain && (daysSinceScrape > 30 || !business.quality_analysis?.website_scraped)) {
+                    console.log(`🧠 Starting Deep Scan Refresh for ${business.legal_name} (Last: ${daysSinceScrape.toFixed(0)} days ago)...`);
+
+                    // Dynamic import
+                    const { scrapeWebsite } = await import('@/lib/crawler/website-scraper');
+
+                    try {
+                        const websiteData = await scrapeWebsite(business.domain, 10);
+                        if (websiteData) {
+                            await supabase
+                                .from('businesses')
+                                .update({
+                                    logo_url: websiteData.logoUrl,
+                                    company_description: websiteData.description || business.company_description, // Keep old if new failed
+                                    social_media: websiteData.socialMedia,
+                                    sitelinks: websiteData.sitelinks,
+                                    quality_analysis: {
+                                        ...business.quality_analysis,
+                                        website_scraped: true,
+                                        scraped_at: new Date().toISOString(),
+                                        contact_info: websiteData.contactInfo,
+                                        subpage_count: websiteData.subpages.length,
+                                        potential_ids: websiteData.potentialBusinessIds,
+                                    },
+                                })
+                                .eq('id', business.id);
+                            console.log(`✨ Refreshed website data for ${business.legal_name}`);
+                        }
+                    } catch (scrapeError) {
+                        console.error(`⚠️ Deep Scan Refresh failed:`, scrapeError);
+                    }
+                }
             } else {
                 console.warn(`⚠️ Could not verify ${business.legal_name} in registry.`);
             }
 
-            // Nice delay
-            await new Promise(r => setTimeout(r, 1000));
+            // Nice delay to respect APIs
+            await new Promise(r => setTimeout(r, 2000));
 
         } catch (e) {
             console.error(`Error processing ${business.legal_name}:`, e);

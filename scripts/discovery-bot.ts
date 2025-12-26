@@ -92,7 +92,7 @@ async function runDiscoveryJob() {
         .from('businesses')
         .select('*')
         .is('domain', null)
-        .limit(10); // Batch size
+        .limit(1); // Process only 1 item per run (every 2 mins)
 
     if (error) {
         console.error('Error:', error);
@@ -127,6 +127,38 @@ async function runDiscoveryJob() {
                     // Optional: could save full url in a new field if schema permitted
                 })
                 .eq('id', business.id);
+
+            console.log(`🧠 Starting Deep Scan for ${business.legal_name}...`);
+
+            // Dynamic import for scraper to keep startup fast
+            const { scrapeWebsite } = await import('@/lib/crawler/website-scraper');
+
+            try {
+                // Scrape the newly found domain immediately
+                const websiteData = await scrapeWebsite(domain, 10); // Standard depth
+
+                if (websiteData) {
+                    await supabase
+                        .from('businesses')
+                        .update({
+                            logo_url: websiteData.logoUrl,
+                            company_description: websiteData.description || 'Ingen beskrivelse funnet',
+                            social_media: websiteData.socialMedia,
+                            sitelinks: websiteData.sitelinks,
+                            quality_analysis: {
+                                website_scraped: true,
+                                scraped_at: new Date().toISOString(),
+                                contact_info: websiteData.contactInfo,
+                                subpage_count: websiteData.subpages.length,
+                                potential_ids: websiteData.potentialBusinessIds,
+                            },
+                        })
+                        .eq('id', business.id);
+                    console.log(`✅ Deep Scan complete for ${business.legal_name}`);
+                }
+            } catch (scrapeError) {
+                console.error(`⚠️ Deep Scan failed for ${business.id}:`, scrapeError);
+            }
 
             found++;
         } else {

@@ -86,18 +86,18 @@ export default function SearchBar({
             dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-gray-400
             focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-lg
             outline-none transition-all hover:shadow-md
-            ${isLarge ? 'px-6 py-5 text-lg pr-14' : 'px-5 py-3 pr-12'}`}
+            ${isLarge ? 'px-5 py-4 text-base md:px-6 md:py-5 md:text-lg pr-12 md:pr-14' : 'px-4 py-3 text-sm md:text-base pr-10 md:pr-12'}`}
                 />
                 <button
                     type="submit"
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full
+                    className={`absolute top-1/2 -translate-y-1/2 p-2 rounded-full
             text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all
             dark:text-gray-500 dark:hover:text-blue-400 dark:hover:bg-slate-700
-            ${isLarge ? 'right-3' : 'right-2'}`}
+            ${isLarge ? 'right-2 md:right-3' : 'right-1 md:right-2'}`}
                     aria-label="Søk"
                 >
                     <svg
-                        className={`${isLarge ? 'w-6 h-6' : 'w-5 h-5'}`}
+                        className={`${isLarge ? 'w-5 h-5 md:w-6 md:h-6' : 'w-4 h-4 md:w-5 md:h-5'}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -114,7 +114,7 @@ export default function SearchBar({
 
             {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 z-50 overflow-hidden">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 z-50 overflow-hidden max-h-[50vh] overflow-y-auto">
                     {suggestions.map((item) => (
                         <button
                             key={item.value}

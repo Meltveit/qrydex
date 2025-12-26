@@ -16,13 +16,14 @@ async function listModels() {
         // Attempt to generate content directly to test default model first
         // Listing models might not be available on all keys depending on restrictions, 
         // but generateContent is the core feature.
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        console.log("Testing gemini-1.5-flash...");
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        console.log("Testing gemini-2.0-flash...");
         const result = await model.generateContent("Hello?");
-        console.log("✅ gemini-1.5-flash is WORKING!");
+        console.log("✅ gemini-2.0-flash is WORKING!");
+        console.log("Response:", result.response.text());
 
     } catch (e) {
-        console.error("❌ gemini-1.5-flash failed:", e.message);
+        console.error("❌ gemini-2.0-flash failed:", e.message);
 
         try {
             const model2 = genAI.getGenerativeModel({ model: "gemini-pro" });

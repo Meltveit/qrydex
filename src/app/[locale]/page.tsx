@@ -67,11 +67,11 @@ export default async function Home() {
       <SchemaWebsite />
 
       <div className="flex flex-col items-center justify-center w-full max-w-4xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-2">
+        <div className="mb-6 md:mb-8 text-center px-2">
+          <h1 className="text-3xl md:text-5xl font-bold text-[var(--color-primary)] mb-3 md:mb-2">
             Qrydex
           </h1>
-          <p className="text-[var(--color-text-secondary)] text-lg">
+          <p className="text-[var(--color-text-secondary)] text-base md:text-lg max-w-md md:max-w-none mx-auto">
             {t('title')}
           </p>
         </div>
