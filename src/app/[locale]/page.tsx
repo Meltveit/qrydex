@@ -44,13 +44,21 @@ async function getBusinessCount() {
 
 export default async function Home() {
   const headersList = await headers();
+  // Use Vercel headers for instant, free geolocation
+  const city = headersList.get('x-vercel-ip-city') || 'Norge';
+  const country = headersList.get('x-vercel-ip-country') || 'NO';
+  const countryName = country === 'NO' ? 'Norge' : country;
+  // (Simplification: just use headers. No need for ipapi fetch)
+
+  const location = { city, country, countryName };
+  const businessCount = await getBusinessCount();
+
+  /* 
+  // Old logic removed to prevent "IP lookup failed" errors
   const forwardedFor = headersList.get('x-forwarded-for');
   const ip = forwardedFor?.split(',')[0] || null;
-
-  const [location, businessCount] = await Promise.all([
-    getLocationFromIP(ip),
-    getBusinessCount()
-  ]);
+  const [location, businessCount] = await Promise.all([ ... ]);
+  */
 
   const t = await getTranslations('HomePage');
 
