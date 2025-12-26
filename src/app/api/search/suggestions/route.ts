@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     const { data: businesses, error } = await supabase
         .from('businesses')
         .select('legal_name, org_number, logo_url')
-        .or(`legal_name.ilike.%${query}%,org_number.ilike.%${query}%,company_description.ilike.%${query}%`)
+        .or(`legal_name.ilike.%${query}%,org_number.ilike.%${query}%,company_description.ilike.%${query}%,registry_data->>visiting_address.ilike.%${query}%,registry_data->>home_page.ilike.%${query}%,registry_data->>nace_description.ilike.%${query}%,quality_analysis->>industry_category.ilike.%${query}%`)
         .limit(5);
 
     if (error) {

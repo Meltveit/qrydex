@@ -152,8 +152,28 @@ async function runDiscoveryJob() {
                                 subpage_count: websiteData.subpages.length,
                                 potential_ids: websiteData.potentialBusinessIds,
                             },
-                        })
-                        .eq('id', business.id);
+                        });
+
+                    // Check for ID match to auto-verify
+                    const ids = Object.values(websiteData.potentialBusinessIds || {}).flat();
+                    const cleanOrg = business.org_number.replace(/\D/g, '');
+                    const isIdMatch = ids.some(id => id && id.replace(/\D/g, '').includes(cleanOrg));
+
+                    if (isIdMatch) {
+                        console.log(`✅ IDENTITY CONFIRMED: Found Org Nr ${cleanOrg} on website.`);
+                        await supabase
+                            .from('businesses')
+                            .update({
+                                verification_status: 'verified',
+                                trust_score: 85, // High trust for confirmed website match
+                                last_verified_at: new Date().toISOString()
+                            })
+                            .eq('id', business.id);
+                    }
+
+                    // Separate update for content to ensure we don't break the JSONB update pattern
+                    // (Actually the previous update block is fine, I'll merge this logic if simpler, 
+                    // but separate updates are safer for clarity in this edit)
                     console.log(`✅ Deep Scan complete for ${business.legal_name}`);
                 }
             } catch (scrapeError) {

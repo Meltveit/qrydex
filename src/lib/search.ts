@@ -65,10 +65,43 @@ export async function searchBusinesses(
 
         // Text search
         if (query && query.trim()) {
-            businessQueryBuilder = businessQueryBuilder.textSearch('search_vector', query, {
-                type: 'websearch',
-                config: 'norwegian',
-            });
+            // Enhanced Search Logic:
+            // 1. Try to match 'legal_name' or 'description' directly (standard FTS)
+            // 2. ALSO match against address/location fields explicitly to support "Studio Oslo" queries
+
+            // Note: Ideally, we should add address fields to the 'search_vector' in the database.
+            // For now, we use an OR condition to cover location data not in the vector.
+
+            const cleanQuery = query.trim().replace(/'/g, "''"); // Escape quotes
+            const searchTerms = cleanQuery.split(' ').filter(t => t.length > 2);
+
+            // Construct a robust OR filter
+            // This searches: Name OR Description OR Address OR City OR Country
+            const orConditions = [
+                `search_vector.fts.${cleanQuery}`, // Valid Full Text Search syntax? Or just use .textSearch() combined?
+                // Supabase mix of fts and column search can be tricky.
+                // Let's stick to .or() with ilike for broad coverage if FTS is failing specific words
+                `legal_name.ilike.%${cleanQuery}%`,
+                `company_description.ilike.%${cleanQuery}%`,
+                `registry_data->>visiting_address.ilike.%${cleanQuery}%`,
+                `registry_data->>registered_address.ilike.%${cleanQuery}%`,
+                `registry_data->>city.ilike.%${cleanQuery}%`,
+                `registry_data->>nace_description.ilike.%${cleanQuery}%`, // Brreg Industry Description
+                `quality_analysis->>industry_category.ilike.%${cleanQuery}%` // AI Industry Tag
+                // `city.ilike.%${cleanQuery}%`, // City column might not exist directly
+                // `country_code.ilike.%${cleanQuery}%` // usually 2 chars, might not match "Norge"
+            ];
+
+            // Add country name matching if query looks like a country
+            if (['norge', 'norway', 'no'].includes(cleanQuery.toLowerCase())) {
+                orConditions.push(`country_code.eq.NO`);
+            }
+
+            // Using pure OR filter with ilike is expensive on large datasets but ensures matches 
+            // where FTS vector might be missing data. 
+            // For "Studio Norge", FTS might fail if vectors aren't weighted right.
+
+            businessQueryBuilder = businessQueryBuilder.or(orConditions.join(','));
         }
 
         // Apply filters

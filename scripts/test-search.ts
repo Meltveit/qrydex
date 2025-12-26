@@ -14,10 +14,12 @@ async function testSearch(query: string) {
     console.log(`🔍 Testing search for: "${query}"`);
 
     // Exact logic from route.ts
+    // Test logic similar to suggestions API
+    // Updated logic matching route.ts - using JSONB accessors
     const { data: businesses, error } = await supabase
         .from('businesses')
         .select('legal_name, org_number, logo_url')
-        .or(`legal_name.ilike.%${query}%,org_number.ilike.%${query}%,company_description.ilike.%${query}%`)
+        .or(`legal_name.ilike.%${query}%,org_number.ilike.%${query}%,company_description.ilike.%${query}%,registry_data->>visiting_address.ilike.%${query}%,registry_data->>registered_address.ilike.%${query}%`)
         .limit(5);
 
     if (error) {
@@ -30,8 +32,7 @@ async function testSearch(query: string) {
 
 // Test with common terms
 (async () => {
-    await testSearch('Vi');
-    await testSearch('As');
-    await testSearch('123');
-    await testSearch('Visma Software'); // Test with space
+    await testSearch('Stu'); // Suggestion simulation
+    await testSearch('Nor'); // Country/Location part
+    await testSearch('Oslo'); // City
 })();
