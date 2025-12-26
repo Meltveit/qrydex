@@ -65,21 +65,56 @@ export async function searchBusinesses(
 
         // Text search
         if (query && query.trim()) {
-            // Enhanced Search Logic:
-            // 1. Try to match 'legal_name' or 'description' directly (standard FTS)
-            // 2. ALSO match against address/location fields explicitly to support "Studio Oslo" queries
+            let cleanQuery = query.trim().replace(/'/g, "''"); // Escape quotes
 
-            // Note: Ideally, we should add address fields to the 'search_vector' in the database.
-            // For now, we use an OR condition to cover location data not in the vector.
+            // Smart Query Parsing: Detect location intent ("... i Tyskland")
+            const countryMap: Record<string, string> = {
+                'norge': 'NO', 'borge': 'NO', 'norway': 'NO',
+                'sverige': 'SE', 'sweden': 'SE',
+                'danmark': 'DK', 'denmark': 'DK',
+                'finland': 'FI', 'suomi': 'FI',
+                'tyskland': 'DE', 'germany': 'DE', 'deutschland': 'DE',
+                'frankrike': 'FR', 'france': 'FR',
+                'spania': 'ES', 'spain': 'ES', 'espana': 'ES',
+                'usa': 'US', 'amerika': 'US',
+                'storbritannia': 'GB', 'uk': 'GB', 'england': 'GB'
+            };
 
-            const cleanQuery = query.trim().replace(/'/g, "''"); // Escape quotes
-            const searchTerms = cleanQuery.split(' ').filter(t => t.length > 2);
+            // Regex for " i [Country]" or " in [Country]" at end of string
+            const locationRegex = /\s+(?:i|in|på|at)\s+([a-zA-ZæøåÆØÅ]+)$/i;
+            const match = cleanQuery.match(locationRegex);
 
             // Construct a robust OR filter
-            // This searches: Name OR Description OR Address OR City OR Country
-            const orConditions = [
-                // Removing explicit FTS from OR to prevent syntax errors with spaces. 
-                // We rely on specific field ILIKEs which are safer and cover most cases.
+            // This searches: Name OR Description OR Address OR City OR Industry matches
+            const orConditions: string[] = [];
+
+            if (match) {
+                const locationTerm = match[1].toLowerCase();
+                const mappedCountry = countryMap[locationTerm];
+
+                if (mappedCountry) {
+                    // It's a country filter!
+                    // Apply explicit filter (overrides any existing country filter)
+                    // And REMOVE the location term from the text search so we don't strict-match "Tyskland" in the name
+                    businessQueryBuilder = businessQueryBuilder.eq('country_code', mappedCountry);
+                    cleanQuery = cleanQuery.replace(locationRegex, '').trim();
+                    context = { ...context, country: mappedCountry }; // Update context for logging
+                } else {
+                    // It might be a city (e.g. "i Oslo")
+                    // We can't strictly filter by city column easily without mapping, 
+                    // but we can ensure we search the city field specifically.
+                    // For now, allow the full query to run against city fields in the OR block.
+                }
+            } else {
+                // Check if the query IS just a country name
+                const directCountry = countryMap[cleanQuery.toLowerCase()];
+                if (directCountry) {
+                    orConditions.push(`country_code.eq.${directCountry}`);
+                }
+            }
+
+            // Populate orConditions with the (potentially modified) cleanQuery
+            orConditions.push(
                 `legal_name.ilike.%${cleanQuery}%`,
                 `company_description.ilike.%${cleanQuery}%`,
                 `registry_data->>visiting_address.ilike.%${cleanQuery}%`,
@@ -99,16 +134,7 @@ export async function searchBusinesses(
                 `translations->de->>products.ilike.%${cleanQuery}%`,
                 `translations->es->>services.ilike.%${cleanQuery}%`,
                 `translations->es->>products.ilike.%${cleanQuery}%`
-            ];
-
-            // Add country name matching if query looks like a country
-            if (['norge', 'norway', 'no'].includes(cleanQuery.toLowerCase())) {
-                orConditions.push(`country_code.eq.NO`);
-            }
-
-            // Using pure OR filter with ilike is expensive on large datasets but ensures matches 
-            // where FTS vector might be missing data. 
-            // For "Studio Norge", FTS might fail if vectors aren't weighted right.
+            );
 
             businessQueryBuilder = businessQueryBuilder.or(orConditions.join(','));
         }
