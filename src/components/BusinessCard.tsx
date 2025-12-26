@@ -2,7 +2,7 @@
 
 import { Business } from '@/types/database';
 import { formatTrustScore } from '@/lib/trust-engine';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
 interface BusinessCardProps {
     business: Business;
