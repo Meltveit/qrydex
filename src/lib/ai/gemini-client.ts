@@ -10,8 +10,8 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey || '');
 
 // Models
-// 'gemini-1.5-flash' is faster and cheaper
-export const geminiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+// 'gemini-2.0-flash' is the latest fast model
+export const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
 /**
  * Helper to generate text from a prompt

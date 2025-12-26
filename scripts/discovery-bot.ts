@@ -133,8 +133,10 @@ async function runDiscoveryJob() {
             console.log(`Searching failed/not found for ${business.legal_name}`);
         }
 
-        // Respect rate limits & politeness
-        await new Promise(r => setTimeout(r, 2000));
+        // Respect rate limits & politeness - Gemini Free Tier has limits (RMS/RPM)
+        // Rate limit 15 RPM / 1M TPM
+        console.log('⏳ Waiting 4s to respect rate limits...');
+        await new Promise(r => setTimeout(r, 4000));
     }
 
     console.log(`\n🕵️‍♂️ Discovery complete. Found ${found} new domains.`);
