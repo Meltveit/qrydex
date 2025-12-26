@@ -35,7 +35,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     return (
         <div className="min-h-screen bg-[var(--color-background)]">
             {/* Header with search */}
-            <header className="sticky top-0 z-50 bg-white border-b border-[var(--color-border)]">
+            <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-[var(--color-border)] transition-colors">
                 <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-4">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 flex-shrink-0">

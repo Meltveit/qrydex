@@ -82,7 +82,7 @@ export default function SearchBar({
                     onBlur={handleBlur}
                     placeholder={placeholder}
                     autoFocus={autoFocus}
-                    className={`w-full rounded-full border border-gray-200 bg-white
+                    className={`w-full rounded-full border border-gray-200 bg-white text-gray-900
             dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-gray-400
             focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-lg
             outline-none transition-all hover:shadow-md
