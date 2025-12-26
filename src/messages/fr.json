@@ -1,0 +1,42 @@
+{
+    "HomePage": {
+        "title": "L'Index B2B - Trouvez votre prochain partenaire commercial",
+        "searchPlaceholder": "Rechercher des produits, services ou entreprises...",
+        "locationPrefix": "Recherche depuis",
+        "verifiedBusinesses": "{count} entreprises vérifiées",
+        "regionLabel": "Europe & USA",
+        "updatedLabel": "Mises à jour en direct (24/7)"
+    },
+    "Navigation": {
+        "search": "Rechercher",
+        "privacy": "Confidentialité",
+        "about": "À propos"
+    },
+    "Footer": {
+        "copyright": "© {year} Qrydex. Tous droits réservés.",
+        "privacyLink": "Politique de confidentialité"
+    },
+    "PrivacyPage": {
+        "title": "Confidentialité chez Qrydex",
+        "badge": "🛡️ Pas de suivi. Pas de cookies.",
+        "noTrackingTitle": "Nous ne vous suivons pas",
+        "noTrackingText": "Qrydex est un moteur de recherche d'entreprises fondé sur la confiance. Nous ne croyons pas à la surveillance de nos utilisateurs. Lorsque vous effectuez une recherche chez nous, nous n'enregistrons pas votre adresse IP, nous ne stockons pas votre historique de recherche lié à vous personnellement, et nous ne vendons aucune donnée comportementale à des tiers.",
+        "noCookiesTitle": "Pas de cookies",
+        "noCookiesText": "Nous n'utilisons aucun cookie fonctionnel ou marketing.",
+        "publicDataTitle": "Données publiques",
+        "publicDataText": "Les informations que nous affichons sur les entreprises sont basées uniquement sur des données accessibles au public provenant de registres et de sites Web ouverts.",
+        "contactText": "Des questions ? Contactez-nous à privacy@qrydex.com"
+    },
+    "Business": {
+        "orgNumber": "Numéro d'organisation",
+        "visitingAddress": "Adresse de visite",
+        "postalAddress": "Adresse postale",
+        "contact": "Contact",
+        "employees": "Employés",
+        "founded": "Fondé",
+        "industry": "Industrie",
+        "about": "À propos de l'entreprise",
+        "services": "Services",
+        "products": "Produits"
+    }
+}

@@ -19,12 +19,24 @@
     "PrivacyPage": {
         "title": "Personvern hos Qrydex",
         "badge": "🛡️ Ingen sporing. Ingen cookies.",
-        "noTrackingTitle": "Vi tracker deg ikke",
-        "noTrackingText": "Qrydex er en bedrifts-søkemotor bygget på tillit. Vi tror ikke på å overvåke brukerne våre. Når du søker hos oss, logger vi ikke IP-adressen din, vi lagrer ikke søkehistorikken din knyttet til deg som person, og vi selger ingen data om din adferd til tredjeparter.",
+        "noTrackingTitle": "Vi sporer deg ikke",
+        "noTrackingText": "Qrydex er en bedriftssøkemotor bygget på tillit. Vi tror ikke på å overvåke brukerne våre. Når du søker hos oss, logger vi ikke din IP-adresse, vi lagrer ikke din søkehistorikk knyttet til deg som person, og vi selger ingen adferdsdata til tredjeparter.",
         "noCookiesTitle": "Ingen Cookies",
-        "noCookiesText": "Vi bruker ingen funksjonelle cookies eller markedsførings-cookies.",
-        "publicDataTitle": "Offentlig Data",
+        "noCookiesText": "Vi bruker ingen funksjonelle cookies eller markedføringscookies.",
+        "publicDataTitle": "Offentlige Data",
         "publicDataText": "Informasjonen vi viser om bedrifter er utelukkende basert på offentlig tilgjengelig data fra registre og åpne nettsider.",
-        "contactText": "Har du spørsmål? Kontakt oss på privacy@qrydex.com"
+        "contactText": "Spørsmål? Kontakt oss på privacy@qrydex.com"
+    },
+    "Business": {
+        "orgNumber": "Organisasjonsnummer",
+        "visitingAddress": "Besøksadresse",
+        "postalAddress": "Postadresse",
+        "contact": "Kontakt",
+        "employees": "Ansatte",
+        "founded": "Stiftet",
+        "industry": "Bransje",
+        "about": "Om bedriften",
+        "services": "Tjenester",
+        "products": "Produkter"
     }
 }

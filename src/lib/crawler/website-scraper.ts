@@ -334,17 +334,33 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 10): 
         const potentialBusinessIds = extractBusinessIds(homepage.content);
         const sitelinks = extractSitelinks(homepage.html, normalizedUrl);
 
+        // Initialize optional enhanced data fields
+        let services: string[] = [];
+        let products: string[] = [];
+        let translations: any = {};
+        let industryCategory: string | null = null;
+
         // Deep Scan AI Summarization (Bot A intelligence)
         // Now requesting structured data: Description + Services + Products
         if (!description || description.length < 50 || true) { // Always run AI analysis for services even if description exists
             try {
                 const prompt = `Analyze this website content and extract key business data. Return strictly valid JSON with this structure:
 {
-  "description": "Professional summary under 200 chars in Norwegian",
-  "services": ["Service 1 (Norwegian)", "Service 2 (Norwegian)"],
-  "services_en": ["Service 1 (English)", "Service 2 (English)"],
-  "products": ["Product 1 (Norwegian)", "Product 2 (Norwegian)"],
-  "products_en": ["Product 1 (English)", "Product 2 (English)"],
+  "description_no": "Professional summary in Norwegian",
+  "description_en": "Professional summary in English",
+  "description_fr": "Professional summary in French",
+  "description_de": "Professional summary in German",
+  "description_es": "Professional summary in Spanish",
+  "services_no": ["Service 1 (NO)", "Service 2 (NO)"],
+  "services_en": ["Service 1 (EN)", "Service 2 (EN)"],
+  "services_fr": ["Service 1 (FR)", "Service 2 (FR)"],
+  "services_de": ["Service 1 (DE)", "Service 2 (DE)"],
+  "services_es": ["Service 1 (ES)", "Service 2 (ES)"],
+  "products_no": ["Product 1 (NO)"],
+  "products_en": ["Product 1 (EN)"],
+  "products_fr": ["Product 1 (FR)"],
+  "products_de": ["Product 1 (DE)"],
+  "products_es": ["Product 1 (ES)"],
   "industry_category": "Main Industry Category"
 }
 Content: ${homepage.content.slice(0, 3000)}`;
@@ -357,25 +373,25 @@ Content: ${homepage.content.slice(0, 3000)}`;
                         const jsonStr = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
                         const data = JSON.parse(jsonStr);
 
-                        if (data.description) description = data.description;
-                        if (Array.isArray(data.services)) websiteData.services = data.services;
-                        if (Array.isArray(data.products)) websiteData.products = data.products;
+                        // Set default (Norwegian)
+                        if (data.description_no) description = data.description_no;
+                        if (Array.isArray(data.services_no)) services = data.services_no;
+                        if (Array.isArray(data.products_no)) products = data.products_no;
 
-                        // Store English data in temporary augmentation properties (need to cast or extend interface if strict)
-                        // For simplicity, we just attach them to data object to be used in batchScrape
-                        (websiteData as any).services_en = Array.isArray(data.services_en) ? data.services_en : [];
-                        (websiteData as any).products_en = Array.isArray(data.products_en) ? data.products_en : [];
+                        // Construct Polyglot object
+                        translations = {
+                            en: { description: data.description_en, services: data.services_en, products: data.products_en },
+                            fr: { description: data.description_fr, services: data.services_fr, products: data.products_fr },
+                            de: { description: data.description_de, services: data.services_de, products: data.products_de },
+                            es: { description: data.description_es, services: data.services_es, products: data.products_es },
+                        };
 
                         // We also get industry category which is great
                         if (data.industry_category) {
-                            // We will merge this into quality_analysis later
-                            (websiteData as any).industry_category = data.industry_category;
+                            industryCategory = data.industry_category;
                         }
 
-                        console.log('✨ Generated AI Deep Scan data (Multilingual):', {
-                            services_no: data.services?.length,
-                            services_en: data.services_en?.length
-                        });
+                        console.log('✨ Generated Polyglot Data (NO, EN, FR, DE, ES)');
                     } catch (parseError) {
                         console.warn('Failed to parse AI JSON:', parseError);
                         // Fallback: If it's just text, treat as description
@@ -419,8 +435,8 @@ Content: ${homepage.content.slice(0, 3000)}`;
                 links: homepage.links
             },
             subpages: subpages as unknown as Omit<PageData, 'html'>[],
-            products: [],
-            services: [],
+            products: products,
+            services: services,
             contactInfo,
             logoUrl,
             description,
@@ -434,9 +450,8 @@ Content: ${homepage.content.slice(0, 3000)}`;
             securityHeaders,
             responseTime,
             // Pass through augmented data
-            services_en: (websiteData as any).services_en,
-            products_en: (websiteData as any).products_en,
-            industry_category: (websiteData as any).industry_category
+            translations: translations,
+            industry_category: industryCategory
         } as any; // Cast to any to bypass strict interface for new fields temporarily
     } catch (error) {
         console.error('Error in website scraping:', error);
@@ -483,6 +498,7 @@ export async function batchScrapeBusinesses(limit: number = 10) {
                         company_description: websiteData.description || 'Ingen beskrivelse funnet',
                         social_media: websiteData.socialMedia,
                         sitelinks: websiteData.sitelinks, // Save Sitelinks
+                        translations: websiteData.translations, // Save Polyglot Data
                         // Update existing JSONB fields
                         quality_analysis: {
                             website_scraped: true,
@@ -492,8 +508,6 @@ export async function batchScrapeBusinesses(limit: number = 10) {
                             potential_ids: websiteData.potentialBusinessIds,
                             services: websiteData.services,
                             products: websiteData.products,
-                            services_en: websiteData.services_en, // English
-                            products_en: websiteData.products_en, // English
                             industry_category: websiteData.industry_category || null
                         },
                     })
@@ -553,23 +567,39 @@ function extractSitelinks(html: string, baseUrl: string): { title: string; url: 
                 // English
                 'about', 'about us', 'contact', 'services', 'products', 'pricing', 'team', 'careers',
                 'news', 'blog', 'support', 'login', 'solutions', 'industries', 'resources', 'company',
-                'customers', 'partners', 'case studies', 'testimonials',
+                'customers', 'partners', 'case studies', 'testimonials', 'faq', 'help', 'privacy', 'terms',
 
                 // Norwegian
                 'om oss', 'kontakt', 'tjenester', 'produkter', 'priser', 'ansatte', 'jobb', 'aktuelt',
                 'kundeservice', 'logg inn', 'regnskap', 'lønn', 'programvare', 'kunder', 'partnere',
+                'referanser', 'betingelser', 'personvern', 'hjem', 'artikler',
 
                 // Swedish
                 'om oss', 'kontakta', 'tjänster', 'produkter', 'priser', 'medarbetare', 'jobb',
-                'nyheter', 'kundservice', 'logga in', 'kunder',
+                'nyheter', 'kundservice', 'logga in', 'kunder', 'referenser', 'villkor', 'integritet',
 
                 // Danish
                 'om os', 'kontakt', 'tjenester', 'produkter', 'priser', 'medarbejdere', 'job',
-                'nyheder', 'kundeservice', 'log ind', 'kunder',
+                'nyheder', 'kundeservice', 'log ind', 'kunder', 'referencer', 'betingelser', 'privatliv',
 
                 // Finnish
                 'tietoja', 'yhteystiedot', 'palvelut', 'tuotteet', 'hinnat', 'työntekijät', 'työpaikat',
-                'uutiset', 'asiakaspalvelu', 'kirjaudu', 'asiakkaat'
+                'uutiset', 'asiakaspalvelu', 'kirjaudu', 'asiakkaat', 'referenssit', 'ehdot',
+
+                // German
+                'über uns', 'kontakt', 'dienstleistungen', 'produkte', 'preise', 'team', 'karriere',
+                'neuigkeiten', 'blog', 'support', 'anmelden', 'lösungen', 'branchen', 'ressourcen',
+                'kunden', 'partner', 'referenzen', 'impressum', 'datenschutz', 'agb',
+
+                // French
+                'à propos', 'contact', 'services', 'produits', 'tarifs', 'équipe', 'carrières',
+                'actualités', 'blog', 'support', 'connexion', 'solutions', 'secteurs', 'ressources',
+                'clients', 'partenaires', 'références', 'mentions légales', 'confidentialité',
+
+                // Spanish
+                'sobre nosotros', 'contacto', 'servicios', 'productos', 'precios', 'equipo', 'empleo',
+                'noticias', 'blog', 'soporte', 'iniciar sesión', 'soluciones', 'industrias', 'recursos',
+                'clientes', 'socios', 'referencias', 'aviso legal', 'privacidad'
             ];
 
             // Heuristic: If text matches keywords OR is very short & distinct (CamelCase?)
@@ -589,7 +619,7 @@ function extractSitelinks(html: string, baseUrl: string): { title: string; url: 
         }
     }
 
-    return sitelinks.slice(0, 8); // Limit to top 8
+    return sitelinks.slice(0, 12); // Limit to top 12 (increased from 8)
 }
 
 /**
@@ -607,10 +637,13 @@ function extractLinkDescription(title: string, lowerTitle: string): string {
         'careers': 'Join our team',
         'blog': 'Read our latest insights',
         'support': 'Get help and support',
+        'privacy': 'Privacy Policy',
+        'terms': 'Terms and Conditions',
 
         // Norwegian
         'om oss': 'Lær mer om oss',
         'kontakt': 'Kontakt oss',
+        // 'contact': 'Kontakt oss', // DUPLICATE KEY REMOVED
         'tjenester': 'Utforsk våre tjenester',
         'produkter': 'Se våre produkter',
         'priser': 'Se priser',
@@ -619,6 +652,38 @@ function extractLinkDescription(title: string, lowerTitle: string): string {
         'kundeservice': 'Få hjelp og støtte',
         'regnskap': 'Regnskapstjenester',
         'lønn': 'Lønnstjenester',
+        'personvern': 'Personvernerklæring',
+
+        // German
+        'über uns': 'Über unser Unternehmen',
+        // 'kontakt': 'Kontaktieren Sie uns', // DUPLICATE KEY REMOVED
+        'dienstleistungen': 'Unsere Leistungen',
+        'produkte': 'Unsere Produkte',
+        // 'preise': 'Preise ansehen', // DUPLICATE KEY REMOVED (priser vs preise - wait, priser != preise ok)
+        // 'team': 'Unser Team', // DUPLICATE if English has team
+        'karriere': 'Werden Sie Teil des Teams',
+        // 'blog': 'Aktuelle Einblicke', // DUPLICATE KEY REMOVED
+        'impressum': 'Rechtliche Informationen',
+
+        // French
+        'à propos': 'À propos de nous',
+        // 'contact': 'Contactez-nous', // DUPLICATE KEY REMOVED
+        // 'services': 'Nos services', // DUPLICATE KEY REMOVED
+        'produits': 'Nos produits',
+        'tarifs': 'Voir les tarifs',
+        'carrières': 'Rejoignez notre équipe',
+        // 'blog': 'Dernières actualités', // DUPLICATE KEY REMOVED
+        'mentions légales': 'Mentions légales',
+
+        // Spanish
+        'sobre nosotros': 'Sobre nuestra empresa',
+        'contacto': 'Contáctenos',
+        // 'servicios': 'Nuestros servicios', // DUPLICATE CAREFUL services (en/fr) vs servicios (es) ok
+        // 'productos': 'Nuestros productos', // DUPLICATE productos (es) vs products (en) vs produits (fr) vs produkte (de) vs produkter (no) - ok
+        // 'precios': 'Ver precios', // DUPLICATE precios (es) vs prices (en) vs priser (no) vs preise (de) - ok
+        'empleo': 'Únete a nuestro equipo',
+        // 'blog': 'Últimas noticias', // DUPLICATE KEY REMOVED 
+        'aviso legal': 'Información legal'
     };
 
     // Find matching description

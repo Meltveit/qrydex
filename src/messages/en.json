@@ -26,5 +26,17 @@
         "publicDataTitle": "Public Data",
         "publicDataText": "The information we display about companies is based solely on publicly available data from registries and open websites.",
         "contactText": "Questions? Contact us at privacy@qrydex.com"
+    },
+    "Business": {
+        "orgNumber": "Organization Number",
+        "visitingAddress": "Visiting Address",
+        "postalAddress": "Postal Address",
+        "contact": "Contact",
+        "employees": "Employees",
+        "founded": "Founded",
+        "industry": "Industry",
+        "about": "About the company",
+        "services": "Services",
+        "products": "Products"
     }
 }

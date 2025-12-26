@@ -90,9 +90,15 @@ export async function searchBusinesses(
                 // Deep Scan 2.0: Search in services & products arrays (cast to text)
                 `quality_analysis->>services.ilike.%${cleanQuery}%`,
                 `quality_analysis->>products.ilike.%${cleanQuery}%`,
-                // Multilingual Support (English)
-                `quality_analysis->>services_en.ilike.%${cleanQuery}%`,
-                `quality_analysis->>products_en.ilike.%${cleanQuery}%`
+                // Multilingual Support (Global Expansion)
+                `translations->en->>services.ilike.%${cleanQuery}%`,
+                `translations->en->>products.ilike.%${cleanQuery}%`,
+                `translations->fr->>services.ilike.%${cleanQuery}%`,
+                `translations->fr->>products.ilike.%${cleanQuery}%`,
+                `translations->de->>services.ilike.%${cleanQuery}%`,
+                `translations->de->>products.ilike.%${cleanQuery}%`,
+                `translations->es->>services.ilike.%${cleanQuery}%`,
+                `translations->es->>products.ilike.%${cleanQuery}%`
             ];
 
             // Add country name matching if query looks like a country

@@ -1,0 +1,42 @@
+{
+    "HomePage": {
+        "title": "Der B2B Index - Finden Sie Ihren nächsten Geschäftspartner",
+        "searchPlaceholder": "Suchen Sie nach Produkten, Dienstleistungen oder Unternehmen...",
+        "locationPrefix": "Suche von",
+        "verifiedBusinesses": "{count} verifizierte Unternehmen",
+        "regionLabel": "Europa & USA",
+        "updatedLabel": "Live-Updates (24/7)"
+    },
+    "Navigation": {
+        "search": "Suche",
+        "privacy": "Datenschutz",
+        "about": "Über uns"
+    },
+    "Footer": {
+        "copyright": "© {year} Qrydex. Alle Rechte vorbehalten.",
+        "privacyLink": "Datenschutzrichtlinie"
+    },
+    "PrivacyPage": {
+        "title": "Datenschutz bei Qrydex",
+        "badge": "🛡️ Kein Tracking. Keine Cookies.",
+        "noTrackingTitle": "Wir verfolgen Sie nicht",
+        "noTrackingText": "Qrydex ist eine auf Vertrauen aufgebaute Suchmaschine für Unternehmen. Wir glauben nicht an die Überwachung unserer Nutzer. Wenn Sie bei uns suchen, protokollieren wir Ihre IP-Adresse nicht, speichern Ihren Suchverlauf nicht personenbezogen und verkaufen keine Verhaltensdaten an Dritte.",
+        "noCookiesTitle": "Keine Cookies",
+        "noCookiesText": "Wir verwenden keine funktionalen oder Marketing-Cookies.",
+        "publicDataTitle": "Öffentliche Daten",
+        "publicDataText": "Die Informationen, die wir über Unternehmen anzeigen, basieren ausschließlich auf öffentlich zugänglichen Daten aus Registern und offenen Websites.",
+        "contactText": "Fragen? Kontaktieren Sie uns unter privacy@qrydex.com"
+    },
+    "Business": {
+        "orgNumber": "Organisationsnummer",
+        "visitingAddress": "Besucheradresse",
+        "postalAddress": "Postanschrift",
+        "contact": "Kontakt",
+        "employees": "Mitarbeiter",
+        "founded": "Gegründet",
+        "industry": "Branche",
+        "about": "Über das Unternehmen",
+        "services": "Dienstleistungen",
+        "products": "Produkte"
+    }
+}

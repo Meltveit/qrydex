@@ -1,0 +1,42 @@
+{
+    "HomePage": {
+        "title": "El Índice B2B - Encuentre su próximo socio comercial",
+        "searchPlaceholder": "Buscar productos, servicios o empresas...",
+        "locationPrefix": "Buscando desde",
+        "verifiedBusinesses": "{count} empresas verificadas",
+        "regionLabel": "Europa y EE. UU.",
+        "updatedLabel": "Actualizaciones en vivo (24/7)"
+    },
+    "Navigation": {
+        "search": "Buscar",
+        "privacy": "Privacidad",
+        "about": "Nosotros"
+    },
+    "Footer": {
+        "copyright": "© {year} Qrydex. Todos los derechos reservados.",
+        "privacyLink": "Política de privacidad"
+    },
+    "PrivacyPage": {
+        "title": "Privacidad en Qrydex",
+        "badge": "🛡️ Sin rastreo. Sin cookies.",
+        "noTrackingTitle": "No te rastreamos",
+        "noTrackingText": "Qrydex es un motor de búsqueda empresarial basado en la confianza. No creemos en monitorear a nuestros usuarios. Cuando busca con nosotros, no registramos su dirección IP, no almacenamos su historial de búsqueda vinculado a usted personalmente y no vendemos ningún dato de comportamiento a terceros.",
+        "noCookiesTitle": "Sin cookies",
+        "noCookiesText": "No utilizamos cookies funcionales ni de marketing.",
+        "publicDataTitle": "Datos públicos",
+        "publicDataText": "La información que mostramos sobre las empresas se basa únicamente en datos disponibles públicamente de registros y sitios web abiertos.",
+        "contactText": "¿Preguntas? Contáctenos en privacy@qrydex.com"
+    },
+    "Business": {
+        "orgNumber": "Número de organización",
+        "visitingAddress": "Dirección de visita",
+        "postalAddress": "Dirección postal",
+        "contact": "Contacto",
+        "employees": "Empleados",
+        "founded": "Fundado",
+        "industry": "Industria",
+        "about": "Sobre la empresa",
+        "services": "Servicios",
+        "products": "Productos"
+    }
+}
