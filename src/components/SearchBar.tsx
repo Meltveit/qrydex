@@ -115,18 +115,31 @@ export default function SearchBar({
             {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 z-50 overflow-hidden max-h-[50vh] overflow-y-auto">
-                    {suggestions.map((item) => (
+                    {suggestions.map((item, index) => (
                         <button
-                            key={item.value}
+                            key={`${item.value}-${index}`}
                             onClick={() => {
-                                router.push(`/business/${item.value}`);
+                                if (item.type === 'category') {
+                                    // Search for category
+                                    router.push(`/search?q=${encodeURIComponent(item.value)}`);
+                                } else {
+                                    // Go to business directly
+                                    router.push(`/business/${item.value}`);
+                                }
                                 setQuery(item.label);
                                 setShowSuggestions(false);
                             }}
                             className="w-full text-left px-5 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors border-b border-gray-50 dark:border-slate-700 last:border-0"
                         >
-                            <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 text-xs text-gray-400 font-bold overflow-hidden">
-                                {item.logo ? (
+                            <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold overflow-hidden ${item.type === 'category'
+                                    ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                    : 'bg-gray-100 dark:bg-slate-700 text-gray-400'
+                                }`}>
+                                {item.type === 'category' ? (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                    </svg>
+                                ) : item.logo ? (
                                     <img src={item.logo} alt="" className="w-full h-full object-contain" />
                                 ) : (
                                     item.label.substring(0, 2).toUpperCase()
@@ -134,7 +147,9 @@ export default function SearchBar({
                             </div>
                             <div>
                                 <div className="font-medium text-gray-900 dark:text-gray-100">{item.label}</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">Org.nr: {item.value}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    {item.type === 'category' ? 'Søk i bransje' : `Org.nr: ${item.value}`}
+                                </div>
                             </div>
                         </button>
                     ))}

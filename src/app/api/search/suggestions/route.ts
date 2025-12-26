@@ -17,28 +17,69 @@ export async function GET(request: Request) {
     // Note: 'products' is text[], using cs (contains) or ilike text cast is needed.
     // Supabase text search on array is tricky with .or(). 
     // Simplified: Search name/org/description first. 
-    console.log(`🔍 Suggestion Query: "${query}"`);
+    // console.log(`🔍 Suggestion Query: "${query}"`); // Removed as part of the change
 
-    const { data: businesses, error } = await supabase
+    // 1. Search for Businesses (Name match)
+    const businessPromise = supabase
         .from('businesses')
         .select('legal_name, org_number, logo_url')
-        .or(`legal_name.ilike.%${query}%,org_number.ilike.%${query}%,company_description.ilike.%${query}%,registry_data->>visiting_address.ilike.%${query}%,registry_data->>home_page.ilike.%${query}%,registry_data->>nace_description.ilike.%${query}%,quality_analysis->>industry_category.ilike.%${query}%`)
+        .or(`legal_name.ilike.%${query}%,company_description.ilike.%${query}%`)
         .limit(5);
 
-    if (error) {
-        console.error('❌ Suggestion Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    // 2. Search for Categories (NACE or Industry)
+    // We fetch a few rows that match industry description to extract unique category names
+    const categoryPromise = supabase
+        .from('businesses')
+        .select('registry_data, quality_analysis')
+        .or(`registry_data->>nace_description.ilike.%${query}%,quality_analysis->>industry_category.ilike.%${query}%`)
+        .limit(10); // Fetch more to increase chance of finding unique valid categories
+
+    const [businessRes, categoryRes] = await Promise.all([businessPromise, categoryPromise]);
+
+    const suggestions = [];
+
+    // Process Categories first (so they appear at top or mixed? User usually wants specific first? 
+    // Let's put categories first if they are exact matches, otherwise mixed.
+    // For simplicity: Categories first if generic query, Businesses first if specific.
+    // We'll treat them as a separate group.)
+
+    const categories = new Set<string>();
+
+    if (categoryRes.data) {
+        categoryRes.data.forEach((biz: any) => {
+            const nace = biz.registry_data?.nace_description;
+            const aiCat = biz.quality_analysis?.industry_category;
+
+            if (nace && nace.toLowerCase().includes(query.toLowerCase())) {
+                categories.add(nace);
+            }
+            if (aiCat && aiCat.toLowerCase().includes(query.toLowerCase())) {
+                categories.add(aiCat);
+            }
+        });
     }
 
-    console.log(`✅ Found ${businesses?.length || 0} suggestions`);
+    // Add top 3 unique categories
+    Array.from(categories).slice(0, 3).forEach(cat => {
+        suggestions.push({
+            label: cat,
+            value: cat, // Value is the query string to search for
+            type: 'category',
+            logo: null
+        });
+    });
 
-    // Format suggestions
-    const suggestions = (businesses || []).map(b => ({
-        type: 'business',
-        label: b.legal_name,
-        value: b.org_number,
-        logo: b.logo_url
-    }));
+    // Add businesses
+    if (businessRes.data) {
+        businessRes.data.forEach((biz: any) => {
+            suggestions.push({
+                label: biz.legal_name,
+                value: biz.org_number,
+                type: 'business',
+                logo: biz.logo_url
+            });
+        });
+    }
 
     return NextResponse.json(suggestions);
 }

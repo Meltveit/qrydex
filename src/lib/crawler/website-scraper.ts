@@ -335,18 +335,50 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 10): 
         const sitelinks = extractSitelinks(homepage.html, normalizedUrl);
 
         // Deep Scan AI Summarization (Bot A intelligence)
-        if (!description || description.length < 50) {
+        // Now requesting structured data: Description + Services + Products
+        if (!description || description.length < 50 || true) { // Always run AI analysis for services even if description exists
             try {
-                const prompt = `Summarize the business activity and services of this company based on their website content in Norwegian. Keep it professional and under 200 characters. Content: ${homepage.content.slice(0, 2000)}`;
-                const aiSummary = await generateText(prompt);
-                if (aiSummary) {
-                    description = aiSummary;
-                    console.log('✨ Generated AI Deep Scan summary');
+                const prompt = `Analyze this website content and extract key business data. Return strictly valid JSON with this structure:
+{
+  "description": "Professional summary under 200 chars in Norwegian",
+  "services": ["Service 1", "Service 2"],
+  "products": ["Product 1", "Product 2"],
+  "industry_category": "Main Industry Category"
+}
+Content: ${homepage.content.slice(0, 3000)}`;
+
+                const aiResponse = await generateText(prompt);
+
+                if (aiResponse) {
+                    try {
+                        // Clean markdown code blocks if present
+                        const jsonStr = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                        const data = JSON.parse(jsonStr);
+
+                        if (data.description) description = data.description;
+                        if (Array.isArray(data.services)) websiteData.services = data.services;
+                        if (Array.isArray(data.products)) websiteData.products = data.products;
+
+                        // We also get industry category which is great
+                        if (data.industry_category) {
+                            // We will merge this into quality_analysis later
+                            (websiteData as any).industry_category = data.industry_category;
+                        }
+
+                        console.log('✨ Generated AI Deep Scan data:', {
+                            services: data.services?.length,
+                            products: data.products?.length
+                        });
+                    } catch (parseError) {
+                        console.warn('Failed to parse AI JSON:', parseError);
+                        // Fallback: If it's just text, treat as description
+                        if (!description) description = aiResponse.slice(0, 200);
+                    }
                 }
             } catch (aiError) {
-                console.warn('Failed to generate AI summary:', aiError);
+                console.warn('Failed to generate AI data:', aiError);
             }
-        } // New call implementation
+        }
 
         // Find product/service pages
         const productPageUrls = identifyProductPages(homepage.links).slice(0, maxPages);
@@ -447,6 +479,9 @@ export async function batchScrapeBusinesses(limit: number = 10) {
                             contact_info: websiteData.contactInfo,
                             subpage_count: websiteData.subpages.length,
                             potential_ids: websiteData.potentialBusinessIds,
+                            services: websiteData.services,
+                            products: websiteData.products,
+                            industry_category: (websiteData as any).industry_category || null
                         },
                     })
                     .eq('id', business.id);

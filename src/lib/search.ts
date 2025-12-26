@@ -86,9 +86,10 @@ export async function searchBusinesses(
                 `registry_data->>registered_address.ilike.%${cleanQuery}%`,
                 `registry_data->>city.ilike.%${cleanQuery}%`,
                 `registry_data->>nace_description.ilike.%${cleanQuery}%`, // Brreg Industry Description
-                `quality_analysis->>industry_category.ilike.%${cleanQuery}%` // AI Industry Tag
-                // `city.ilike.%${cleanQuery}%`, // City column might not exist directly
-                // `country_code.ilike.%${cleanQuery}%` // usually 2 chars, might not match "Norge"
+                `quality_analysis->>industry_category.ilike.%${cleanQuery}%`, // AI Industry Tag
+                // Deep Scan 2.0: Search in services & products arrays (cast to text)
+                `quality_analysis->>services.ilike.%${cleanQuery}%`,
+                `quality_analysis->>products.ilike.%${cleanQuery}%`
             ];
 
             // Add country name matching if query looks like a country
