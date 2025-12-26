@@ -14,10 +14,10 @@ async function main() {
 
         console.log('🚀 Starting Bot A: The Deep Scan Crawler...');
 
-        // Run batch scrape (default limit 10, can be increased)
+        // Run batch scrape with increased capacity
         // This will find businesses with domains but missing 'company_description'
-        // and enrich them with Sitelinks, AI Summary, etc.
-        await batchScrapeBusinesses(10);
+        // and enrich them with Sitelinks, SSL verification, AI Summary, etc.
+        await batchScrapeBusinesses(20); // Increased from 10 to 20
 
         console.log('✅ Bot A batch complete.');
         process.exit(0);

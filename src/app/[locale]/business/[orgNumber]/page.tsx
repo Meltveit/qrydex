@@ -10,13 +10,11 @@ import { generateBusinessSchema } from '@/lib/seo/schema-generator';
 import { formatTrustScore } from '@/lib/trust-engine';
 
 interface BusinessPageProps {
-    params: Promise<{ locale: string; orgNumber: string }>;
+    params: Promise<{ orgNumber: string }>;
 }
 
-export default async function BusinessPage(props: BusinessPageProps) {
-    const params = await props.params;
-    const { orgNumber } = params;
-
+export default async function BusinessPage({ params }: BusinessPageProps) {
+    const { orgNumber } = await params;
     const { data: business } = await supabase
         .from('businesses')
         .select('*')

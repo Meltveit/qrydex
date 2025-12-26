@@ -99,23 +99,31 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
                 </div>
             </div>
 
-            {/* Sitelinks - Google Style Navigation */}
+            {/* Sitelinks - Google Style Navigation with Descriptions */}
             {Array.isArray(business.sitelinks) && (business.sitelinks as any[]).length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4 relative z-20">
-                    {(business.sitelinks as Array<{ title: string; url: string }>).slice(0, 6).map((link, i) => (
+                <div className="flex flex-wrap gap-3 mb-4 relative z-20">
+                    {(business.sitelinks as Array<{ title: string; url: string; description?: string }>).slice(0, 6).map((link, i) => (
                         <a
                             key={i}
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 
-                                         hover:bg-blue-100 hover:text-blue-800 rounded-md transition-colors border border-blue-100"
+                            className="group flex flex-col gap-0.5 px-3 py-2 text-sm bg-blue-50 
+                                         hover:bg-blue-100 rounded-lg transition-all border border-blue-100 hover:border-blue-200
+                                         hover:shadow-sm max-w-[200px]"
                         >
-                            {link.title}
-                            <svg className="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
+                            <div className="flex items-center gap-1.5 font-medium text-blue-700 group-hover:text-blue-800">
+                                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                                <span className="truncate">{link.title}</span>
+                            </div>
+                            {link.description && (
+                                <span className="text-xs text-blue-600/70 group-hover:text-blue-700/80 line-clamp-1">
+                                    {link.description}
+                                </span>
+                            )}
                         </a>
                     ))}
                 </div>

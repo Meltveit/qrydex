@@ -43,7 +43,15 @@ export interface WebsiteData {
         FI?: string[];
         SE?: string[];
     };
-    sitelinks?: { title: string; url: string }[];
+    sitelinks?: { title: string; url: string; description?: string }[];
+    // Security & Technical
+    hasSSL?: boolean;
+    securityHeaders?: {
+        strictTransportSecurity?: boolean;
+        contentSecurityPolicy?: boolean;
+        xFrameOptions?: boolean;
+    };
+    responseTime?: number;
 }
 
 /**
@@ -277,19 +285,45 @@ async function scrapePage(url: string): Promise<PageData | null> {
 /**
  * Deep scrape a business website
  */
-export async function scrapeWebsite(websiteUrl: string, maxPages: number = 5): Promise<WebsiteData | null> {
+export async function scrapeWebsite(websiteUrl: string, maxPages: number = 10): Promise<WebsiteData | null> {
     try {
         const normalizedUrl = websiteUrl.startsWith('http')
             ? websiteUrl
             : `https://${websiteUrl}`;
 
-        console.log(`🕷️ Scraping website: ${normalizedUrl}`);
+        console.log(`🕷️ Scraping website: ${normalizedUrl} (max ${maxPages} pages)`);
 
         // Scrape homepage
+        const startTime = Date.now();
         const homepage = await scrapePage(normalizedUrl);
         if (!homepage) {
             console.error('Failed to scrape homepage');
             return null;
+        }
+        const responseTime = Date.now() - startTime;
+
+        // Check SSL and Security Headers
+        const hasSSL = normalizedUrl.startsWith('https://');
+        let securityHeaders = {
+            strictTransportSecurity: false,
+            contentSecurityPolicy: false,
+            xFrameOptions: false
+        };
+
+        try {
+            const securityCheckResponse = await fetch(normalizedUrl, {
+                method: 'HEAD',
+                redirect: 'follow'
+            });
+            const headers = securityCheckResponse.headers;
+            securityHeaders = {
+                strictTransportSecurity: headers.has('strict-transport-security'),
+                contentSecurityPolicy: headers.has('content-security-policy'),
+                xFrameOptions: headers.has('x-frame-options')
+            };
+            console.log(`🔒 SSL: ${hasSSL}, Security Headers: ${Object.values(securityHeaders).filter(Boolean).length}/3`);
+        } catch (secError) {
+            console.warn('⚠️ Could not check security headers');
         }
 
         // Extract enhanced data from homepage
@@ -354,7 +388,12 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 5): P
             socialMedia,
             images: [], // Placeholder for extracted images
             openingHours: undefined,
-            potentialBusinessIds
+            potentialBusinessIds,
+            sitelinks,
+            // Security & Performance
+            hasSSL,
+            securityHeaders,
+            responseTime
         };
     } catch (error) {
         console.error('Error in website scraping:', error);
@@ -430,14 +469,13 @@ export async function batchScrapeBusinesses(limit: number = 10) {
 
 /**
  * Extract sitelinks from internal links using Anchor Text
- * Looks for navigation-like links (About, Contact, Services)
+ * Now with descriptions and multilingual support (EN, NO, SV, DA, FI)
  */
-function extractSitelinks(html: string, baseUrl: string): { title: string; url: string }[] {
-    const sitelinks: { title: string; url: string }[] = [];
+function extractSitelinks(html: string, baseUrl: string): { title: string; url: string; description?: string }[] {
+    const sitelinks: { title: string; url: string; description?: string }[] = [];
     const seenUrls = new Set<string>();
 
     // Regex to find <a> tags with href and text
-    // Capture group 1: href, Group 2: properties (optional), Group 3: text
     const linkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
     let match;
 
@@ -461,16 +499,41 @@ function extractSitelinks(html: string, baseUrl: string): { title: string; url: 
             if (seenUrls.has(absoluteUrl)) continue;
 
             const lowerText = text.toLowerCase();
+
+            // Expanded multilingual keywords
             const relevantKeywords = [
-                'about', 'contact', 'services', 'products', 'pricing', 'team', 'careers', 'news', 'blog', 'support', 'login',
+                // English
+                'about', 'about us', 'contact', 'services', 'products', 'pricing', 'team', 'careers',
+                'news', 'blog', 'support', 'login', 'solutions', 'industries', 'resources', 'company',
+                'customers', 'partners', 'case studies', 'testimonials',
+
                 // Norwegian
-                'om oss', 'kontakt', 'tjenester', 'produkter', 'priser', 'ansatte', 'jobb', 'aktuelt', 'kundeservice', 'logg inn',
-                'regnskap', 'lønn', 'programvare', 'software' // Visma specific
+                'om oss', 'kontakt', 'tjenester', 'produkter', 'priser', 'ansatte', 'jobb', 'aktuelt',
+                'kundeservice', 'logg inn', 'regnskap', 'lønn', 'programvare', 'kunder', 'partnere',
+
+                // Swedish
+                'om oss', 'kontakta', 'tjänster', 'produkter', 'priser', 'medarbetare', 'jobb',
+                'nyheter', 'kundservice', 'logga in', 'kunder',
+
+                // Danish
+                'om os', 'kontakt', 'tjenester', 'produkter', 'priser', 'medarbejdere', 'job',
+                'nyheder', 'kundeservice', 'log ind', 'kunder',
+
+                // Finnish
+                'tietoja', 'yhteystiedot', 'palvelut', 'tuotteet', 'hinnat', 'työntekijät', 'työpaikat',
+                'uutiset', 'asiakaspalvelu', 'kirjaudu', 'asiakkaat'
             ];
 
             // Heuristic: If text matches keywords OR is very short & distinct (CamelCase?)
-            if (relevantKeywords.some(k => lowerText.includes(k)) || (text.length < 20 && /^[A-ZÅÆØ]/.test(text))) {
-                sitelinks.push({ title: text, url: absoluteUrl });
+            if (relevantKeywords.some(k => lowerText.includes(k)) || (text.length < 20 && /^[A-ZÅÆØÄÖ]/.test(text))) {
+                // Extract meta description or first paragraph as description
+                const description = extractLinkDescription(text, lowerText);
+
+                sitelinks.push({
+                    title: text,
+                    url: absoluteUrl,
+                    description
+                });
                 seenUrls.add(absoluteUrl);
             }
         } catch (e) {
@@ -479,4 +542,44 @@ function extractSitelinks(html: string, baseUrl: string): { title: string; url: 
     }
 
     return sitelinks.slice(0, 8); // Limit to top 8
+}
+
+/**
+ * Generate a short description for a sitelink based on its title
+ */
+function extractLinkDescription(title: string, lowerTitle: string): string {
+    // Map common navigation items to descriptions
+    const descriptionMap: Record<string, string> = {
+        // English
+        'about': 'Learn about our company',
+        'contact': 'Get in touch with us',
+        'services': 'Explore our services',
+        'products': 'Browse our products',
+        'pricing': 'View pricing options',
+        'careers': 'Join our team',
+        'blog': 'Read our latest insights',
+        'support': 'Get help and support',
+
+        // Norwegian
+        'om oss': 'Lær mer om oss',
+        'kontakt': 'Kontakt oss',
+        'tjenester': 'Utforsk våre tjenester',
+        'produkter': 'Se våre produkter',
+        'priser': 'Se priser',
+        'jobb': 'Bli en del av teamet',
+        'aktuelt': 'Les siste nytt',
+        'kundeservice': 'Få hjelp og støtte',
+        'regnskap': 'Regnskapstjenester',
+        'lønn': 'Lønnstjenester',
+    };
+
+    // Find matching description
+    for (const [key, desc] of Object.entries(descriptionMap)) {
+        if (lowerTitle.includes(key)) {
+            return desc;
+        }
+    }
+
+    // Default generic description
+    return `Visit our ${title} page`;
 }

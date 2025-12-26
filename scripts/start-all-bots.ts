@@ -65,8 +65,8 @@ const startScheduler = () => {
         runScript('discovery-bot.ts', 'Discovery Bot (Oppdageren)', YELLOW);
     });
 
-    // --- Ingestion Bot (High Frequency - every minute) ---
-    cron.schedule('*/1 * * * *', () => {
+    // --- Ingestion Bot (Every hour at :00) ---
+    cron.schedule('0 * * * *', () => {
         runScript('ingestion-bot.ts', 'Ingestion Bot (The Recruiter)', CYAN);
     });
 

@@ -1,7 +1,7 @@
-import Parser from 'rss-parser';
+const RSSParser = require('rss-parser');
 import { createServerClient } from '@/lib/supabase';
 
-const parser = new Parser();
+const parser = new RSSParser();
 
 interface NewsArticleInsert {
     source_id: string;
