@@ -13,7 +13,16 @@
     "indexer": "node scripts/index-websites.js",
     "bot:discovery": "node scripts/bots/web-discovery.js",
     "bot:discovery:continuous": "node scripts/bots/web-discovery.js 999",
-    "scheduler": "node scripts/scheduler.js"
+    "scheduler": "node scripts/scheduler.js",
+    "bot-status": "node --env-file=.env.local check-data-status.mjs",
+    "add-nordic": "npx tsx --env-file=.env.local lib-external/populate-nordic-eu.ts",
+    "find-websites": "npx tsx --env-file=.env.local lib-external/website-discovery-bot.ts",
+    "scrape": "npx tsx --env-file=.env.local lib-external/parallel-scraper.ts",
+    "translate": "npx tsx --env-file=.env.local lib-external/translation-bot.ts",
+    "registry-crawler": "npx tsx --env-file=.env.local src/lib/crawler/registry-crawler.ts",
+    "website-discovery": "npx tsx --env-file=.env.local src/lib/crawler/website-discovery-cli.ts",
+    "website-scraper": "npx tsx --env-file=.env.local src/lib/crawler/website-scraper-cli.ts",
+    "translator": "npx tsx --env-file=.env.local lib-external/translation-bot.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

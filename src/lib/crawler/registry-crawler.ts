@@ -3,8 +3,22 @@
  * Fetches businesses from official registries (Brønnøysund, Companies House etc.)
  */
 
-import { createServerClient } from '@/lib/supabase';
-import { verifyAndStoreBusiness } from '@/lib/verification';
+import { verifyAndStoreBusiness } from '../verification';
+import {
+    searchNorwayRegistry,
+    searchSwedenRegistry,
+    searchDenmarkRegistry,
+    searchFinlandRegistry,
+    searchGermanyRegistry,
+    searchFranceRegistry,
+    searchUKRegistry,
+    crawlNorwayByIndustry,
+    crawlDenmarkByIndustry,
+    crawlUKByIndustry,
+    crawlFranceByIndustry,
+    crawlOpenCorporatesByIndustry,
+    type RegistryCompany
+} from '../registries/global-registry';
 
 // B2B Industry codes - fokus på leverandører, produsenter, håndverkere
 const B2B_NACE_CODES = [
@@ -26,10 +40,13 @@ const B2B_NACE_CODES = [
 
     // Industritjenester
     '74', '75', '77', '78', '79', '80', '81', '82', // Professional services, cleaning, security
+
+    // IT & Software (Added)
+    '62', '63'
 ];
 
 interface CrawlOptions {
-    country: 'NO' | 'GB' | 'DE' | 'NL' | 'SE';
+    country: 'NO' | 'GB' | 'DE' | 'FR' | 'SE' | 'DK' | 'FI' | 'ES';
     limit?: number;
     industryFilter?: string[];
 }
@@ -42,9 +59,9 @@ interface CrawlResult {
 }
 
 /**
- * Crawl Norwegian businesses from Brønnøysund
+ * Generic crawler that delegates to specific country logic
  */
-export async function crawlNorwegianBusinesses(options: CrawlOptions): Promise<CrawlResult> {
+export async function crawlRegistry(options: CrawlOptions): Promise<CrawlResult> {
     const result: CrawlResult = {
         total: 0,
         verified: 0,
@@ -52,133 +69,76 @@ export async function crawlNorwegianBusinesses(options: CrawlOptions): Promise<C
         businesses: [],
     };
 
-    try {
-        // Brønnøysund API endpoint for searching
-        const industries = options.industryFilter || B2B_NACE_CODES;
+    console.log(`🔍 Crawling registry for ${options.country}(Systematic NACE crawl)...`);
 
-        for (const naceCode of industries.slice(0, 5)) { // Limit to avoid overload
-            console.log(`Crawling Norwegian businesses with NACE code: ${naceCode}...`);
+    // Use provided industry filter or fallback to all core B2B codes
+    const industries = options.industryFilter || B2B_NACE_CODES;
 
-            const response = await fetch(
-                `https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode=${naceCode}&size=${options.limit || 100}`,
-                {
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                }
-            );
+    // Shuffle codes to avoid hammering the same industry every run
+    const shuffledIndustries = [...industries].sort(() => Math.random() - 0.5);
 
-            if (!response.ok) continue;
+    for (const naceCode of shuffledIndustries) {
+        if (result.total >= (options.limit || 100)) break;
 
-            const data = await response.json();
-            const businesses = data._embedded?.enheter || [];
+        console.log(`  🏭 Processing Industry Code: ${naceCode} (${options.country})`);
 
-            for (const business of businesses) {
+        let foundCompanies: RegistryCompany[] = [];
+
+        try {
+            switch (options.country) {
+                // Official / Dedicated APIs
+                case 'NO':
+                    foundCompanies = await crawlNorwayByIndustry(naceCode, 20);
+                    break;
+                case 'DK':
+                    foundCompanies = await crawlDenmarkByIndustry(naceCode, 5);
+                    break;
+                case 'GB':
+                    foundCompanies = await crawlUKByIndustry(naceCode, 20);
+                    break;
+                case 'FR':
+                    foundCompanies = await crawlFranceByIndustry(naceCode, 20);
+                    break;
+
+                // Fallback / OpenCorporates (Limited/Paid usually, using free tier carefully)
+                case 'SE':
+                case 'FI':
+                case 'DE':
+                case 'ES':
+                    foundCompanies = await crawlOpenCorporatesByIndustry(naceCode, options.country, 10);
+                    break;
+            }
+
+            console.log(`    > Found ${foundCompanies.length} potential businesses`);
+
+            for (const company of foundCompanies) {
                 result.total++;
 
-                try {
-                    // Extract org number
-                    const orgNumber = business.organisasjonsnummer;
+                // Verify and store
+                const verifyResult = await verifyAndStoreBusiness({
+                    orgNumber: company.id,
+                    countryCode: options.country,
+                    websiteUrl: company.website,
+                    // If we have industry text, we could enhance it here
+                });
 
-                    // Find website from hjemmeside field
-                    const websiteUrl = business.hjemmeside;
-
-                    // Verify and store
-                    const verifyResult = await verifyAndStoreBusiness({
-                        orgNumber,
-                        countryCode: 'NO',
-                        websiteUrl,
-                    });
-
-                    if (verifyResult.success && verifyResult.business) {
-                        result.verified++;
-                        result.businesses.push(verifyResult.business.legal_name);
-                        console.log(`✓ Verified: ${verifyResult.business.legal_name}`);
-                    } else {
-                        result.failed++;
-                    }
-
-                    // Rate limiting - wait 500ms between requests
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                } catch (error) {
+                if (verifyResult.success && verifyResult.business) {
+                    result.verified++;
+                    result.businesses.push(verifyResult.business.legal_name);
+                    console.log(`    ✅ Added: ${verifyResult.business.legal_name} `);
+                } else {
                     result.failed++;
-                    console.error('Error verifying business:', error);
                 }
+
+                if (result.total >= (options.limit || 100)) break;
             }
+
+            // Rate limiting between industry codes
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+        } catch (error) {
+            console.error(`Error processing NACE ${naceCode}: `, error);
         }
-    } catch (error) {
-        console.error('Error crawling Norwegian businesses:', error);
-    }
-
-    return result;
-}
-
-/**
- * Crawl UK businesses from Companies House
- */
-export async function crawlUKBusinesses(options: CrawlOptions): Promise<CrawlResult> {
-    const result: CrawlResult = {
-        total: 0,
-        verified: 0,
-        failed: 0,
-        businesses: [],
-    };
-
-    const apiKey = process.env.COMPANIES_HOUSE_API_KEY;
-    if (!apiKey) {
-        console.error('Companies House API key not configured');
-        return result;
-    }
-
-    // SIC codes for B2B industries (UK equivalent of NACE)
-    const sicCodes = ['10000', '15000', '20000', '25000', '28000', '41000', '43000', '46000'];
-
-    try {
-        for (const sicCode of sicCodes.slice(0, 3)) {
-            console.log(`Crawling UK businesses with SIC code: ${sicCode}...`);
-
-            const response = await fetch(
-                `https://api.company-information.service.gov.uk/search/companies?q=*&sic_codes=${sicCode}&items_per_page=${options.limit || 50}`,
-                {
-                    headers: {
-                        'Authorization': apiKey,
-                    },
-                }
-            );
-
-            if (!response.ok) continue;
-
-            const data = await response.json();
-            const businesses = data.items || [];
-
-            for (const business of businesses) {
-                result.total++;
-
-                try {
-                    const companyNumber = business.company_number;
-
-                    const verifyResult = await verifyAndStoreBusiness({
-                        orgNumber: companyNumber,
-                        countryCode: 'GB',
-                    });
-
-                    if (verifyResult.success && verifyResult.business) {
-                        result.verified++;
-                        result.businesses.push(verifyResult.business.legal_name);
-                        console.log(`✓ Verified UK: ${verifyResult.business.legal_name}`);
-                    } else {
-                        result.failed++;
-                    }
-
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                } catch (error) {
-                    result.failed++;
-                    console.error('Error verifying UK business:', error);
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error crawling UK businesses:', error);
     }
 
     return result;
@@ -190,15 +150,13 @@ export async function crawlUKBusinesses(options: CrawlOptions): Promise<CrawlRes
 export async function runFullCrawl(limitPerCountry: number = 100): Promise<Record<string, CrawlResult>> {
     console.log('🚀 Starting full business crawl...\n');
 
+    const countries = ['NO', 'SE', 'DK', 'FI', 'DE', 'FR', 'GB', 'ES'] as const;
     const results: Record<string, CrawlResult> = {};
 
-    // Norway
-    console.log('📍 Crawling Norway...');
-    results.NO = await crawlNorwegianBusinesses({ country: 'NO', limit: limitPerCountry });
-
-    // UK
-    console.log('\n📍 Crawling UK...');
-    results.GB = await crawlUKBusinesses({ country: 'GB', limit: limitPerCountry });
+    for (const country of countries) {
+        if (country === 'ES') continue; // Not implemented yet
+        results[country] = await crawlRegistry({ country, limit: limitPerCountry });
+    }
 
     // Summary
     console.log('\n✅ Crawl Summary:');
@@ -207,4 +165,41 @@ export async function runFullCrawl(limitPerCountry: number = 100): Promise<Recor
     });
 
     return results;
+}
+
+// CLI execution - RUNS CONTINUOUSLY
+if (require.main === module) {
+    console.log('🏢 Registry Crawler - CONTINUOUS MODE');
+    console.log('   Continuously crawling business registries');
+    console.log('   Countries: EU & Nordics');
+    console.log('   Press Ctrl+C to stop\n');
+
+    let cycleCount = 0;
+
+    async function runContinuously() {
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            cycleCount++;
+            console.log(`\n${'='.repeat(60)}`);
+            console.log(`🔄 CYCLE ${cycleCount} - ${new Date().toLocaleString()}`);
+            console.log(`${'='.repeat(60)}\n`);
+
+            try {
+                await runFullCrawl(100);
+
+                console.log('\n⏱️  Sleeping 1 hour before next cycle...');
+                await new Promise(resolve => setTimeout(resolve, 60 * 60 * 1000)); // 1 hour
+
+            } catch (err: any) {
+                console.error('❌ Error:', err.message);
+                console.log('   Retrying in 10 minutes...');
+                await new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000));
+            }
+        }
+    }
+
+    runContinuously().catch((err) => {
+        console.error('❌ Fatal error:', err);
+        process.exit(1);
+    });
 }

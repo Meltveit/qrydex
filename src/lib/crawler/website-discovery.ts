@@ -1,20 +1,10 @@
 /**
- * Website Discovery Bot
+ * Website Discovery
  * Automatically finds missing websites for businesses in the database
- * 
- * Strategies:
- * 1. Google Custom Search API
- * 2. Common domain patterns (company-name.no, company-name.com)
- * 3. DNS lookup
- * 4. Verify with org number on website
  */
 
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createServerClient } from '../supabase';
+import { generateText } from '../ai/gemini-client';
 
 /**
  * Clean company name for domain search
@@ -117,8 +107,6 @@ async function verifyWebsite(domain: string, orgNumber: string): Promise<boolean
  */
 async function searchWithGemini(companyName: string, orgNumber: string, country: string): Promise<string | null> {
     try {
-        const { generateText } = await import('../src/lib/ai/gemini-client.js');
-
         const prompt = `Find the official website for this company:
         
 Company Name: ${companyName}
@@ -158,6 +146,11 @@ Return only the domain, nothing else.`;
  * Discover website for a single business
  */
 export async function discoverWebsite(businessId: string): Promise<string | null> {
+    const supabase = createServerClient();
+
+    // Check if client is initialized (handles server/client context)
+    // If running in script, we might need direct access
+
     const { data: business } = await supabase
         .from('businesses')
         .select('id, legal_name, org_number, country_code')
@@ -191,6 +184,7 @@ export async function discoverWebsite(businessId: string): Promise<string | null
     }
 
     // Strategy 2: Gemini AI Search
+    console.log('  🧠 Using Gemini AI to search...');
     const geminiResult = await searchWithGemini(
         business.legal_name,
         business.org_number,
@@ -198,99 +192,16 @@ export async function discoverWebsite(businessId: string): Promise<string | null
     );
 
     if (geminiResult) {
-        console.log(`  🤖 Found via Gemini AI: ${geminiResult}`);
-
-        if (await verifyWebsite(geminiResult, business.org_number)) {
+        console.log(`  🤖 Gemini AI found: ${geminiResult}`);
+        if (await isDomainReachable(geminiResult)) {
             await supabase
                 .from('businesses')
                 .update({ domain: geminiResult })
                 .eq('id', business.id);
-
             return geminiResult;
         }
     }
 
-    console.log(`  ❌ No website found`);
+    console.log('  ❌ Could not find website.');
     return null;
-}
-
-/**
- * Batch discover websites for businesses missing domains
- */
-export async function discoverMissingWebsites(limit = 100) {
-    console.log('🌐 Website Discovery Bot Starting...\n');
-
-    // Fetch businesses without domain
-    const { data: businesses } = await supabase
-        .from('businesses')
-        .select('id, legal_name')
-        .is('domain', null)
-        .limit(limit);
-
-    if (!businesses || businesses.length === 0) {
-        console.log('✅ All businesses have websites!');
-        return;
-    }
-
-    console.log(`📋 Found ${businesses.length} businesses without websites\n`);
-
-    let foundCount = 0;
-    let notFoundCount = 0;
-
-    for (const business of businesses) {
-        const domain = await discoverWebsite(business.id);
-
-        if (domain) {
-            foundCount++;
-
-            // Trigger scraping will be done later when integrated
-            console.log(`  📝 Domain saved: ${domain}, scraping will be done later`);
-        } else {
-            notFoundCount++;
-        }
-
-        // Rate limiting
-        await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
-    console.log('\n📊 Discovery Summary:');
-    console.log(`   ✅ Websites found: ${foundCount}`);
-    console.log(`   ❌ Not found: ${notFoundCount}`);
-    console.log(`   📈 Success rate: ${((foundCount / businesses.length) * 100).toFixed(1)}%`);
-}
-
-// CLI execution - RUNS CONTINUOUSLY
-if (require.main === module) {
-    console.log('🚀 Website Discovery Bot - CONTINUOUS MODE');
-    console.log('   Bot will run forever, checking for missing websites');
-    console.log('   Press Ctrl+C to stop\n');
-
-    let cycleCount = 0;
-
-    async function runContinuously() {
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-            cycleCount++;
-            console.log(`\n${'='.repeat(60)}`);
-            console.log(`🔄 CYCLE ${cycleCount} - ${new Date().toLocaleString()}`);
-            console.log(`${'='.repeat(60)}\n`);
-
-            try {
-                await discoverMissingWebsites(50); // Process 50 per cycle
-
-                console.log('\n⏱️  Sleeping 10 minutes before next cycle...');
-                await new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000)); // 10 min
-
-            } catch (err: any) {
-                console.error('❌ Error in cycle:', err.message);
-                console.log('   Retrying in 5 minutes...');
-                await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
-            }
-        }
-    }
-
-    runContinuously().catch((err) => {
-        console.error('❌ Fatal error:', err);
-        process.exit(1);
-    });
 }
