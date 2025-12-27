@@ -5,7 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { analyzeArticle } from './news-intelligence';
-import { searchGlobalRegistry } from '@/lib/registries/global-registry';
+import { searchGlobalRegistry } from '../registries/global-registry';
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -120,7 +120,7 @@ export async function processNewsArticle(articleId: string) {
             sentiment: analysis.sentiment.label,
             sentiment_score: analysis.sentiment.score,
             topics: analysis.topics,
-            companies_mentioned: analysis.companies.map(c => c.name)
+            companies_mentioned: analysis.companies.map((c: any) => c.name)
         })
         .eq('id', articleId);
 
