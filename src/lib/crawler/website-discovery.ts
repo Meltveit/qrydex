@@ -229,7 +229,7 @@ export async function discoverWebsite(businessId: string): Promise<string | null
         if (await isDomainReachable(domain)) {
             console.log(`  ✅ Reachable!`);
 
-            if (await verifyWebsite(domain, business.org_number)) {
+            if (await verifyWebsite(domain, business.org_number, business.legal_name)) {
                 console.log(`  ✨ Verified! Updating database...`);
 
                 await supabase
