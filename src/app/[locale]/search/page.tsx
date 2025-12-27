@@ -6,16 +6,18 @@ import { headers } from 'next/headers';
 import crypto from 'crypto';
 
 interface SearchPageProps {
+    params: Promise<{ locale: string }>;
     searchParams: Promise<{
         q?: string;
         page?: string;
     }>;
 }
 
-export default async function SearchPage({ searchParams }: SearchPageProps) {
-    const params = await searchParams;
-    const query = params.q || '';
-    const page = params.page ? parseInt(params.page, 10) : 1;
+export default async function SearchPage({ params, searchParams }: SearchPageProps) {
+    const { locale } = await params;
+    const searchParamsValues = await searchParams;
+    const query = searchParamsValues.q || '';
+    const page = searchParamsValues.page ? parseInt(searchParamsValues.page, 10) : 1;
 
     // Analytics Context (Bot B)
     const headersList = await headers();
@@ -141,19 +143,19 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     <div className="flex items-center justify-center gap-2 mt-8">
                         {page > 1 && (
                             <Link
-                                href={`/search?q=${query}&page=${page - 1}`}
-                                className="px-4 py-2 text-sm font-medium text-[var(--color-primary)] hover:bg-gray-100 rounded-lg"
+                                href={`/${locale}/search?q=${query}&page=${page - 1}`}
+                                className="px-4 py-2 text-sm font-medium text-[var(--color-primary)] hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg dark:text-blue-400"
                             >
                                 ← Forrige
                             </Link>
                         )}
-                        <span className="px-4 py-2 text-sm text-[var(--color-text-secondary)]">
+                        <span className="px-4 py-2 text-sm text-[var(--color-text-secondary)] dark:text-gray-400">
                             Side {page} av {Math.ceil(results.total / results.pageSize)}
                         </span>
                         {page < Math.ceil(results.total / results.pageSize) && (
                             <Link
-                                href={`/search?q=${query}&page=${page + 1}`}
-                                className="px-4 py-2 text-sm font-medium text-[var(--color-primary)] hover:bg-gray-100 rounded-lg"
+                                href={`/${locale}/search?q=${query}&page=${page + 1}`}
+                                className="px-4 py-2 text-sm font-medium text-[var(--color-primary)] hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg dark:text-blue-400"
                             >
                                 Neste →
                             </Link>
