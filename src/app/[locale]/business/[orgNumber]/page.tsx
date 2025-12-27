@@ -103,7 +103,12 @@ export default async function BusinessPage(props: any) {
 
                                 {/* Company Description */}
                                 <div className="prose prose-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-none">
-                                    <p className="text-sm md:text-base">{business.company_description || quality.ai_summary || "No description available."}</p>
+                                    <p className="text-sm md:text-base">
+                                        {business.translations?.[locale]?.company_description ||
+                                            business.company_description ||
+                                            quality?.ai_summary ||
+                                            "No description available."}
+                                    </p>
                                 </div>
 
                                 {/* Social Media Links */}
