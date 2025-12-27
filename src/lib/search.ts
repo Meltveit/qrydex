@@ -128,12 +128,23 @@ export async function searchBusinesses(
                 // Multilingual Support (Global Expansion)
                 `translations->en->>services.ilike.%${cleanQuery}%`,
                 `translations->en->>products.ilike.%${cleanQuery}%`,
+                `translations->en->>company_description.ilike.%${cleanQuery}%`,
+                `translations->en->>industry_text.ilike.%${cleanQuery}%`,
+
                 `translations->fr->>services.ilike.%${cleanQuery}%`,
                 `translations->fr->>products.ilike.%${cleanQuery}%`,
+                `translations->fr->>company_description.ilike.%${cleanQuery}%`,
+                `translations->fr->>industry_text.ilike.%${cleanQuery}%`,
+
                 `translations->de->>services.ilike.%${cleanQuery}%`,
                 `translations->de->>products.ilike.%${cleanQuery}%`,
+                `translations->de->>company_description.ilike.%${cleanQuery}%`,
+                `translations->de->>industry_text.ilike.%${cleanQuery}%`,
+
                 `translations->es->>services.ilike.%${cleanQuery}%`,
-                `translations->es->>products.ilike.%${cleanQuery}%`
+                `translations->es->>products.ilike.%${cleanQuery}%`,
+                `translations->es->>company_description.ilike.%${cleanQuery}%`,
+                `translations->es->>industry_text.ilike.%${cleanQuery}%`
             );
 
             businessQueryBuilder = businessQueryBuilder.or(orConditions.join(','));

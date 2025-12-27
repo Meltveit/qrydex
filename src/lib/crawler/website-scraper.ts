@@ -13,6 +13,7 @@ interface PageData {
     content: string;
     links: string[];
     html: string; // Keep raw HTML for analyzing meta tags
+    language?: string; // e.g. 'en', 'no', 'en-US'
 }
 
 export interface WebsiteData {
@@ -52,6 +53,7 @@ export interface WebsiteData {
         xFrameOptions?: boolean;
     };
     responseTime?: number;
+    detectedLanguage?: string;
 }
 
 /**
@@ -279,12 +281,17 @@ async function scrapePage(url: string): Promise<PageData | null> {
         const content = extractTextContent(html);
         const links = extractLinks(html, url);
 
+        // Detect Language
+        const langMatch = html.match(/<html[^>]+lang=["']([a-zA-Z]{2}(?:-[a-zA-Z]{2})?)/i);
+        const language = langMatch ? langMatch[1].toLowerCase() : undefined;
+
         return {
             url,
             title,
             content: content.slice(0, 15000),
             links,
             html, // Keep for metadata extraction
+            language
         };
     } catch (error) {
         // console.error(`Error scraping ${url}:`, error);
@@ -481,6 +488,7 @@ Content: ${homepage.content.slice(0, 3000)}`;
             openingHours: undefined,
             potentialBusinessIds,
             sitelinks,
+            detectedLanguage: homepage.language,
             // Security & Performance
             hasSSL,
             securityHeaders,

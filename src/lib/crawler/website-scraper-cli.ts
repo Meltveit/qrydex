@@ -1,5 +1,6 @@
 import { createServerClient } from '../supabase';
 import { scrapeWebsite } from './website-scraper';
+import { analyzeBusinessCredibility } from '../ai/scam-detector';
 
 // CLI execution - RUNS CONTINUOUSLY
 if (require.main === module) {
@@ -23,7 +24,7 @@ if (require.main === module) {
                 // Get businesses with domains but no scraped data
                 const { data: businesses, count } = await supabase
                     .from('businesses')
-                    .select('id, domain, legal_name, org_number', { count: 'exact' })
+                    .select('id, domain, legal_name, org_number, registry_data, quality_analysis', { count: 'exact' })
                     .not('domain', 'is', null)
                     .is('company_description', null)
                     .limit(20); // Process 20 per cycle
@@ -40,6 +41,22 @@ if (require.main === module) {
                             const data = await scrapeWebsite(`https://${business.domain}`);
 
                             if (data) {
+                                // Run AI Credibility Analysis
+                                const analysis = await analyzeBusinessCredibility(
+                                    business,
+                                    business.registry_data as any,
+                                    data
+                                );
+
+                                // Merge quality analysis
+                                const existingQuality = (business.quality_analysis as any) || {};
+                                const updatedQuality = {
+                                    ...existingQuality,
+                                    ...analysis, // isScam, confidence, redFlags, trustSignals, riskLevel, summary
+                                    detected_language: data.detectedLanguage,
+                                    scraped_at: new Date().toISOString()
+                                };
+
                                 // Update database
                                 await supabase
                                     .from('businesses')
@@ -49,6 +66,7 @@ if (require.main === module) {
                                         services: data.services,
                                         logo_url: data.logoUrl,
                                         social_media: data.socialMedia,
+                                        quality_analysis: updatedQuality,
                                         last_scraped_at: new Date().toISOString()
                                     })
                                     .eq('id', business.id);

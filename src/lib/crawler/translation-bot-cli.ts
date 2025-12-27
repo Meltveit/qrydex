@@ -172,7 +172,7 @@ if (require.main === module) {
                 // Find businesses needing translation (have data but no translations)
                 const { data: businesses, count } = await supabase
                     .from('businesses')
-                    .select('id, company_description, services, products, country_code, industry_code', { count: 'exact' })
+                    .select('id, company_description, services, products, country_code, industry_code, quality_analysis', { count: 'exact' })
                     .not('company_description', 'is', null)
                     .is('translations', null)
                     .limit(2); // Process 2 per cycle to reduce API load
@@ -198,9 +198,9 @@ if (require.main === module) {
                                 'ES': 'es'
                             };
 
-                            // Default to English if we don't know, or assume scraper detected it
-                            // Ideally Scraper should store 'detected_language'
-                            const sourceLanguage = langMap[business.country_code] || 'en';
+                            // Determine source language based on detected language (priority) or country
+                            const detected = (business.quality_analysis as any)?.detected_language;
+                            const sourceLanguage = detected ? detected.substring(0, 2) : (langMap[business.country_code] || 'en');
 
                             // Extract just the text part of industry code if it follows format "Code: Text"
                             // e.g. "52.260: Andre støttetjenester..." -> "Andre støttetjenester..."

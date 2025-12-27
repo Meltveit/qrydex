@@ -115,6 +115,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
                             <BusinessCard
                                 key={business.id}
                                 business={business}
+                                locale={locale}
                             />
                         ))}
                     </div>

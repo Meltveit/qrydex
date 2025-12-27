@@ -13,6 +13,13 @@ const genAI = new GoogleGenerativeAI(apiKey || '');
 // 'gemini-2.0-flash' is the fastest and most cost-effective for high volume
 export const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
+// Initialize Maintenance Model (for Scam Detection & Background tasks)
+const maintenanceKey = process.env.GOOGLE_GEMINI_MAINTENANCE_KEY;
+const maintenanceGenAI = maintenanceKey ? new GoogleGenerativeAI(maintenanceKey) : null;
+export const maintenanceModel = maintenanceGenAI
+    ? maintenanceGenAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+    : geminiModel; // Fallback to main model if key missing
+
 /**
  * Helper to generate text from a prompt with robust Retry logic
  */

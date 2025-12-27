@@ -1,4 +1,4 @@
-import { geminiModel } from './gemini-client';
+import { maintenanceModel } from './gemini-client';
 import type { Business, RegistryData } from '@/types/database';
 import type { WebsiteData } from '@/lib/crawler/website-scraper';
 
@@ -10,6 +10,10 @@ export interface ScamAnalysisResult {
     trustSignals: string[];
     riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
     summary: string;
+    // New Enrichment Fields
+    certifications: string[]; // e.g. ISO 9001, Miljøfyrtårn
+    customerSegment: 'B2B' | 'B2C' | 'BOTH';
+    keyFeatures: string[];
 }
 
 /**
@@ -30,7 +34,7 @@ export async function analyzeBusinessCredibility(
     try {
         const prompt = createAnalysisPrompt(business, registryData, websiteData);
 
-        const result = await geminiModel.generateContent({
+        const result = await maintenanceModel.generateContent({
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             generationConfig: {
                 responseMimeType: "application/json",
@@ -82,16 +86,24 @@ function createAnalysisPrompt(
     3. Lack of contact info (no phone, no physical address).
     4. Very recent registration date but claims "years of experience".
     5. Suspicious or high-risk industry codes (e.g., crypto, generic consulting) without proof of work.
+
+    Also extract:
+    - Certifications: Any mentioned certifications (ISO, Eco-lighthouse, etc).
+    - Customer Segment: Is this primarily B2B, B2C, or both?
+    - Key Features: 3-5 distinct features or selling points.
     
     Return a JSON object with this exact structure:
     {
         "isScam": boolean,
-        "confidence": number, // 0-100, how sure are you of your assessment
-        "credibilityScore": number, // 0-100, where 100 is perfectly trustworthy
-        "redFlags": string[], // List of specific concerns
-        "trustSignals": string[], // List of positive value props/validations
+        "confidence": number, // 0-100
+        "credibilityScore": number, // 0-100
+        "redFlags": string[],
+        "trustSignals": string[],
         "riskLevel": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-        "summary": "Brief explanation of the verdict (max 2 sentences)"
+        "summary": "Brief verdict",
+        "certifications": ["Cert 1", "Cert 2"],
+        "customerSegment": "B2B/B2C/BOTH",
+        "keyFeatures": ["Feature 1", "Feature 2"]
     }
     `;
 }
@@ -101,9 +113,12 @@ function createFallbackAnalysis(): ScamAnalysisResult {
         isScam: false,
         confidence: 0,
         credibilityScore: 50, // Neutral
-        redFlags: ['AI Analysis Unavailable'],
+        redFlags: [],
         trustSignals: [],
         riskLevel: 'LOW',
-        summary: 'Automatic verification passed without AI analysis.'
+        summary: 'Automatic verification passed without AI analysis.',
+        certifications: [],
+        customerSegment: 'BOTH',
+        keyFeatures: []
     };
 }

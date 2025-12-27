@@ -42,7 +42,13 @@ export default function SearchBar({
 
     // Effect for fetching suggestions
     // Effect for fetching suggestions
+    const firstRender = useRef(true);
     useEffect(() => {
+        if (firstRender.current) {
+            firstRender.current = false;
+            return;
+        }
+
         const timer = setTimeout(async () => {
             if (query.trim().length >= 2) {
                 try {
