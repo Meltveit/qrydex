@@ -22,7 +22,7 @@
     "registry-crawler": "npx tsx --env-file=.env.local src/lib/crawler/registry-crawler.ts",
     "website-discovery": "npx tsx --env-file=.env.local src/lib/crawler/website-discovery-cli.ts",
     "website-scraper": "npx tsx --env-file=.env.local src/lib/crawler/website-scraper-cli.ts",
-    "translator": "npx tsx --env-file=.env.local lib-external/translation-bot.ts"
+    "translator": "npx tsx --env-file=.env.local src/lib/crawler/translation-bot-cli.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

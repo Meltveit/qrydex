@@ -15,7 +15,7 @@ interface BusinessPageProps {
 
 export default async function BusinessPage(props: any) {
     const params = await props.params;
-    const { orgNumber } = params;
+    const { orgNumber, locale } = params;
     const { data: business } = await supabase
         .from('businesses')
         .select('*')
@@ -141,12 +141,20 @@ export default async function BusinessPage(props: any) {
                         <div className="grid sm:grid-cols-2 gap-3 md:gap-4">
                             <InfoRow label="Legal Name" value={registry?.legal_name} />
                             <InfoRow label="Organization Number" value={registry?.org_nr} />
-                            <InfoRow label="VAT Number" value={registry?.vat_number} />
-                            <InfoRow
-                                label="VAT Status"
-                                value={registry?.vat_status}
-                                badge={registry?.vat_status === 'Active' ? 'green' : 'gray'}
-                            />
+
+                            {/* Smart VAT Display - Hide if unknown or redundant */}
+                            {registry?.vat_number && (
+                                <InfoRow label="VAT Number" value={registry?.vat_number} />
+                            )}
+
+                            {registry?.vat_status && registry.vat_status !== 'Unknown' && (
+                                <InfoRow
+                                    label="VAT Status"
+                                    value={registry?.vat_status}
+                                    badge={registry?.vat_status === 'Active' ? 'green' : 'gray'}
+                                />
+                            )}
+
                             <InfoRow
                                 label="Company Status"
                                 value={registry?.company_status}
@@ -155,11 +163,27 @@ export default async function BusinessPage(props: any) {
                             <InfoRow label="Registration Date" value={registry?.registration_date} />
                             <InfoRow label="Employee Count" value={registry?.employee_count?.toString()} />
                             <InfoRow label="Address" value={registry?.registered_address} />
-                            {registry?.industry_codes && registry.industry_codes.length > 0 && (
-                                <div className="md:col-span-2">
-                                    <InfoRow label="Industry Codes" value={registry.industry_codes.join(', ')} />
-                                </div>
-                            )}
+
+                            {/* Industry Codes with Smart Translation */}
+                            {(() => {
+                                const industryCodes = registry?.industry_codes || [];
+                                const translatedIndustry = business.translations?.[locale]?.industry_text;
+
+                                // Show translation if available, preserving code prefix if present
+                                const displayValue = translatedIndustry
+                                    ? (industryCodes.length > 0 && industryCodes[0].includes(':')
+                                        ? `${industryCodes[0].split(':')[0]}: ${translatedIndustry}`
+                                        : translatedIndustry)
+                                    : industryCodes.join(', ');
+
+                                if (!displayValue) return null;
+
+                                return (
+                                    <div className="md:col-span-2">
+                                        <InfoRow label="Industry Codes" value={displayValue} />
+                                    </div>
+                                );
+                            })()}
                         </div>
                         {registry?.last_verified_registry && (
                             <p className="mt-4 text-sm text-gray-500">
