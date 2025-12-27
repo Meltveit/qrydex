@@ -1,0 +1,65 @@
+{
+    "HomePage": {
+        "title": "B2B Indekset - Find din næste forretningspartner",
+        "searchPlaceholder": "Søg efter produkter, tjenester eller virksomheder...",
+        "locationPrefix": "Søger fra",
+        "verifiedBusinesses": "{count} verificerede virksomheder",
+        "regionLabel": "Europa & USA",
+        "updatedLabel": "Live Opdateringer (24/7)"
+    },
+    "Navigation": {
+        "search": "Søg",
+        "privacy": "Privatliv",
+        "about": "Om os"
+    },
+    "Footer": {
+        "copyright": "© {year} Qrydex. Alle rettigheder forbeholdes.",
+        "privacyLink": "Privatlivspolitik"
+    },
+    "PrivacyPage": {
+        "title": "Privatliv hos Qrydex",
+        "badge": "🛡️ Ingen sporing. Ingen cookies.",
+        "noTrackingTitle": "Vi sporer dig ikke",
+        "noTrackingText": "Qrydex er en virksomhedssøgemaskine bygget på tillid. Vi tror ikke på at overvåge vores brugere. Når du søger hos os, logger vi ikke din IP-adresse, vi gemmer ikke din søgehistorik knyttet til dig personligt, og vi sælger ingen adfærdsdata til tredjeparter.",
+        "noCookiesTitle": "Ingen Cookies",
+        "noCookiesText": "Vi bruger ingen funktionelle cookies eller markedsføringscookies.",
+        "publicDataTitle": "Offentlige Data",
+        "publicDataText": "De oplysninger, vi viser om virksomheder, er udelukkende baseret på offentligt tilgængelige data fra registre og åbne websteder.",
+        "contactText": "Spørgsmål? Kontakt os på privacy@qrydex.com"
+    },
+    "Business": {
+        "orgNumber": "CVR-nummer",
+        "visitingAddress": "Besøgsadresse",
+        "postalAddress": "Postadresse",
+        "contact": "Kontakt",
+        "employees": "Ansatte",
+        "founded": "Grundlagt",
+        "industry": "Branche",
+        "about": "Om virksomheden",
+        "services": "Tjenester",
+        "products": "Produkter",
+        "officialRegistry": "Officielt Register",
+        "trustScoreBreakdown": "Tillidsscore Detaljer",
+        "registryVerified": "Register Verificeret",
+        "qualityScore": "Kvalitetsscore",
+        "newsSentiment": "Nyhedsanalyse",
+        "quickLinks": "Genveje",
+        "lastUpdated": "Sidst opdateret",
+        "vatNumber": "Momsnummer",
+        "vatStatus": "Momsstatus",
+        "companyStatus": "Virksomhedsstatus",
+        "registrationDate": "Registreringsdato",
+        "address": "Adresse",
+        "industryCodes": "Branchekoder",
+        "lastVerified": "Sidst verificeret",
+        "trusted": "Pålidelig",
+        "trustScore": "Tillidsscore",
+        "aiAnalysis": "AI Kvalitetsanalyse",
+        "website": "Hjemmeside",
+        "sslHttps": "SSL/HTTPS",
+        "secure": "Sikker",
+        "active": "Aktiv",
+        "inactive": "Inaktiv",
+        "verified": "Verificeret"
+    }
+}

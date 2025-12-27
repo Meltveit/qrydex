@@ -1,0 +1,65 @@
+{
+    "HomePage": {
+        "title": "B2B Indexet - Hitta din nästa affärspartner",
+        "searchPlaceholder": "Sök efter produkter, tjänster eller företag...",
+        "locationPrefix": "Söker från",
+        "verifiedBusinesses": "{count} verifierade företag",
+        "regionLabel": "Europa & USA",
+        "updatedLabel": "Liveuppdateringar (24/7)"
+    },
+    "Navigation": {
+        "search": "Sök",
+        "privacy": "Integritet",
+        "about": "Om oss"
+    },
+    "Footer": {
+        "copyright": "© {year} Qrydex. Alla rättigheter förbehållna.",
+        "privacyLink": "Integritetspolicy"
+    },
+    "PrivacyPage": {
+        "title": "Integritet på Qrydex",
+        "badge": "🛡️ Ingen spårning. Inga cookies.",
+        "noTrackingTitle": "Vi spårar dig inte",
+        "noTrackingText": "Qrydex är en företagssökmotor byggd på förtroende. Vi tror inte på att övervaka våra användare. När du söker hos oss loggar vi inte din IP-adress, vi lagrar inte din sökhistorik kopplad till dig personligen, och vi säljer ingen beteendedata till tredje part.",
+        "noCookiesTitle": "Inga Cookies",
+        "noCookiesText": "Vi använder inga funktionella cookies eller marknadsföringscookies.",
+        "publicDataTitle": "Offentlig Data",
+        "publicDataText": "Informationen vi visar om företag baseras uteslutande på offentligt tillgängliga data från register och öppna webbplatser.",
+        "contactText": "Frågor? Kontakta oss på privacy@qrydex.com"
+    },
+    "Business": {
+        "orgNumber": "Organisationsnummer",
+        "visitingAddress": "Besöksadress",
+        "postalAddress": "Postadress",
+        "contact": "Kontakt",
+        "employees": "Anställda",
+        "founded": "Grundades",
+        "industry": "Bransch",
+        "about": "Om företaget",
+        "services": "Tjänster",
+        "products": "Produkter",
+        "officialRegistry": "Officiellt Register",
+        "trustScoreBreakdown": "Förtroendepoäng Detaljer",
+        "registryVerified": "Register Verifierat",
+        "qualityScore": "Kvalitetspoäng",
+        "newsSentiment": "Nyhetsanalys",
+        "quickLinks": "Snabblänkar",
+        "lastUpdated": "Senast uppdaterad",
+        "vatNumber": "Momsnummer",
+        "vatStatus": "Momsstatus",
+        "companyStatus": "Företagsstatus",
+        "registrationDate": "Registreringsdatum",
+        "address": "Adress",
+        "industryCodes": "Branschkoder",
+        "lastVerified": "Senast verifierad",
+        "trusted": "Pålitlig",
+        "trustScore": "Förtroendepoäng",
+        "aiAnalysis": "AI Kvalitetsanalys",
+        "website": "Webbplats",
+        "sslHttps": "SSL/HTTPS",
+        "secure": "Säker",
+        "active": "Aktiv",
+        "inactive": "Inaktiv",
+        "verified": "Verifierad"
+    }
+}

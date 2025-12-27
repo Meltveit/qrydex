@@ -8,6 +8,7 @@ import { Business, NewsSignal } from '@/types/database';
 import TrustScoreBadge from '@/components/TrustScoreBadge';
 import { generateBusinessSchema } from '@/lib/seo/schema-generator';
 import { formatTrustScore } from '@/lib/trust-engine';
+import { getTranslations } from 'next-intl/server';
 
 interface BusinessPageProps {
     params: any;
@@ -16,6 +17,10 @@ interface BusinessPageProps {
 export default async function BusinessPage(props: any) {
     const params = await props.params;
     const { orgNumber, locale } = params;
+    const t = await getTranslations({ locale, namespace: 'Business' });
+    const tNav = await getTranslations({ locale, namespace: 'Navigation' });
+    const tHome = await getTranslations({ locale, namespace: 'HomePage' });
+
     const { data: business } = await supabase
         .from('businesses')
         .select('*')
@@ -44,7 +49,7 @@ export default async function BusinessPage(props: any) {
             <SchemaBreadcrumbs
                 items={[
                     { name: 'Home', item: '/' },
-                    { name: 'Search', item: '/search' },
+                    { name: tNav('search'), item: '/search' },
                     { name: business.legal_name, item: `/business/${orgNumber}` }
                 ]}
             />
@@ -54,7 +59,7 @@ export default async function BusinessPage(props: any) {
                 <ol className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-500 dark:text-gray-400">
                     <li><Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">Home</Link></li>
                     <li>/</li>
-                    <li className="hidden sm:block"><Link href="/search" className="hover:text-blue-600 dark:hover:text-blue-400">Search</Link></li>
+                    <li className="hidden sm:block"><Link href="/search" className="hover:text-blue-600 dark:hover:text-blue-400">{tNav('search')}</Link></li>
                     <li className="hidden sm:block">/</li>
                     <li className="text-gray-900 dark:text-gray-200 line-clamp-1 truncate">{business.legal_name}</li>
                 </ol>
@@ -92,7 +97,7 @@ export default async function BusinessPage(props: any) {
                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                     </svg>
-                                                    Verified
+                                                    {t('verified')}
                                                 </span>
                                             )}
                                             <span className="text-gray-400 dark:text-gray-600 text-xs md:text-sm">•</span>
@@ -130,7 +135,7 @@ export default async function BusinessPage(props: any) {
                                     label={trustScore.label}
                                     size="lg"
                                 />
-                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Trust Score</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('trustScore')}</span>
                             </div>
                         </div>
                     </div>
@@ -141,33 +146,33 @@ export default async function BusinessPage(props: any) {
                             <svg className="w-5 h-5 md:w-6 md:h-6 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
-                            <span className="text-base md:text-xl">Official Registry</span>
+                            <span className="text-base md:text-xl">{t('officialRegistry')}</span>
                         </h2>
                         <div className="grid sm:grid-cols-2 gap-3 md:gap-4">
-                            <InfoRow label="Legal Name" value={registry?.legal_name} />
-                            <InfoRow label="Organization Number" value={registry?.org_nr} />
+                            <InfoRow label={t('orgNumber')} value={registry?.legal_name} />
+                            <InfoRow label={t('orgNumber')} value={registry?.org_nr} />
 
                             {/* Smart VAT Display - Hide if unknown or redundant */}
                             {registry?.vat_number && (
-                                <InfoRow label="VAT Number" value={registry?.vat_number} />
+                                <InfoRow label={t('vatNumber')} value={registry?.vat_number} />
                             )}
 
                             {registry?.vat_status && registry.vat_status !== 'Unknown' && (
                                 <InfoRow
-                                    label="VAT Status"
+                                    label={t('vatStatus')}
                                     value={registry?.vat_status}
                                     badge={registry?.vat_status === 'Active' ? 'green' : 'gray'}
                                 />
                             )}
 
                             <InfoRow
-                                label="Company Status"
+                                label={t('companyStatus')}
                                 value={registry?.company_status}
                                 badge={registry?.company_status === 'Active' ? 'green' : registry?.company_status === 'Liquidation' ? 'red' : 'gray'}
                             />
-                            <InfoRow label="Registration Date" value={registry?.registration_date} />
-                            <InfoRow label="Employee Count" value={registry?.employee_count?.toString()} />
-                            <InfoRow label="Address" value={registry?.registered_address} />
+                            <InfoRow label={t('registrationDate')} value={registry?.registration_date} />
+                            <InfoRow label={t('employees')} value={registry?.employee_count?.toString()} />
+                            <InfoRow label={t('address')} value={registry?.registered_address} />
 
                             {/* Industry Codes with Smart Translation */}
                             {(() => {
@@ -185,14 +190,14 @@ export default async function BusinessPage(props: any) {
 
                                 return (
                                     <div className="md:col-span-2">
-                                        <InfoRow label="Industry Codes" value={displayValue} />
+                                        <InfoRow label={t('industryCodes')} value={displayValue} />
                                     </div>
                                 );
                             })()}
                         </div>
                         {registry?.last_verified_registry && (
                             <p className="mt-4 text-sm text-gray-500">
-                                Last verified: {new Date(registry.last_verified_registry).toLocaleDateString()}
+                                {t('lastVerified')}: {new Date(registry.last_verified_registry).toLocaleDateString()}
                             </p>
                         )}
                     </div>
@@ -204,14 +209,14 @@ export default async function BusinessPage(props: any) {
                                 <svg className="w-5 h-5 md:w-6 md:h-6 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                                 </svg>
-                                AI Quality Analysis
+                                {t('aiAnalysis')}
                             </h2>
                             <div className="grid sm:grid-cols-2 gap-3 md:gap-4">
                                 <InfoRow label="Industry Category" value={quality.industry_category} />
-                                <InfoRow label="Website" value={quality.website_url} link />
+                                <InfoRow label={t('website')} value={quality.website_url} link />
                                 <InfoRow
-                                    label="SSL/HTTPS"
-                                    value={quality.has_ssl ? 'Secure' : 'Not Secure'}
+                                    label={t('sslHttps')}
+                                    value={quality.has_ssl ? t('secure') : 'Not Secure'}
                                     badge={quality.has_ssl ? 'green' : 'red'}
                                 />
                                 <InfoRow
@@ -248,7 +253,7 @@ export default async function BusinessPage(props: any) {
                                 <svg className="w-5 h-5 md:w-6 md:h-6 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                                 </svg>
-                                Recent News
+                                {t('newsSentiment')}
                             </h2>
                             <div className="space-y-3">
                                 {(business.news_signals as unknown as NewsSignal[]).map((signal, i) => (
@@ -282,22 +287,22 @@ export default async function BusinessPage(props: any) {
                 <div className="space-y-4 md:space-y-6">
                     {/* Trust Score Breakdown */}
                     <div className="p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl md:rounded-2xl border border-gray-100 dark:border-slate-700 shadow-lg">
-                        <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Trust Score Breakdown</h3>
+                        <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">{t('trustScoreBreakdown')}</h3>
                         <div className="space-y-3 md:space-y-4">
                             <ScoreBar
-                                label="Registry Verified"
+                                label={t('registryVerified')}
                                 score={trustScore.breakdown.registry.score}
                                 max={trustScore.breakdown.registry.max}
                                 color="green"
                             />
                             <ScoreBar
-                                label="Quality Score"
+                                label={t('qualityScore')}
                                 score={trustScore.breakdown.quality.score}
                                 max={trustScore.breakdown.quality.max}
                                 color="blue"
                             />
                             <ScoreBar
-                                label="News Sentiment"
+                                label={t('newsSentiment')}
                                 score={trustScore.breakdown.news.score}
                                 max={trustScore.breakdown.news.max}
                                 color="purple"
@@ -308,7 +313,7 @@ export default async function BusinessPage(props: any) {
                     {/* Quick Links */}
                     {business.domain && (
                         <div className="p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl md:rounded-2xl border border-gray-100 dark:border-slate-700 shadow-lg">
-                            <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Quick Links</h3>
+                            <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">{t('quickLinks')}</h3>
                             <div className="space-y-2">
                                 <a
                                     href={`https://${business.domain}`}
@@ -327,7 +332,7 @@ export default async function BusinessPage(props: any) {
 
                     {/* Last Updated */}
                     <div className="p-3 md:p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg md:rounded-xl text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center border border-gray-100 dark:border-slate-700">
-                        Last updated: {new Date(business.updated_at).toLocaleDateString()}
+                        {t('lastUpdated')}: {new Date(business.updated_at).toLocaleDateString()}
                     </div>
                 </div>
             </div>
