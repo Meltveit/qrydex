@@ -223,7 +223,8 @@ if (require.main === module) {
                             await translateBusiness(task);
 
                             // Rate limiting between businesses
-                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            console.log('  ⏳ Cooling down (60s)...');
+                            await new Promise(resolve => setTimeout(resolve, 60000));
 
                         } catch (error: any) {
                             console.error(`  ❌ Error processing ${business.id}:`, error.message);

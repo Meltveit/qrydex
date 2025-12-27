@@ -131,10 +131,15 @@ export async function crawlRegistry(options: CrawlOptions): Promise<CrawlResult>
                 }
 
                 if (result.total >= (options.limit || 100)) break;
+
+                // Rate limiting: Wait 20 seconds between businesses to respect Gemini Free Tier
+                // (We do checking/verification which calls AI)
+                console.log('    ⏳ Cooling down (20s)...');
+                await new Promise(resolve => setTimeout(resolve, 20000));
             }
 
             // Rate limiting between industry codes
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 5000));
 
         } catch (error) {
             console.error(`Error processing NACE ${naceCode}: `, error);

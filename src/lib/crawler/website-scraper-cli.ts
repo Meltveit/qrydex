@@ -57,7 +57,8 @@ if (require.main === module) {
                             }
 
                             // Rate limiting
-                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            console.log('  ⏳ Cooling down (30s)...');
+                            await new Promise(resolve => setTimeout(resolve, 30000));
 
                         } catch (error: any) {
                             console.error(`  ❌ Error scraping ${business.domain}:`, error.message);

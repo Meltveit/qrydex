@@ -43,7 +43,8 @@ if (require.main === module) {
                             await discoverWebsite(business.id);
 
                             // Rate limiting
-                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            console.log('  ⏳ Cooling down (30s)...');
+                            await new Promise(resolve => setTimeout(resolve, 30000));
 
                         } catch (error: any) {
                             console.error(`  ❌ Error processing ${business.legal_name}:`, error.message);
