@@ -92,7 +92,7 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
                     };
 
                     // Rate limiting
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, 5000));
                 }
             }
         }
@@ -109,7 +109,7 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
                     for (const service of task.sourceData.services.slice(0, 5)) { // Limit to 5
                         const translated = await translateText(service, task.sourceLanguage, lang);
                         translatedServices.push(translated);
-                        await new Promise(resolve => setTimeout(resolve, 300));
+                        await new Promise(resolve => setTimeout(resolve, 3000));
                     }
                     translations[lang].services = translatedServices;
                 }
@@ -130,8 +130,8 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
                         lang
                     );
                     translations[lang].industry_text = translated;
-                    // Minimal delay for short texts
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    // Extended delay for rate limiting
+                    await new Promise(resolve => setTimeout(resolve, 3000));
                 }
             }
         }
@@ -175,7 +175,7 @@ if (require.main === module) {
                     .select('id, company_description, services, products, country_code, industry_code', { count: 'exact' })
                     .not('company_description', 'is', null)
                     .is('translations', null)
-                    .limit(5); // Process 5 per cycle (Translation is heavy on API)
+                    .limit(2); // Process 2 per cycle to reduce API load
 
                 if (!businesses || businesses.length === 0) {
                     console.log('✅ All businesses translated! Waiting for new data...');
@@ -223,8 +223,8 @@ if (require.main === module) {
                             await translateBusiness(task);
 
                             // Rate limiting between businesses
-                            console.log('  ⏳ Cooling down (60s)...');
-                            await new Promise(resolve => setTimeout(resolve, 60000));
+                            console.log('  ⏳ Cooling down (120s)...');
+                            await new Promise(resolve => setTimeout(resolve, 120000));
 
                         } catch (error: any) {
                             console.error(`  ❌ Error processing ${business.id}:`, error.message);
