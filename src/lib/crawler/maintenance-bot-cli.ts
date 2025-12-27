@@ -2,6 +2,7 @@
 import { createServerClient } from '../supabase';
 import { analyzeBusinessCredibility } from '../ai/scam-detector';
 import { scrapeWebsite } from './website-scraper';
+import pLimit from 'p-limit';
 
 // CLI execution - RUNS CONTINUOUSLY
 if (require.main === module) {
@@ -21,25 +22,35 @@ if (require.main === module) {
             console.log(`${'='.repeat(60)}\n`);
 
             try {
-                // Fetch businesses that have been scraped but NOT analyzed for scams yet
-                // Or businesses analyzed long ago? For now, focus on missing analysis.
-                // We fetch businesses with quality_analysis but check content in JS
+                // Fetch businesses that either:
+                // 1. Have quality_analysis (scraped) but missing scam/enrichment check
+                // 2. Have NO quality_analysis (never scraped or failed) but HAVE a domain
+                // 3. Have quality_analysis but NO description (failed scrape)
+                // We fetch a batch and filter in code for flexibility
                 const { data: businesses, count } = await supabase
                     .from('businesses')
-                    .select('id, domain, legal_name, org_number, registry_data, quality_analysis', { count: 'exact' })
-                    .not('quality_analysis', 'is', null)
+                    .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis', { count: 'exact' })
+                    .not('domain', 'is', null) // Must have a domain to scrape
                     .limit(50); // Fetch batch
 
                 if (!businesses || businesses.length === 0) {
                     console.log('✅ No businesses found to check.');
                 } else {
-                    // Filter for those missing 'isScam' OR missing 'certifications' (enrichment backfill)
+                    // Filter for those needing attention
                     const toAnalyze = businesses.filter(b => {
                         const qa = b.quality_analysis as any;
+
+                        // Case A: Never scraped or Scrape Failed (no QA object)
+                        if (!qa) return true;
+
+                        // Case B: Scraped but empty description (failed content extraction)
+                        if (!b.company_description || b.company_description.length < 10) return true;
+
+                        // Case C: Missing Intelligence (Scam check or Enrichment)
                         // Needs analysis if:
                         // 1. isScam is undefined (never checked)
                         // 2. certifications is undefined (checked before enrichment update)
-                        return qa && qa.scraped_at && (qa.isScam === undefined || qa.certifications === undefined);
+                        return qa.scraped_at && (qa.isScam === undefined || qa.certifications === undefined);
                     });
 
                     if (toAnalyze.length === 0) {
@@ -47,7 +58,10 @@ if (require.main === module) {
                     } else {
                         console.log(`Found ${toAnalyze.length} businesses needing scam check.`);
 
-                        for (const business of toAnalyze) {
+                        // Process in parallel with concurrency limit
+                        const limit = pLimit(3); // Run 3 sites simultaneously
+
+                        const tasks = toAnalyze.map(business => limit(async () => {
                             console.log(`  🛡️ Checking: ${business.legal_name}`);
                             const qa = business.quality_analysis as any;
 
@@ -62,7 +76,7 @@ if (require.main === module) {
 
                             if (!websiteData) {
                                 console.log(`   ⚠️ Could not scrape. Skipping.`);
-                                continue;
+                                return;
                             }
 
                             const analysis = await analyzeBusinessCredibility(
@@ -86,15 +100,14 @@ if (require.main === module) {
 
                                 console.log(`  ✅ Verified. Risk: ${analysis.riskLevel}`);
                             }
+                        }));
 
-                            // Rate limit (Gemini Maintenance Key)
-                            await new Promise(r => setTimeout(r, 2000));
-                        }
+                        await Promise.all(tasks);
                     }
                 }
 
-                console.log('\n⏱️  Sleeping 5 minutes...');
-                await new Promise(resolve => setTimeout(resolve, 300000));
+                console.log('\n⏱️  Sleeping 2 minutes...');
+                await new Promise(resolve => setTimeout(resolve, 120000));
 
             } catch (err: any) {
                 console.error('❌ Error:', err.message);
