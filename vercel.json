@@ -1,0 +1,8 @@
+{
+    "crons": [
+        {
+            "path": "/api/cron/rescrape",
+            "schedule": "0 2 * * *"
+        }
+    ]
+}

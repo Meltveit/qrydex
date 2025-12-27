@@ -33,16 +33,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     });
 
     return (
-        <div className="min-h-screen bg-[var(--color-background)]">
+        <div className="min-h-screen bg-[var(--color-background)] dark:bg-slate-950">
             {/* Header with search */}
             <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-[var(--color-border)] transition-colors">
                 <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-4">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center">
-                            <span className="text-white font-bold">Q</span>
+                    <Link href="/" className="flex items-center gap-2 flex-shrink-0 p-2 -m-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-[var(--color-primary)] dark:bg-blue-600 flex items-center justify-center shadow">
+                            <span className="text-white font-bold text-lg">Q</span>
                         </div>
-                        <span className="text-xl font-bold text-[var(--color-primary)] hidden sm:block">
+                        <span className="text-xl font-bold text-[var(--color-primary)] dark:text-blue-400 hidden sm:block">
                             Qrydex
                         </span>
                     </Link>
@@ -54,10 +54,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 </div>
             </header>
 
-            <main className="max-w-4xl mx-auto px-4 py-6">
+            <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
                 {/* Results info */}
-                <div className="mb-4">
-                    <p className="text-sm text-[var(--color-text-secondary)]">
+                <div className="mb-4 md:mb-6">
+                    <p className="text-sm md:text-base text-[var(--color-text-secondary)] dark:text-gray-400">
                         Viser {results.total} bedrifter
                         {results.articles && results.articles.length > 0 && ` og ${results.articles.length} artikler`}
                         {query && ` for "${query}"`}

@@ -63,11 +63,11 @@ export default async function Home() {
   const t = await getTranslations('HomePage');
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] w-full px-4">
-      <div className="absolute top-4 left-4">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center">
-            <span className="text-white font-bold text-lg">Q</span>
+    <div className="flex flex-col items-center justify-center min-h-[80vh] w-full px-4 md:px-6">
+      <div className="absolute top-4 left-4 md:top-6 md:left-6">
+        <Link href="/" className="inline-flex items-center gap-2 p-2 -m-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-[var(--color-primary)] dark:bg-blue-600 flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-xl md:text-2xl">Q</span>
           </div>
         </Link>
       </div>
@@ -76,10 +76,10 @@ export default async function Home() {
 
       <div className="flex flex-col items-center justify-center w-full max-w-4xl">
         <div className="mb-6 md:mb-8 text-center px-2">
-          <h1 className="text-3xl md:text-5xl font-bold text-[var(--color-primary)] mb-3 md:mb-2">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-primary)] dark:text-blue-400 mb-3 md:mb-2">
             Qrydex
           </h1>
-          <p className="text-[var(--color-text-secondary)] text-base md:text-lg max-w-md md:max-w-none mx-auto">
+          <p className="text-[var(--color-text-secondary)] dark:text-gray-300 text-base md:text-lg max-w-md md:max-w-none mx-auto">
             {t('title')}
           </p>
         </div>
@@ -89,24 +89,24 @@ export default async function Home() {
         </div>
 
         {location.city && (
-          <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-            📍 {t('locationPrefix')} <span className="font-medium">{location.city}, {location.countryName}</span>
+          <p className="text-sm text-[var(--color-text-secondary)] dark:text-gray-400 mb-4 md:mb-6">
+            📍 {t('locationPrefix')} <span className="font-medium dark:text-gray-300">{location.city}, {location.countryName}</span>
           </p>
         )}
 
-        <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-[var(--color-text-secondary)]">
+        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-[var(--color-text-secondary)] dark:text-gray-400">
           {businessCount > 0 && (
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[var(--color-verified)]" />
+            <span className="flex items-center gap-2 px-3 py-2 md:px-0 md:py-0">
+              <span className="w-2 h-2 rounded-full bg-[var(--color-verified)] dark:bg-green-400" />
               {t('verifiedBusinesses', { count: businessCount.toLocaleString() })}
             </span>
           )}
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
+          <span className="flex items-center gap-2 px-3 py-2 md:px-0 md:py-0">
+            <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] dark:bg-blue-400" />
             {t('regionLabel')}
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[var(--color-primary-light)]" />
+          <span className="flex items-center gap-2 px-3 py-2 md:px-0 md:py-0">
+            <span className="w-2 h-2 rounded-full bg-[var(--color-primary-light)] dark:bg-blue-300" />
             {t('updatedLabel')}
           </span>
         </div>
