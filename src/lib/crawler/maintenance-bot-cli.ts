@@ -49,6 +49,7 @@ if (require.main === module) {
 
                         for (const business of toAnalyze) {
                             console.log(`  🛡️ Checking: ${business.legal_name}`);
+                            const qa = business.quality_analysis as any;
 
                             // Re-scrape website to get deep content for enrichment
                             // We use maxPages=3 to be faster for maintenance
@@ -67,7 +68,7 @@ if (require.main === module) {
                             const analysis = await analyzeBusinessCredibility(
                                 business,
                                 business.registry_data as any,
-                                mockWebsiteData
+                                websiteData
                             );
 
                             if (analysis) {
