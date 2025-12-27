@@ -59,12 +59,24 @@ export default function BusinessCard({ business, distance }: BusinessCardProps) 
                     </div>
                 </div>
 
-                {/* AI Description */}
-                {business.quality_analysis?.ai_summary && (
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 leading-relaxed">
-                        {business.quality_analysis.ai_summary}
-                    </p>
-                )}
+                {/* Company Description or AI Summary */}
+                {(() => {
+                    const description = business.company_description || business.quality_analysis?.ai_summary;
+
+                    // Hide if it's the placeholder text from registry crawler
+                    if (description && description.includes('Automatic verification passed without AI')) {
+                        return null;
+                    }
+
+                    if (description) {
+                        return (
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 leading-relaxed">
+                                {description}
+                            </p>
+                        );
+                    }
+                    return null;
+                })()}
 
                 {/* Metadata Row */}
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-4">
