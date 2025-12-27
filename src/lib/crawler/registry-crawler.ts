@@ -132,10 +132,10 @@ export async function crawlRegistry(options: CrawlOptions): Promise<CrawlResult>
 
                 if (result.total >= (options.limit || 100)) break;
 
-                // Rate limiting: Wait 20 seconds between businesses to respect Gemini Free Tier
+                // Rate limiting: Wait 45 seconds between businesses to respect Gemini Free Tier
                 // (We do checking/verification which calls AI)
-                console.log('    ⏳ Cooling down (20s)...');
-                await new Promise(resolve => setTimeout(resolve, 20000));
+                console.log('    ⏳ Cooling down (45s)...');
+                await new Promise(resolve => setTimeout(resolve, 45000));
             }
 
             // Rate limiting between industry codes
