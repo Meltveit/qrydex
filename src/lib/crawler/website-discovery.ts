@@ -21,30 +21,65 @@ function cleanCompanyName(name: string): string {
  * Try common domain patterns
  */
 function generateDomainCandidates(companyName: string, country: string): string[] {
-    const clean = cleanCompanyName(companyName);
-    const patterns = [];
+    const patterns: string[] = [];
 
-    // Country-specific TLDs
+    // Country-specific TLDs (Priority Order)
     const countryTLDs: Record<string, string[]> = {
-        'NO': ['.no', '.com'],
-        'SE': ['.se', '.com'],
+        'NO': ['.no', '.com', '.net', '.org'],
+        'SE': ['.se', '.com', '.nu'],
         'DK': ['.dk', '.com'],
         'FI': ['.fi', '.com'],
         'DE': ['.de', '.com'],
         'FR': ['.fr', '.com'],
         'ES': ['.es', '.com'],
-        'GB': ['.co.uk', '.com'],
-        'US': ['.com']
+        'GB': ['.co.uk', '.com', '.uk'],
+        'US': ['.com', '.net'],
+        'IT': ['.it', '.com'],
+        'NL': ['.nl', '.com'],
+        'PL': ['.pl', '.com'],
+        'BE': ['.be', '.com']
     };
 
-    const tlds = countryTLDs[country] || ['.com'];
+    const tlds = countryTLDs[country] || ['.com', '.net'];
 
+    // 1. Full cleaned name (e.g. "visma software international" -> "vismasoftwareinternational.no")
+    const cleanFull = cleanCompanyName(companyName);
+
+    // 2. First word only (Risk of collision, but verified by Org Nr later!)
+    // e.g. "Visma Software AS" -> "visma.no"
+    const words = companyName.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().split(/\s+/);
+    const firstWord = words[0];
+
+    // 3. First two words combined
+    const firstTwo = words.slice(0, 2).join('');
+    const firstTwoHyphen = words.slice(0, 2).join('-');
+
+    // Generate Candidates
     for (const tld of tlds) {
-        patterns.push(`${clean}${tld}`);
-        patterns.push(`www.${clean}${tld}`);
+        // Priority 1: Shortest reasonable name (First word, if > 3 chars)
+        if (firstWord.length > 2 && !['the', 'det', 'den'].includes(firstWord)) {
+            patterns.push(`${firstWord}${tld}`);
+        }
+
+        // Priority 2: First two words (if applicable)
+        if (words.length > 1) {
+            patterns.push(`${firstTwo}${tld}`);
+            patterns.push(`${firstTwoHyphen}${tld}`);
+        }
+
+        // Priority 3: Full name
+        if (cleanFull !== firstWord && cleanFull !== firstTwo) {
+            patterns.push(`${cleanFull}${tld}`);
+        }
+
+        // Also try www version for the most likely one (First Word)
+        if (firstWord.length > 3) {
+            patterns.push(`www.${firstWord}${tld}`);
+        }
     }
 
-    return patterns;
+    // Deduplicate
+    return [...new Set(patterns)];
 }
 
 /**
@@ -67,36 +102,60 @@ async function isDomainReachable(domain: string): Promise<boolean> {
 /**
  * Verify website belongs to the company by checking for org number
  */
-async function verifyWebsite(domain: string, orgNumber: string): Promise<boolean> {
+async function verifyWebsite(domain: string, orgNumber: string, companyName: string): Promise<boolean> {
     try {
         const url = domain.startsWith('http') ? domain : `https://${domain}`;
         const response = await fetch(url, {
-            signal: AbortSignal.timeout(10000)
+            signal: AbortSignal.timeout(10000),
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
         });
 
         if (!response.ok) return false;
 
-        const html = await response.text();
+        const html = (await response.text()).toLowerCase();
 
-        // Check if org number appears on the page
+        // 1. Strict Check: Org Number
         const cleanOrgNumber = orgNumber.replace(/\s/g, '');
         const variations = [
             cleanOrgNumber,
             orgNumber,
-            `Org.nr: ${orgNumber}`,
-            `Org.nr.: ${orgNumber}`,
-            `Organisasjonsnummer: ${orgNumber}`
+            `org.nr: ${orgNumber}`,
+            `organisasjonsnummer: ${orgNumber}`
         ];
 
         for (const variant of variations) {
-            if (html.includes(variant)) {
+            if (html.includes(variant.toLowerCase())) {
                 return true;
             }
         }
 
-        // If org number not found, still accept if domain is reachable
-        // (some sites don't display org number)
-        return true;
+        // 2. Soft Check: Company Name Match (if Org Nr missing)
+        // Clean company name to core part (e.g. "Visma Software AS" -> "visma")
+        const cleanName = companyName.toLowerCase()
+            .replace(/\s(as|asa|ab|gmbh|ltd|inc|oy|aps)$/i, '')
+            .replace(/[^a-z0-9\s]/g, '')
+            .trim();
+
+        // Split into significant words (ignore "norway", "group" etc if needed, but keep it simple)
+        const nameParts = cleanName.split(' ').filter(p => p.length > 3);
+
+        // If domain contains the full clean name, it's a strong signal
+        if (domain.includes(cleanName.replace(/\s/g, ''))) {
+            // And page mentions at least one significant part of the name
+            if (nameParts.some(part => html.includes(part))) {
+                // console.log(`   ⚠️ Soft verified via domain Match: ${domain}`);
+                return true;
+            }
+        }
+
+        // If page title or copyright contains company name
+        if (html.includes(cleanName) || html.includes(`copyright ${new Date().getFullYear()} ${cleanName}`)) {
+            return true;
+        }
+
+        return false;
     } catch {
         return false;
     }

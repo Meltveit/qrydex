@@ -14,6 +14,7 @@ export interface ScamAnalysisResult {
     certifications: string[]; // e.g. ISO 9001, Miljøfyrtårn
     customerSegment: 'B2B' | 'B2C' | 'BOTH';
     keyFeatures: string[];
+    search_keywords: string[]; // Multilingual keywords (EN, NO, DE, etc.)
 }
 
 /**
@@ -91,6 +92,10 @@ function createAnalysisPrompt(
     - Certifications: Any mentioned certifications (ISO, Eco-lighthouse, etc).
     - Customer Segment: Is this primarily B2B, B2C, or both?
     - Key Features: 3-5 distinct features or selling points.
+    - Search Keywords: Generate 10-15 localized search keywords relevant to this business.
+      Include translations in English, Norwegian, German, French, and Spanish if applicable.
+      Example: If an accounting firm, include "Accounting", "Regnskap", "Buchhaltung", "Payroll", "Lønn".
+      Ensure high relevance for search indexing.
     
     Return a JSON object with this exact structure:
     {
@@ -103,7 +108,8 @@ function createAnalysisPrompt(
         "summary": "Brief verdict",
         "certifications": ["Cert 1", "Cert 2"],
         "customerSegment": "B2B/B2C/BOTH",
-        "keyFeatures": ["Feature 1", "Feature 2"]
+        "keyFeatures": ["Feature 1", "Feature 2"],
+        "search_keywords": ["Accounting", "Regnskap", "Buchhaltung"]
     }
     `;
 }
@@ -119,6 +125,7 @@ function createFallbackAnalysis(): ScamAnalysisResult {
         summary: 'Automatic verification passed without AI analysis.',
         certifications: [],
         customerSegment: 'BOTH',
-        keyFeatures: []
+        keyFeatures: [],
+        search_keywords: []
     };
 }

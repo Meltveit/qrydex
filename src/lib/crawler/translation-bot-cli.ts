@@ -170,12 +170,22 @@ if (require.main === module) {
 
             try {
                 // Find businesses needing translation (have data but no translations)
-                const { data: businesses, count } = await supabase
+                // Priority: High Trust Score -> Recently Scraped -> Has content
+                const { data: rawBusinesses, count } = await supabase
                     .from('businesses')
                     .select('id, company_description, services, products, country_code, industry_code, quality_analysis', { count: 'exact' })
                     .not('company_description', 'is', null)
                     .is('translations', null)
-                    .limit(2); // Process 2 per cycle to reduce API load
+                    .order('trust_score', { ascending: false, nullsFirst: false }) // Prioritize trusted businesses
+                    .limit(20); // Process larger batch to filter
+
+                // Filter in-memory for quality content
+                const businesses = (rawBusinesses || []).filter(b => {
+                    // MUST have description > 50 chars to be worth translating
+                    if (!b.company_description || b.company_description.length < 50) return false;
+                    // Optional: Skip if description is just "Copyright..." or similar junk (handled by AI usually but good to check)
+                    return true;
+                }).slice(0, 3); // Take top 3 valid ones per cycle
 
                 if (!businesses || businesses.length === 0) {
                     console.log('✅ All businesses translated! Waiting for new data...');

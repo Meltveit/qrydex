@@ -46,7 +46,7 @@ const B2B_NACE_CODES = [
 ];
 
 interface CrawlOptions {
-    country: 'NO' | 'GB' | 'DE' | 'FR' | 'SE' | 'DK' | 'FI' | 'ES';
+    country: 'NO' | 'GB' | 'DE' | 'FR' | 'SE' | 'DK' | 'FI' | 'ES' | 'IT' | 'NL' | 'PL' | 'BE';
     limit?: number;
     industryFilter?: string[];
 }
@@ -105,6 +105,10 @@ export async function crawlRegistry(options: CrawlOptions): Promise<CrawlResult>
                 case 'FI':
                 case 'DE':
                 case 'ES':
+                case 'IT':
+                case 'NL':
+                case 'PL':
+                case 'BE':
                     foundCompanies = await crawlOpenCorporatesByIndustry(naceCode, options.country, 10);
                     break;
             }
@@ -155,11 +159,11 @@ export async function crawlRegistry(options: CrawlOptions): Promise<CrawlResult>
 export async function runFullCrawl(limitPerCountry: number = 100): Promise<Record<string, CrawlResult>> {
     console.log('🚀 Starting full business crawl...\n');
 
-    const countries = ['NO', 'SE', 'DK', 'FI', 'DE', 'FR', 'GB', 'ES'] as const;
+    const countries = ['NO', 'SE', 'DK', 'FI', 'DE', 'FR', 'GB', 'ES', 'IT', 'NL', 'PL', 'BE'] as const;
     const results: Record<string, CrawlResult> = {};
 
     for (const country of countries) {
-        if (country === 'ES') continue; // Not implemented yet
+        // if (country === 'ES') continue; // Removed skip
         results[country] = await crawlRegistry({ country, limit: limitPerCountry });
     }
 

@@ -144,7 +144,9 @@ export async function searchBusinesses(
                 `translations->es->>services.ilike.%${cleanQuery}%`,
                 `translations->es->>products.ilike.%${cleanQuery}%`,
                 `translations->es->>company_description.ilike.%${cleanQuery}%`,
-                `translations->es->>industry_text.ilike.%${cleanQuery}%`
+                `translations->es->>industry_text.ilike.%${cleanQuery}%`,
+                // New Multilingual Keywords Field
+                `quality_analysis->>search_keywords.ilike.%${cleanQuery}%`
             );
 
             businessQueryBuilder = businessQueryBuilder.or(orConditions.join(','));

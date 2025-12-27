@@ -27,16 +27,64 @@ if (require.main === module) {
                 // 2. Have NO quality_analysis (never scraped or failed) but HAVE a domain
                 // 3. Have quality_analysis but NO description (failed scrape)
                 // We fetch a batch and filter in code for flexibility
-                const { data: businesses, count } = await supabase
+                // Priority 1: Virgin Targets (Domain exists, but never scraped/analyzed)
+                // We fetch rows where quality_analysis IS NULL
+                let { data: priorityBatch, error: pError } = await supabase
                     .from('businesses')
-                    .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis', { count: 'exact' })
-                    .not('domain', 'is', null) // Must have a domain to scrape
-                    .limit(50); // Fetch batch
+                    .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis')
+                    .not('domain', 'is', null)
+                    .is('quality_analysis', null)
+                    .limit(20);
+
+                if (pError) console.error('Priority Fetch Error:', pError.message);
+
+                let businesses = priorityBatch || [];
+                let mode = 'RESCUE_VIRGIN';
+
+                // Priority 2: Incomplete Targets (Scraped, but failed description)
+                if (businesses.length < 10) {
+                    const { data: incompleteBatch } = await supabase
+                        .from('businesses')
+                        .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis')
+                        .not('domain', 'is', null)
+                        .not('quality_analysis', 'is', null)
+                        .is('company_description', null) // Explicitly missing description
+                        .limit(20);
+
+                    if (incompleteBatch && incompleteBatch.length > 0) {
+                        businesses = [...businesses, ...incompleteBatch];
+                        mode = (mode === 'RESCUE_VIRGIN' && businesses.length === incompleteBatch.length) ? 'RESCUE_BROKEN' : 'HYBRID';
+                    }
+                }
+
+                // Priority 3: Enrichment/Maintenance (Standard rotation)
+                if (businesses.length < 50) {
+                    // Get random sample or oldest updated for general maintenance
+                    // Using a random order or just taking next batch to avoid getting stuck on same 50
+                    // Note: Supabase random() is tricky, so we use a range or just offset based on time if possible.
+                    // For now, valid "maintenance" candidates are those with old timestamps
+                    const { data: maintenanceBatch } = await supabase
+                        .from('businesses')
+                        .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis')
+                        .not('domain', 'is', null)
+                        .not('quality_analysis', 'is', null)
+                        .order('updated_at', { ascending: true }) // Check oldest records first
+                        .limit(30);
+
+                    if (maintenanceBatch) {
+                        businesses = [...businesses, ...maintenanceBatch];
+                    }
+                }
+
+                // Deduplicate by ID
+                businesses = Array.from(new Map(businesses.map(b => [b.id, b])).values());
 
                 if (!businesses || businesses.length === 0) {
                     console.log('✅ No businesses found to check.');
                 } else {
-                    // Filter for those needing attention
+                    console.log(`🔎 Mode: ${mode} | Analyizing batch of ${businesses.length} businesses`);
+
+                    // Filter for those needing attention (Double Check)
                     const toAnalyze = businesses.filter(b => {
                         const qa = b.quality_analysis as any;
 
@@ -47,9 +95,6 @@ if (require.main === module) {
                         if (!b.company_description || b.company_description.length < 10) return true;
 
                         // Case C: Missing Intelligence (Scam check or Enrichment)
-                        // Needs analysis if:
-                        // 1. isScam is undefined (never checked)
-                        // 2. certifications is undefined (checked before enrichment update)
                         return qa.scraped_at && (qa.isScam === undefined || qa.certifications === undefined);
                     });
 

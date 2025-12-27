@@ -248,31 +248,73 @@ function identifyProductPages(links: string[]): string[] {
  */
 async function scrapePage(url: string): Promise<PageData | null> {
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased timeout to 30s
+        const userAgents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15'
+        ];
 
-        const response = await fetch(url, {
-            headers: {
-                // Mimic real Chrome browser to avoid blocking
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.9,no;q=0.8,sv;q=0.7,da;q=0.7,fi;q=0.7,de;q=0.6,fr;q=0.6,es;q=0.6', // International optimization
-                'Referer': 'https://www.google.com/',
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache',
-                'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-                'Sec-Ch-Ua-Mobile': '?0',
-                'Sec-Ch-Ua-Platform': '"Windows"'
-            },
-            signal: controller.signal,
-            redirect: 'follow'
-        });
+        let response: Response | null = null;
+        let html = '';
+        let lastError: any = null;
 
-        clearTimeout(timeoutId);
+        // Retry loop (3 attempts)
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                const controller = new AbortController();
+                // Vary timeout slightly: 20s, 30s, 40s
+                const timeoutMs = 20000 + (attempt * 10000);
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-        if (!response.ok) return null;
+                // Pick random UA
+                const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
 
-        const html = await response.text();
+                response = await fetch(url, {
+                    headers: {
+                        'User-Agent': userAgent,
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.9,no;q=0.8,sv;q=0.7,da;q=0.7,fi;q=0.7,de;q=0.6,fr;q=0.6,es;q=0.6',
+                        'Referer': 'https://www.google.com/',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache',
+                        'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                        'Sec-Ch-Ua-Mobile': '?0',
+                        'Sec-Ch-Ua-Platform': '"Windows"',
+                        // Add some randomness to headers if needed
+                    },
+                    signal: controller.signal,
+                    redirect: 'follow'
+                });
+
+                clearTimeout(timeoutId);
+
+                // Success! Accessing invalid URL might return 404, which is a "success" in network terms but failed scrape
+                // Success!
+                if (response.ok) {
+                    html = await response.text();
+                    break;
+                }
+
+                // If 403/429, retry
+                if (response.status === 403 || response.status === 429) {
+                    await new Promise(r => setTimeout(r, 2000 * attempt)); // Exponential backoff
+                    continue;
+                }
+
+                // Other errors (404, 500), break generally
+                break;
+
+            } catch (err) {
+                // Network error, retry
+                await new Promise(r => setTimeout(r, 1000 * attempt));
+            }
+        }
+
+        if (!response || !response.ok || !html) {
+            return null;
+        }
 
         // Extract title
         const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
