@@ -247,13 +247,23 @@ function identifyProductPages(links: string[]): string[] {
 async function scrapePage(url: string): Promise<PageData | null> {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased timeout to 30s
 
         const response = await fetch(url, {
             headers: {
-                'User-Agent': 'Qrydex B2B Indexer/1.0 (Bot for business verification)',
+                // Mimic real Chrome browser to avoid blocking
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9,no;q=0.8,sv;q=0.7,da;q=0.7,fi;q=0.7,de;q=0.6,fr;q=0.6,es;q=0.6', // International optimization
+                'Referer': 'https://www.google.com/',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                'Sec-Ch-Ua-Mobile': '?0',
+                'Sec-Ch-Ua-Platform': '"Windows"'
             },
             signal: controller.signal,
+            redirect: 'follow'
         });
 
         clearTimeout(timeoutId);
@@ -426,6 +436,32 @@ Content: ${homepage.content.slice(0, 3000)}`;
         // Deduplicate contact info
         contactInfo.emails = [...new Set(contactInfo.emails)];
         contactInfo.phones = [...new Set(contactInfo.phones)];
+
+        // Smart Sitelink Enrichment for pSEO
+        // If we actually visited a subpage, use its real content snippet as description instead of generic text
+        if (sitelinks && sitelinks.length > 0) {
+            sitelinks.forEach(link => {
+                const matchingSubpage = subpages.find(page =>
+                    page.url === link.url ||
+                    page.url.replace(/\/$/, '') === link.url.replace(/\/$/, '') // Handle trailing slash mismatch
+                );
+
+                if (matchingSubpage && matchingSubpage.content) {
+                    // Extract first significant paragraph/sentence (up to 160 chars for SEO meta desc)
+                    const snippet = matchingSubpage.content
+                        .slice(0, 500) // Take a chunk
+                        .replace(/^[^a-zA-Z0-9]*\n*/, '') // Remove initial junk
+                        .split(/\n+/)[0] // Take first paragraph
+                        .slice(0, 160) // Limit length
+                        .trim();
+
+                    if (snippet.length > 20) {
+                        link.description = snippet + '...';
+                        // console.log(`  ✨ Enriched sitelink "${link.title}" with real content!`);
+                    }
+                }
+            });
+        }
 
         return {
             homepage: {
