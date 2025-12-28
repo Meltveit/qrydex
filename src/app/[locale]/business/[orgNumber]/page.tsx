@@ -406,6 +406,8 @@ export default async function BusinessPage(props: any) {
                                 </a>
                             </div>
                         </div>
+                    )}
+
                     {/* Scraped Sitelinks / Highlights */}
                     {business.sitelinks && (
                         <div className="p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl md:rounded-2xl border border-gray-100 dark:border-slate-700 shadow-lg">
