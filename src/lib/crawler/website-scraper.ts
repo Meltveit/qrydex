@@ -55,6 +55,7 @@ export interface WebsiteData {
     };
     responseTime?: number;
     detectedLanguage?: string;
+    enrichedData?: any;
 }
 
 /**

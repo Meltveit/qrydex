@@ -31,7 +31,7 @@ if (require.main === module) {
                 // We fetch rows where quality_analysis IS NULL
                 let { data: priorityBatch, error: pError } = await supabase
                     .from('businesses')
-                    .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis')
+                    .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis, logo_url')
                     .not('domain', 'is', null)
                     .is('quality_analysis', null)
                     .limit(20);
@@ -45,7 +45,7 @@ if (require.main === module) {
                 if (businesses.length < 10) {
                     const { data: incompleteBatch } = await supabase
                         .from('businesses')
-                        .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis')
+                        .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis, logo_url')
                         .not('domain', 'is', null)
                         .not('quality_analysis', 'is', null)
                         .is('company_description', null) // Explicitly missing description
@@ -65,7 +65,7 @@ if (require.main === module) {
                     // For now, valid "maintenance" candidates are those with old timestamps
                     const { data: maintenanceBatch } = await supabase
                         .from('businesses')
-                        .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis')
+                        .select('id, domain, legal_name, company_description, org_number, registry_data, quality_analysis, logo_url')
                         .not('domain', 'is', null)
                         .not('quality_analysis', 'is', null)
                         .order('updated_at', { ascending: true }) // Check oldest records first
