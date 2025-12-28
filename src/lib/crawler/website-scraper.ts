@@ -6,6 +6,7 @@
 import { createServerClient } from '@/lib/supabase';
 import type { Business } from '@/types/database';
 import { generateText } from '@/lib/ai/gemini-client';
+import { deepCrawlWebsite } from './deep-crawler';
 
 interface PageData {
     url: string;
@@ -342,205 +343,76 @@ async function scrapePage(url: string): Promise<PageData | null> {
 }
 
 /**
- * Deep scrape a business website
+ * Deep scrape a business website using the new deep crawler
  */
-export async function scrapeWebsite(websiteUrl: string, maxPages: number = 10): Promise<WebsiteData | null> {
+export async function scrapeWebsite(websiteUrl: string, maxPages: number = 50): Promise<WebsiteData | null> {
     try {
         const normalizedUrl = websiteUrl.startsWith('http')
             ? websiteUrl
             : `https://${websiteUrl}`;
 
-        console.log(`🕷️ Scraping website: ${normalizedUrl} (max ${maxPages} pages)`);
+        console.log(`🕷️  DEEP SCRAPING: ${normalizedUrl}`);
 
-        // Scrape homepage
-        const startTime = Date.now();
-        const homepage = await scrapePage(normalizedUrl);
-        if (!homepage) {
-            console.error('Failed to scrape homepage');
+        // Use the new deep crawler
+        const { deepCrawlWebsite } = await import('./deep-crawler');
+        const crawlResult = await deepCrawlWebsite(normalizedUrl, maxPages);
+
+        if (!crawlResult || crawlResult.pages.length === 0) {
+            console.error('❌ Deep crawl failed or returned no pages');
             return null;
         }
-        const responseTime = Date.now() - startTime;
 
-        // Check SSL and Security Headers
-        const hasSSL = normalizedUrl.startsWith('https://');
-        let securityHeaders = {
-            strictTransportSecurity: false,
-            contentSecurityPolicy: false,
-            xFrameOptions: false
-        };
+        // Process with data extractor
+        const { processDeepCrawl } = await import('./data-extractor');
+        const enrichedData = await processDeepCrawl(crawlResult);
 
-        try {
-            const securityCheckResponse = await fetch(normalizedUrl, {
-                method: 'HEAD',
-                redirect: 'follow'
-            });
-            const headers = securityCheckResponse.headers;
-            securityHeaders = {
-                strictTransportSecurity: headers.has('strict-transport-security'),
-                contentSecurityPolicy: headers.has('content-security-policy'),
-                xFrameOptions: headers.has('x-frame-options')
-            };
-            console.log(`🔒 SSL: ${hasSSL}, Security Headers: ${Object.values(securityHeaders).filter(Boolean).length}/3`);
-        } catch (secError) {
-            console.warn('⚠️ Could not check security headers');
-        }
+        console.log(`✅ Extracted data from ${enrichedData.total_pages_indexed} pages`);
+        console.log(`  📧 Found ${enrichedData.contact_info.emails.length} emails`);
+        console.log(`  🔗 Social: ${Object.keys(enrichedData.contact_info.social_media).filter(k => enrichedData.contact_info.social_media[k as keyof typeof enrichedData.contact_info.social_media]).length} platforms`);
+        console.log(`  🧠 AI: ${enrichedData.industry_category}`);
 
-        // Extract enhanced data from homepage
-        const contactInfo = extractContactInfo(homepage.html);
-        const logoUrl = extractLogo(homepage.html, normalizedUrl);
-        let description = extractDescription(homepage.html);
-        const socialMedia = extractSocialMedia(homepage.html);
-        const potentialBusinessIds = extractBusinessIds(homepage.content);
-        const sitelinks = extractSitelinks(homepage.html, normalizedUrl);
-
-        // Initialize optional enhanced data fields
-        let services: string[] = [];
-        let products: string[] = [];
-        let translations: any = {};
-        let industryCategory: string | null = null;
-
-        // Deep Scan AI Summarization (Bot A intelligence)
-        // Now requesting structured data: Description + Services + Products
-        if (!description || description.length < 50 || true) { // Always run AI analysis for services even if description exists
-            try {
-                const prompt = `Analyze this website content and extract key business data. Return strictly valid JSON with this structure:
-{
-  "description_no": "Professional summary in Norwegian",
-  "description_en": "Professional summary in English",
-  "description_fr": "Professional summary in French",
-  "description_de": "Professional summary in German",
-  "description_es": "Professional summary in Spanish",
-  "services_no": ["Service 1 (NO)", "Service 2 (NO)"],
-  "services_en": ["Service 1 (EN)", "Service 2 (EN)"],
-  "services_fr": ["Service 1 (FR)", "Service 2 (FR)"],
-  "services_de": ["Service 1 (DE)", "Service 2 (DE)"],
-  "services_es": ["Service 1 (ES)", "Service 2 (ES)"],
-  "products_no": ["Product 1 (NO)"],
-  "products_en": ["Product 1 (EN)"],
-  "products_fr": ["Product 1 (FR)"],
-  "products_de": ["Product 1 (DE)"],
-  "products_es": ["Product 1 (ES)"],
-  "industry_category": "Main Industry Category"
-}
-Content: ${homepage.content.slice(0, 3000)}`;
-
-                const aiResponse = await generateText(prompt);
-
-                if (aiResponse) {
-                    try {
-                        // Clean markdown code blocks if present
-                        const jsonStr = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-                        const data = JSON.parse(jsonStr);
-
-                        // Set default (Norwegian)
-                        if (data.description_no) description = data.description_no;
-                        if (Array.isArray(data.services_no)) services = data.services_no;
-                        if (Array.isArray(data.products_no)) products = data.products_no;
-
-                        // Construct Polyglot object
-                        translations = {
-                            en: { description: data.description_en, services: data.services_en, products: data.products_en },
-                            fr: { description: data.description_fr, services: data.services_fr, products: data.products_fr },
-                            de: { description: data.description_de, services: data.services_de, products: data.products_de },
-                            es: { description: data.description_es, services: data.services_es, products: data.products_es },
-                        };
-
-                        // We also get industry category which is great
-                        if (data.industry_category) {
-                            industryCategory = data.industry_category;
-                        }
-
-                        console.log('✨ Generated Polyglot Data (NO, EN, FR, DE, ES)');
-                    } catch (parseError) {
-                        console.warn('Failed to parse AI JSON:', parseError);
-                        // Fallback: If it's just text, treat as description
-                        if (!description) description = aiResponse.slice(0, 200);
-                    }
-                }
-            } catch (aiError) {
-                console.warn('Failed to generate AI data:', aiError);
-            }
-        }
-
-        // Find product/service pages
-        const productPageUrls = identifyProductPages(homepage.links).slice(0, maxPages);
-
-        const subpages: PageData[] = [];
-        for (const url of productPageUrls) {
-            const page = await scrapePage(url);
-            if (page) {
-                // Remove HTML from subpages to save memory
-                const { html, ...pageData } = page;
-                subpages.push(page as any);
-
-                // Merge additional contact info found on subpages
-                const subContact = extractContactInfo(page.html);
-                contactInfo.emails.push(...subContact.emails);
-                contactInfo.phones.push(...subContact.phones);
-            }
-            // Rate limiting
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-
-        // Deduplicate contact info
-        contactInfo.emails = [...new Set(contactInfo.emails)];
-        contactInfo.phones = [...new Set(contactInfo.phones)];
-
-        // Smart Sitelink Enrichment for pSEO
-        // If we actually visited a subpage, use its real content snippet as description instead of generic text
-        if (sitelinks && sitelinks.length > 0) {
-            sitelinks.forEach(link => {
-                const matchingSubpage = subpages.find(page =>
-                    page.url === link.url ||
-                    page.url.replace(/\/$/, '') === link.url.replace(/\/$/, '') // Handle trailing slash mismatch
-                );
-
-                if (matchingSubpage && matchingSubpage.content) {
-                    // Extract first significant paragraph/sentence (up to 160 chars for SEO meta desc)
-                    const snippet = matchingSubpage.content
-                        .slice(0, 500) // Take a chunk
-                        .replace(/^[^a-zA-Z0-9]*\n*/, '') // Remove initial junk
-                        .split(/\n+/)[0] // Take first paragraph
-                        .slice(0, 160) // Limit length
-                        .trim();
-
-                    if (snippet.length > 20) {
-                        link.description = snippet + '...';
-                        // console.log(`  ✨ Enriched sitelink "${link.title}" with real content!`);
-                    }
-                }
-            });
-        }
+        // Convert to legacy WebsiteData format for backward compatibility
+        const homepage = crawlResult.pages[0];
 
         return {
             homepage: {
                 url: homepage.url,
                 title: homepage.title,
                 content: homepage.content,
-                links: homepage.links
+                links: homepage.links,
+                language: homepage.meta.language
             },
-            subpages: subpages as unknown as Omit<PageData, 'html'>[],
-            products: products,
-            services: services,
-            contactInfo,
-            logoUrl,
-            description,
-            socialMedia,
-            images: [], // Placeholder for extracted images
+            subpages: crawlResult.pages.slice(1, 10).map(page => ({
+                url: page.url,
+                title: page.title,
+                content: page.content.slice(0, 1000), // Limit to save space
+                links: [],
+                language: page.meta.language
+            })),
+            products: enrichedData.products.en || [],
+            services: enrichedData.services.en || [],
+            contactInfo: {
+                emails: enrichedData.contact_info.emails,
+                phones: enrichedData.contact_info.phones,
+                addresses: [] // Not extracted yet
+            },
+            logoUrl: enrichedData.logo_url,
+            description: enrichedData.company_description,
+            socialMedia: enrichedData.contact_info.social_media as any,
+            images: enrichedData.all_images,
             openingHours: undefined,
-            potentialBusinessIds,
-            sitelinks,
-            detectedLanguage: homepage.language,
-            // Security & Performance
-            hasSSL,
-            securityHeaders,
-            responseTime,
-            // Pass through augmented data
-            translations: translations,
-            industry_category: industryCategory
-        } as any; // Cast to any to bypass strict interface for new fields temporarily
+            potentialBusinessIds: {},
+            sitelinks: enrichedData.sitelinks,
+            detectedLanguage: enrichedData.detected_languages[0],
+            hasSSL: enrichedData.has_ssl,
+            securityHeaders: undefined,
+            responseTime: enrichedData.response_time_ms,
+            // NEW: Store ALL enriched data
+            enrichedData: enrichedData
+        } as any;
+
     } catch (error) {
-        console.error('Error in website scraping:', error);
+        console.error('❌ Error in deep scraping:', error);
         return null;
     }
 }
