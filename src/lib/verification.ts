@@ -22,6 +22,13 @@ export interface VerifyBusinessRequest {
 
 // ... existing code ...
 
+export interface VerifyBusinessResponse {
+    success: boolean;
+    business?: BusinessInsert;
+    error?: string;
+    source?: 'database' | 'registry_api' | 'registry_scrape';
+}
+
 export async function verifyAndStoreBusiness(
     request: VerifyBusinessRequest
 ): Promise<VerifyBusinessResponse> {
