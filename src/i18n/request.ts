@@ -5,7 +5,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     let locale = await requestLocale;
 
     // Ensure that a valid locale is used
-    if (!locale || !['en', 'no'].includes(locale)) {
+    if (!locale || !['no', 'sv', 'da', 'fi', 'en', 'de', 'fr', 'es'].includes(locale)) {
         locale = 'no';
     }
 
