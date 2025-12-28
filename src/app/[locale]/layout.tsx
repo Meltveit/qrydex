@@ -8,8 +8,42 @@ import { getMessages } from 'next-intl/server';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
-  title: "Qrydex",
-  description: "B2B Index",
+  title: {
+    default: "Qrydex - The Intelligent B2B Search Engine",
+    template: "%s | Qrydex"
+  },
+  description: "Find verified businesses, contacts, and financial data across Europe. The next generation B2B search engine powered by AI.",
+  keywords: ["B2B", "Search Engine", "Company Directory", "Business Index", "Verified Companies", "Nordic Business", "European Business"],
+  authors: [{ name: "Qrydex Team" }],
+  creator: "Qrydex",
+  publisher: "Qrydex",
+  metadataBase: new URL('https://qrydex.com'),
+  openGraph: {
+    title: "Qrydex - The Intelligent B2B Search Engine",
+    description: "Find verified businesses, contacts, and financial data across Europe.",
+    url: 'https://qrydex.com',
+    siteName: 'Qrydex',
+    images: [
+      {
+        url: '/og-image.png', // We will need to ensure this exists or use a generated one
+        width: 1200,
+        height: 630,
+        alt: 'Qrydex B2B Search Engine',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Qrydex - The Intelligent B2B Search Engine",
+    description: "Find verified businesses, contacts, and financial data across Europe.",
+    images: ['/og-image.png'],
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default async function RootLayout({

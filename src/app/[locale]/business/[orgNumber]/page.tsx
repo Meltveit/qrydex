@@ -10,8 +10,86 @@ import { generateBusinessSchema } from '@/lib/seo/schema-generator';
 import { formatTrustScore } from '@/lib/trust-engine';
 import { getTranslations } from 'next-intl/server';
 
+import { ResolvingMetadata } from 'next';
+
+// ... imports
+
 interface BusinessPageProps {
-    params: any;
+    params: Promise<{
+        locale: string;
+        orgNumber: string;
+    }>;
+}
+
+/**
+ * Generate Dynamic Metadata for SEO and Social Sharing
+ */
+export async function generateMetadata(
+    props: { params: Promise<{ locale: string; orgNumber: string }> },
+    parent: ResolvingMetadata
+): Promise<Metadata> {
+    const params = await props.params;
+    const { orgNumber, locale } = params;
+
+    // Fetch business data
+    const { data: business } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('org_number', orgNumber)
+        .single();
+
+    if (!business) {
+        return {
+            title: 'Business Not Found | Qrydex',
+        };
+    }
+
+    // Get localized fields
+    const translations = business.translations as Record<string, any> | null;
+    const description =
+        translations?.[locale]?.company_description ||
+        business.company_description ||
+        business.quality_analysis?.ai_summary ||
+        `View trusted business information for ${business.legal_name} on Qrydex.`;
+
+    // Truncate description for SEO (max ~160 chars)
+    const metaDescription = description.length > 160
+        ? description.substring(0, 157) + '...'
+        : description;
+
+    // Construct valid OG Image
+    const ogImages = [];
+    if (business.logo_url) {
+        ogImages.push({
+            url: business.logo_url,
+            width: 800,
+            height: 600,
+            alt: `${business.legal_name} Logo`,
+        });
+    } else {
+        // Fallback to Qrydex default
+        ogImages.push('/og-image.png');
+    }
+
+    return {
+        title: `${business.legal_name} - Verified Business Profile`,
+        description: metaDescription,
+        openGraph: {
+            title: `${business.legal_name} | Qrydex`,
+            description: metaDescription,
+            url: `https://qrydex.com/${locale}/business/${orgNumber}`,
+            siteName: 'Qrydex',
+            images: ogImages,
+            locale: locale,
+            type: 'profile',
+        },
+        twitter: {
+            card: 'summary',
+            title: `${business.legal_name} on Qrydex`,
+            description: metaDescription,
+            images: ogImages,
+        },
+    };
 }
 
 export default async function BusinessPage(props: any) {

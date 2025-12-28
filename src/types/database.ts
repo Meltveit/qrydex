@@ -17,6 +17,7 @@ export interface RegistryData {
     company_status?: 'Active' | 'Dissolved' | 'Liquidation' | 'Unknown';
     industry_codes?: string[];
     employee_count?: number;
+    country_code?: string;
 }
 
 export interface QualityAnalysis {
@@ -74,6 +75,7 @@ export interface Database {
                     geo_coordinates?: Json | null;
                     product_categories?: string[] | null;
                     sitelinks?: Json | null;
+                    translations?: Json | null;
                 };
                 Row: {
                     id: string;
@@ -99,6 +101,7 @@ export interface Database {
                     geo_coordinates: Json | null;
                     product_categories: string[] | null;
                     sitelinks: Json | null;
+                    translations: Json | null;
                 };
                 Insert: {
                     id?: string;
@@ -124,6 +127,7 @@ export interface Database {
 
                     product_categories?: string[] | null;
                     sitelinks?: Json | null; // Sitelinks
+                    translations?: Json | null;
                 };
             };
             news_sources: {
