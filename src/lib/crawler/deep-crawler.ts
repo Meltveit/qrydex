@@ -18,7 +18,8 @@ import * as cheerio from 'cheerio';
 
 const MAX_PAGES_PER_SITE = 200; // Maximum pages to crawl per website
 const CONCURRENCY = 10; // Parallel page fetches
-const TIMEOUT_MS = 15000;
+const TIMEOUT_MS = 20000; // 20s for slow servers
+const SITEMAP_TIMEOUT_MS = 30000; // 30s for sitemaps (can be huge!)
 const USER_AGENT = 'QrydexBot/2.0 (+https://qrydex.com/bot)';
 
 // ============================================================================
@@ -155,7 +156,7 @@ async function parseSitemap(sitemapUrl: string): Promise<string[]> {
 
     try {
         const response = await fetch(sitemapUrl, {
-            signal: AbortSignal.timeout(10000),
+            signal: AbortSignal.timeout(SITEMAP_TIMEOUT_MS),
             headers: { 'User-Agent': USER_AGENT }
         });
 
@@ -391,12 +392,17 @@ export async function deepCrawlWebsite(
                 `${baseUrl}/sitemap1.xml`
             ];
 
-            for (const sitemapUrl of defaultSitemaps) {
-                const urls = await parseSitemap(sitemapUrl);
-                if (urls.length > 0) {
-                    discoveredUrls.push(...urls);
-                    break;
-                }
+            // Try all sitemaps in parallel with timeouts
+            const sitemapPromises = defaultSitemaps.map(url =>
+                parseSitemap(url).catch(() => [])
+            );
+
+            const allResults = await Promise.all(sitemapPromises);
+            discoveredUrls = allResults.flat();
+
+            // If still nothing, just use homepage
+            if (discoveredUrls.length === 0) {
+                console.log('  ℹ️ No sitemaps found, will crawl from homepage only');
             }
         }
 

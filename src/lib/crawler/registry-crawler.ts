@@ -100,11 +100,31 @@ export async function crawlRegistry(options: CrawlOptions): Promise<CrawlResult>
                     foundCompanies = await crawlFranceByIndustry(naceCode, 20);
                     break;
 
-                // Fallback / OpenCorporates (Limited/Paid usually, using free tier carefully)
-                case 'SE':
-                case 'FI':
-                case 'DE':
-                case 'ES':
+                // NEW: Official Government APIs (Like Brønnøysund!)
+                case 'SE': {
+                    const { crawlSwedenByIndustry } = await import('../registries/official-apis');
+                    foundCompanies = await crawlSwedenByIndustry(naceCode, 50);
+                    break;
+                }
+                case 'FI': {
+                    const { crawlFinlandByIndustry } = await import('../registries/official-apis');
+                    foundCompanies = await crawlFinlandByIndustry(naceCode, 50);
+                    break;
+                }
+
+                // Public Data Scrapers (No official free API)
+                case 'DE': {
+                    const { crawlGermanyByIndustry } = await import('../registries/public-scrapers');
+                    foundCompanies = await crawlGermanyByIndustry(naceCode, 50);
+                    break;
+                }
+                case 'ES': {
+                    const { crawlSpainByIndustry } = await import('../registries/public-scrapers');
+                    foundCompanies = await crawlSpainByIndustry(naceCode, 30);
+                    break;
+                }
+
+                // Fallback: OpenCorporates for remaining countries
                 case 'IT':
                 case 'NL':
                 case 'PL':
