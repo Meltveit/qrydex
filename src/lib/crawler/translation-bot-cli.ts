@@ -91,8 +91,8 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
                         company_description: translated
                     };
 
-                    // Rate limiting
-                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    // Rate limiting (reduced for faster processing)
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
         }
@@ -109,7 +109,7 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
                     for (const service of task.sourceData.services.slice(0, 5)) { // Limit to 5
                         const translated = await translateText(service, task.sourceLanguage, lang);
                         translatedServices.push(translated);
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     }
                     translations[lang].services = translatedServices;
                 }
@@ -130,8 +130,8 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
                         lang
                     );
                     translations[lang].industry_text = translated;
-                    // Extended delay for rate limiting
-                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    // Extended delay for rate limiting (reduced)
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
         }
@@ -169,22 +169,36 @@ if (require.main === module) {
             console.log(`${'='.repeat(60)}\n`);
 
             try {
-                // Find businesses needing translation (have data but no translations)
+                // Find businesses needing translation (have data but no translations OR incomplete translations)
                 // Priority: High Trust Score -> Recently Scraped -> Has content
                 const { data: rawBusinesses, count } = await supabase
                     .from('businesses')
-                    .select('id, company_description, services, products, country_code, industry_code, quality_analysis', { count: 'exact' })
+                    .select('id, company_description, services, products, country_code, industry_code, quality_analysis, translations', { count: 'exact' })
                     .not('company_description', 'is', null)
-                    .is('translations', null)
                     .order('trust_score', { ascending: false, nullsFirst: false }) // Prioritize trusted businesses
-                    .limit(20); // Process larger batch to filter
+                    .limit(50); // Process larger batch to filter
 
-                // Filter in-memory for quality content
+                // Filter in-memory for quality content and missing/incomplete translations
                 const businesses = (rawBusinesses || []).filter(b => {
                     // MUST have description > 50 chars to be worth translating
                     if (!b.company_description || b.company_description.length < 50) return false;
-                    // Optional: Skip if description is just "Copyright..." or similar junk (handled by AI usually but good to check)
-                    return true;
+
+                    // Check if translations are missing or incomplete
+                    if (!b.translations) return true; // No translations at all
+
+                    const translations = b.translations as Record<string, any>;
+                    // Check if empty object
+                    if (Object.keys(translations).length === 0) return true;
+
+                    // Check if all required languages are present and have descriptions
+                    const requiredLanguages = ['no', 'sv', 'da', 'fi', 'en', 'de', 'fr', 'es'];
+                    for (const lang of requiredLanguages) {
+                        if (!translations[lang] || !translations[lang].company_description) {
+                            return true; // Missing language or incomplete
+                        }
+                    }
+
+                    return false; // Has complete translations
                 }).slice(0, 3); // Take top 3 valid ones per cycle
 
                 if (!businesses || businesses.length === 0) {
@@ -232,9 +246,9 @@ if (require.main === module) {
 
                             await translateBusiness(task);
 
-                            // Rate limiting between businesses
-                            console.log('  ⏳ Cooling down (120s)...');
-                            await new Promise(resolve => setTimeout(resolve, 120000));
+                            // Rate limiting between businesses (reduced for faster processing)
+                            console.log('  ⏳ Cooling down (30s)...');
+                            await new Promise(resolve => setTimeout(resolve, 30000));
 
                         } catch (error: any) {
                             console.error(`  ❌ Error processing ${business.id}:`, error.message);
@@ -242,8 +256,8 @@ if (require.main === module) {
                     }
                 }
 
-                console.log('\n⏱️  Sleeping 15 minutes before next cycle...');
-                await new Promise(resolve => setTimeout(resolve, 15 * 60 * 1000)); // 15 min
+                console.log('\n⏱️  Sleeping 5 minutes before next cycle...');
+                await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000)); // 5 min
 
             } catch (err: any) {
                 console.error('❌ Error in cycle:', err.message);

@@ -124,6 +124,34 @@ if (require.main === module) {
                                 return;
                             }
 
+                            // CRITICAL FIX: Save scraped data BEFORE analysis
+                            // Extract enriched data from deep crawl
+                            const enrichedData = websiteData.enrichedData;
+                            const updates: any = {};
+
+                            // Save company description
+                            if (enrichedData?.company_description && !business.company_description) {
+                                updates.company_description = enrichedData.company_description;
+                            }
+
+                            // Save logo
+                            if (enrichedData?.logo_url && !business.logo_url) {
+                                updates.logo_url = enrichedData.logo_url;
+                            }
+
+                            // Save social media
+                            if (enrichedData?.contact_info?.social_media) {
+                                updates.social_media = enrichedData.contact_info.social_media;
+                            }
+
+                            // Save products & services
+                            if (enrichedData?.products) {
+                                updates.products = enrichedData.products.en || [];
+                            }
+                            if (enrichedData?.services) {
+                                updates.services = enrichedData.services.en || [];
+                            }
+
                             const analysis = await analyzeBusinessCredibility(
                                 business,
                                 business.registry_data as any,
@@ -131,19 +159,31 @@ if (require.main === module) {
                             );
 
                             if (analysis) {
-                                // Merge logic
+                                // Merge logic - preserve existing quality analysis and add new data
                                 const updatedQuality = {
                                     ...qa,
                                     ...analysis,
+                                    // Add enriched data from deep crawl
+                                    website_url: enrichedData?.homepage_url || qa?.website_url,
+                                    contact_email: enrichedData?.contact_info?.emails?.[0] || qa?.contact_email,
+                                    contact_phone: enrichedData?.contact_info?.phones?.[0] || qa?.contact_phone,
+                                    industry_category: enrichedData?.industry_category || qa?.industry_category,
+                                    ai_summary: enrichedData?.company_description || qa?.ai_summary,
+                                    has_ssl: enrichedData?.has_ssl ?? qa?.has_ssl,
+                                    professional_email: enrichedData?.contact_info?.emails?.some((e: string) => !e.includes('gmail') && !e.includes('hotmail')) ?? false,
                                     scam_checked_at: new Date().toISOString()
                                 };
 
+                                // Update with both quality_analysis AND scraped fields
                                 await supabase
                                     .from('businesses')
-                                    .update({ quality_analysis: updatedQuality })
+                                    .update({
+                                        quality_analysis: updatedQuality,
+                                        ...updates
+                                    })
                                     .eq('id', business.id);
 
-                                console.log(`  ✅ Verified. Risk: ${analysis.riskLevel}`);
+                                console.log(`  ✅ Success: ${business.legal_name}`);
                             }
                         }));
 

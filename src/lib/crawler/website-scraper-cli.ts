@@ -50,9 +50,19 @@ if (require.main === module) {
 
                                 // Merge quality analysis
                                 const existingQuality = (business.quality_analysis as any) || {};
+                                const enrichedData = data.enrichedData;
+
                                 const updatedQuality = {
                                     ...existingQuality,
                                     ...analysis, // isScam, confidence, redFlags, trustSignals, riskLevel, summary
+                                    // Add enriched data from deep crawl
+                                    website_url: enrichedData?.homepage_url || existingQuality?.website_url,
+                                    contact_email: enrichedData?.contact_info?.emails?.[0] || existingQuality?.contact_email,
+                                    contact_phone: enrichedData?.contact_info?.phones?.[0] || existingQuality?.contact_phone,
+                                    industry_category: enrichedData?.industry_category || existingQuality?.industry_category,
+                                    ai_summary: enrichedData?.company_description || data.description || existingQuality?.ai_summary,
+                                    has_ssl: enrichedData?.has_ssl ?? existingQuality?.has_ssl,
+                                    professional_email: enrichedData?.contact_info?.emails?.some((e: string) => !e.includes('gmail') && !e.includes('hotmail')) ?? false,
                                     detected_language: data.detectedLanguage,
                                     scraped_at: new Date().toISOString()
                                 };
@@ -61,11 +71,11 @@ if (require.main === module) {
                                 await supabase
                                     .from('businesses')
                                     .update({
-                                        company_description: data.description,
-                                        products: data.products,
-                                        services: data.services,
-                                        logo_url: data.logoUrl,
-                                        social_media: data.socialMedia,
+                                        company_description: enrichedData?.company_description || data.description,
+                                        products: enrichedData?.products?.en || data.products,
+                                        services: enrichedData?.services?.en || data.services,
+                                        logo_url: enrichedData?.logo_url || data.logoUrl,
+                                        social_media: enrichedData?.contact_info?.social_media || data.socialMedia,
                                         quality_analysis: updatedQuality,
                                         last_scraped_at: new Date().toISOString()
                                     })

@@ -216,21 +216,6 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
                     Besøk nettside
                 </button>
 
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // TODO: Add to comparison
-                    }}
-                    className="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400
-                             hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-all duration-200
-                             hover:text-gray-900 dark:hover:text-gray-200 active:scale-95 flex-1 md:flex-none justify-center"
-                >
-                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    Sammenlign
-                </button>
-
                 <Link
                     href={`/business/${business.org_number}`}
                     className="ml-auto flex items-center gap-1 text-xs md:text-sm font-medium text-blue-600 dark:text-blue-400
