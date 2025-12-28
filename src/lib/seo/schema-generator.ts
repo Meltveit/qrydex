@@ -55,6 +55,9 @@ export function generateBusinessSchema(business: Business) {
         },
         // Enhanced fields
         sameAs: buildSameAsList(business),
+        knowsAbout: business.sitelinks
+            ? (business.sitelinks as any[]).map(link => link.title).slice(0, 5)
+            : undefined,
     };
 
     // Add opening hours if available

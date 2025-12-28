@@ -407,13 +407,47 @@ export default async function BusinessPage(props: any) {
                             </div>
                         </div>
                     )}
-
-                    {/* Last Updated */}
-                    <div className="p-3 md:p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg md:rounded-xl text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center border border-gray-100 dark:border-slate-700">
-                        {t('lastUpdated')}: {new Date(business.updated_at).toLocaleDateString()}
-                    </div>
                 </div>
             </div>
+
+            {/* Scraped Sitelinks / Highlights */}
+            {business.sitelinks && (
+                <div className="p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl md:rounded-2xl border border-gray-100 dark:border-slate-700 shadow-lg">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        {t('webHighlights') || 'Website Highlights'}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(business.sitelinks as any[]).slice(0, 8).map((link: any, i: number) => (
+                            <a
+                                key={i}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer nofollow"
+                                className="group block p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 transition-all"
+                            >
+                                <div className="font-medium text-sm text-gray-900 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 mb-0.5 truncate">
+                                    {link.title}
+                                </div>
+                                {link.description && (
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 group-hover:text-indigo-600/70 dark:group-hover:text-indigo-300/70">
+                                        {link.description}
+                                    </div>
+                                )}
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Last Updated */}
+            <div className="p-3 md:p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg md:rounded-xl text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center border border-gray-100 dark:border-slate-700">
+                {t('lastUpdated')}: {new Date(business.updated_at).toLocaleDateString()}
+            </div>
+        </div>
+            </div >
 
         </div >
     );
