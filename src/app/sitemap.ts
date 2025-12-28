@@ -2,11 +2,22 @@ import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 
 export async function generateSitemaps() {
-    // Determine how many sitemaps we need
-    // For now, let's just generate a few IDs for simplicity or fetch count
-    // Real implementation would count rows / 50000
-    // Returning an array of identifiers for "batches"
-    return [{ id: 0 }, { id: 1 }, { id: 2 }];
+    // Determine how many sitemaps we need based on total businesses
+    try {
+        const { count } = await supabase
+            .from('businesses')
+            .select('*', { count: 'exact', head: true });
+
+        const totalBusinesses = count || 0;
+        const limit = 10000;
+        const numberOfSitemaps = Math.ceil(totalBusinesses / limit);
+
+        // Generate IDs from 0 to numberOfSitemaps
+        return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i }));
+    } catch (e) {
+        // Fallback if DB fails
+        return [{ id: 0 }];
+    }
 }
 
 export default async function sitemap({ id }: { id: Promise<number> }): Promise<MetadataRoute.Sitemap> {

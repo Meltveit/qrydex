@@ -76,10 +76,17 @@ export function generateBusinessSchema(business: Business) {
         }
     }
 
-    // Add Review/AggregateRating if we have trust score?
-    // Google allows AggregateRating for LocalBusiness based on "user ratings".
-    // Trust Score is proprietary, so maybe we use it carefully or not at all to avoid penalty.
-    // Better to not fake user reviews.
+    // Add Trust Score as Aggregate Rating (0-100 converted to 0-5)
+    if (business.trust_score) {
+        (schema as any).aggregateRating = {
+            '@type': 'AggregateRating',
+            ratingValue: (business.trust_score / 20).toFixed(1), // Convert 100 to 5.0 scale
+            bestRating: '5',
+            worstRating: '0',
+            ratingCount: '1', // Based on 1 trusted evaluation (Qrydex)
+            reviewCount: '1'
+        };
+    }
 
     return schema;
 }
