@@ -25,34 +25,63 @@ if (require.main === module) {
             console.log(`${'='.repeat(60)}\n`);
 
             try {
-                // Get businesses without domains
-                const { data: businesses, count } = await supabase
+                // 1. Get businesses without domains and NOT marked as discovering/not_found
+                // We fetch a slightly larger batch and try to lock them one by one or in bulk
+                const { data: candidates, count } = await supabase
                     .from('businesses')
                     .select('id, legal_name, org_number, country_code', { count: 'exact' })
                     .is('domain', null)
-                    .neq('website_status', 'not_found') // Skip known failures
-                    .order('created_at', { ascending: false }) // Prioritize new ones
-                    .limit(50); // Process 50 per cycle
+                    .neq('website_status', 'not_found')
+                    .neq('website_status', 'discovering') // SKIP locked items
+                    .order('created_at', { ascending: false })
+                    .limit(20); // Smaller batch to reduce race condition window
 
-                if (!businesses || businesses.length === 0) {
-                    console.log('✅ All businesses have websites! Waiting for new businesses...');
+                if (!candidates || candidates.length === 0) {
+                    console.log('✅ queue empty or all locked! Waiting...');
                 } else {
-                    console.log(`Found ${count} businesses without websites`);
-                    console.log(`Processing ${businesses.length} in this cycle...\n`);
+                    console.log(`Found ~${count} pending. Locking batch of ${candidates.length}...`);
 
-                    for (const business of businesses) {
+                    // 2. LOCK items (optimistic locking)
+                    // We only process those we successfully updated to 'discovering'
+                    const lockedBusinesses: typeof candidates = [];
+
+                    for (const candidate of candidates) {
+                        const { error } = await supabase
+                            .from('businesses')
+                            .update({ website_status: 'discovering' })
+                            .eq('id', candidate.id)
+                            // Safety check: ensure it wasn't snatched by another bot ms ago
+                            .is('domain', null)
+                            .neq('website_status', 'discovering');
+
+                        if (!error) {
+                            lockedBusinesses.push(candidate);
+                        }
+                    }
+
+                    console.log(`🔐 Successfully locked ${lockedBusinesses.length} items for this bot.`);
+
+                    // 3. Process LOCKED items
+                    for (const business of lockedBusinesses) {
                         try {
+                            console.log(`🔍 Processing: ${business.legal_name}`);
                             await discoverWebsite(business.id);
-                            // Minimal cooldown since we target different domains
+                            // Cleanup is handled inside discoverWebsite (it sets domain or not_found)
+                            // If discoverWebsite FAILS exception, we should probably reset status or let it hang for manual fix?
+                            // Currently discoverWebsite handles errors internally mostly.
+
+                            // Minimal cooldown
                             await new Promise(resolve => setTimeout(resolve, 500));
                         } catch (error: any) {
-                            console.error(`  ❌ Error processing ${business.legal_name}:`, error.message);
+                            console.error(`  ❌ Critical Error processing ${business.legal_name}:`, error.message);
+                            // Unlock if crashed
+                            await supabase.from('businesses').update({ website_status: null }).eq('id', business.id);
                         }
                     }
                 }
 
-                console.log('\n⏱️  Sleeping 10 seconds before next cycle...');
-                await new Promise(resolve => setTimeout(resolve, 10 * 1000)); // 10 sec
+                console.log('\n⏱️  Sleeping 5 seconds before next cycle...');
+                await new Promise(resolve => setTimeout(resolve, 5 * 1000));
 
             } catch (err: any) {
                 console.error('❌ Error in cycle:', err.message);
