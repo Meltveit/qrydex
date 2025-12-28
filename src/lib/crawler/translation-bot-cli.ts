@@ -171,12 +171,20 @@ if (require.main === module) {
             try {
                 // Find businesses needing translation (have data but no translations OR incomplete translations)
                 // Priority: High Trust Score -> Recently Scraped -> Has content
-                const { data: rawBusinesses, count } = await supabase
+                const { data: rawBusinesses, count, error } = await supabase
                     .from('businesses')
-                    .select('id, company_description, services, products, country_code, industry_code, quality_analysis, translations', { count: 'exact' })
+                    .select('id, company_description, country_code, registry_data, quality_analysis, translations, product_categories', { count: 'exact' })
                     .not('company_description', 'is', null)
                     .order('trust_score', { ascending: false, nullsFirst: false }) // Prioritize trusted businesses
                     .limit(50); // Process larger batch to filter
+
+                if (error) {
+                    console.error('❌ Supabase Query Error:', error);
+                    console.log('Env Check:', {
+                        url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+                        key: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+                    });
+                }
 
                 // Filter in-memory for quality content and missing/incomplete translations
                 const businesses = (rawBusinesses || []).filter(b => {
@@ -190,14 +198,21 @@ if (require.main === module) {
                     // Check if empty object
                     if (Object.keys(translations).length === 0) return true;
 
-                    // Check if all required languages are present and have descriptions
+                    // Extract industry code from registry_data
+                    const industryCodeVal = (b.registry_data as any)?.industry_codes;
+                    const hasIndustryCode = Array.isArray(industryCodeVal) && industryCodeVal.length > 0;
+
+                    // Check if all required languages are present and have descriptions AND industry_text
                     const requiredLanguages = ['no', 'sv', 'da', 'fi', 'en', 'de', 'fr', 'es'];
                     for (const lang of requiredLanguages) {
-                        if (!translations[lang] || !translations[lang].company_description) {
+                        if (!translations[lang] ||
+                            !translations[lang].company_description ||
+                            (hasIndustryCode && !translations[lang].industry_text)) { // Check industry_text if code exists
                             return true; // Missing language or incomplete
                         }
                     }
 
+                    // console.log(`Debug: Rejecting ${b.id} - already complete`);
                     return false; // Has complete translations
                 }).slice(0, 3); // Take top 3 valid ones per cycle
 
@@ -215,8 +230,8 @@ if (require.main === module) {
                                 'SE': 'sv',
                                 'DK': 'da',
                                 'FI': 'fi',
-                                'DE': 'de', // Updated: German is German
-                                'FR': 'fr', // Updated: French is French
+                                'DE': 'de',
+                                'FR': 'fr',
                                 'GB': 'en',
                                 'US': 'en',
                                 'ES': 'es'
@@ -226,11 +241,25 @@ if (require.main === module) {
                             const detected = (business.quality_analysis as any)?.detected_language;
                             const sourceLanguage = detected ? detected.substring(0, 2) : (langMap[business.country_code] || 'en');
 
-                            // Extract just the text part of industry code if it follows format "Code: Text"
-                            // e.g. "52.260: Andre støttetjenester..." -> "Andre støttetjenester..."
-                            let industryTextToTranslate = business.industry_code;
-                            if (business.industry_code && business.industry_code.includes(':')) {
-                                industryTextToTranslate = business.industry_code.split(':')[1].trim();
+                            // Extract just the text part of industry code
+                            // It can be a string "Code: Text" OR an array ["Code: Text"]
+                            let industryTextToTranslate = '';
+
+                            // Handle array (Postgres text[]) or string
+                            // Using registry_data now
+                            const industryCodeVal = (business.registry_data as any)?.industry_codes;
+                            let primaryCode = '';
+
+                            if (Array.isArray(industryCodeVal) && industryCodeVal.length > 0) {
+                                primaryCode = industryCodeVal[0];
+                            } else if (typeof industryCodeVal === 'string') {
+                                primaryCode = industryCodeVal;
+                            }
+
+                            if (primaryCode && primaryCode.includes(':')) {
+                                industryTextToTranslate = primaryCode.split(':')[1].trim();
+                            } else if (primaryCode) {
+                                industryTextToTranslate = primaryCode; // Fallback if no colon
                             }
 
                             const task: TranslationTask = {
@@ -238,9 +267,9 @@ if (require.main === module) {
                                 sourceLanguage,
                                 sourceData: {
                                     company_description: business.company_description,
-                                    services: business.services as string[],
-                                    products: business.products as string[],
-                                    industry_text: industryTextToTranslate // New field
+                                    services: [], // Services col missing
+                                    products: business.product_categories || [], // Map product_categories
+                                    industry_text: industryTextToTranslate
                                 }
                             };
 
