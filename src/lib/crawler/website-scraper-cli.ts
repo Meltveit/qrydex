@@ -26,7 +26,9 @@ if (require.main === module) {
                     .from('businesses')
                     .select('id, domain, legal_name, org_number, registry_data, quality_analysis', { count: 'exact' })
                     .not('domain', 'is', null)
+                    .not('domain', 'is', null)
                     .is('company_description', null)
+                    .order('created_at', { ascending: false }) // Prioritize new items
                     .limit(20); // Process 20 per cycle
 
                 if (!businesses || businesses.length === 0) {
@@ -71,17 +73,28 @@ if (require.main === module) {
                                 await supabase
                                     .from('businesses')
                                     .update({
-                                        company_description: enrichedData?.company_description || data.description,
+                                        company_description: enrichedData?.company_description || data.description || 'Verified via Qrydex DeepScan',
                                         products: enrichedData?.products?.en || data.products,
                                         services: enrichedData?.services?.en || data.services,
                                         logo_url: enrichedData?.logo_url || data.logoUrl,
                                         social_media: enrichedData?.contact_info?.social_media || data.socialMedia,
+                                        sitelinks: enrichedData?.sitelinks || null,
                                         quality_analysis: updatedQuality,
-                                        last_scraped_at: new Date().toISOString()
+                                        last_scraped_at: new Date().toISOString() // Must use date object/string
                                     })
                                     .eq('id', business.id);
 
                                 console.log(`  ✅ Success: ${business.legal_name}`);
+                            } else {
+                                // Scrape FAILED - Mark as failed to avoid infinite loop
+                                console.log(`  ⚠️ Failed to scrape data for: ${business.legal_name}. Marking as failed.`);
+                                await supabase
+                                    .from('businesses')
+                                    .update({
+                                        company_description: 'Scraping failed (Unreachable or Blocked)',
+                                        last_scraped_at: new Date().toISOString()
+                                    })
+                                    .eq('id', business.id);
                             }
 
                             // Rate limiting

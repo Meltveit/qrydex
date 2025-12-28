@@ -430,6 +430,7 @@ export async function batchScrapeBusinesses(limit: number = 10) {
         .select('id, org_number, legal_name, domain')
         .not('domain', 'is', null)
         .is('company_description', null) // Use this as flag for "needs enhanced scrape"
+        .order('created_at', { ascending: false }) // Prioritize NEWEST (freshly found) businesses
         .limit(limit);
 
     if (!businesses || businesses.length === 0) {
