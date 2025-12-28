@@ -495,6 +495,7 @@ export async function batchScrapeBusinesses(limit: number = 10) {
 function extractSitelinks(html: string, baseUrl: string): { title: string; url: string; description?: string }[] {
     const sitelinks: { title: string; url: string; description?: string }[] = [];
     const seenUrls = new Set<string>();
+    const seenTitles = new Set<string>();
 
     // Regex to find <a> tags with href and text
     const linkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
@@ -502,13 +503,18 @@ function extractSitelinks(html: string, baseUrl: string): { title: string; url: 
 
     while ((match = linkRegex.exec(html)) !== null) {
         let href = match[1];
+        // Extract text and clean up
         let text = match[2]
-            .replace(/<[^>]+>/g, '') // Strip tags inside anchor (e.g. spans)
+            .replace(/<[^>]+>/g, '') // Strip tags inside anchor
             .replace(/\s+/g, ' ')
             .trim();
 
-        if (!text || text.length > 30 || text.length < 2) continue; // Skip empty or too long text
-        if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) continue;
+        // Also look for title attribute for description
+        const titleAttrMatch = match[0].match(/title=["']([^"']+)["']/);
+        const titleAttr = titleAttrMatch ? titleAttrMatch[1] : undefined;
+
+        if (!text || text.length > 40 || text.length < 2) continue;
+        if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) continue;
 
         try {
             const absoluteUrl = href.startsWith('http') ? href : new URL(href, baseUrl).toString();
@@ -516,55 +522,66 @@ function extractSitelinks(html: string, baseUrl: string): { title: string; url: 
             // Internal links only
             if (new URL(absoluteUrl).hostname !== new URL(baseUrl).hostname) continue;
 
-            // Deduplicate
+            // Deduplicate by URL
             if (seenUrls.has(absoluteUrl)) continue;
 
-            const lowerText = text.toLowerCase();
+            // Deduplicate by Title (normalized)
+            const normalizedTitle = text.toLowerCase();
+            if (seenTitles.has(normalizedTitle)) continue;
 
-            // Expanded multilingual keywords
+            // Expanded multilingual keywords - B2B & Tech Focused
             const relevantKeywords = [
                 // English
                 'about', 'about us', 'contact', 'services', 'products', 'pricing', 'team', 'careers',
                 'news', 'blog', 'support', 'login', 'solutions', 'industries', 'resources', 'company',
                 'customers', 'partners', 'case studies', 'testimonials', 'faq', 'help', 'privacy', 'terms',
+                'developers', 'api', 'security', 'trust', 'status', 'integration', 'demo', 'book a demo',
 
                 // Norwegian
                 'om oss', 'kontakt', 'tjenester', 'produkter', 'priser', 'ansatte', 'jobb', 'aktuelt',
                 'kundeservice', 'logg inn', 'regnskap', 'lønn', 'programvare', 'kunder', 'partnere',
-                'referanser', 'betingelser', 'personvern', 'hjem', 'artikler',
+                'referanser', 'betingelser', 'personvern', 'hjem', 'artikler', 'sikkerhet', 'status',
 
                 // Swedish
                 'om oss', 'kontakta', 'tjänster', 'produkter', 'priser', 'medarbetare', 'jobb',
                 'nyheter', 'kundservice', 'logga in', 'kunder', 'referenser', 'villkor', 'integritet',
+                'utvecklare', 'säkerhet',
 
                 // Danish
                 'om os', 'kontakt', 'tjenester', 'produkter', 'priser', 'medarbejdere', 'job',
                 'nyheder', 'kundeservice', 'log ind', 'kunder', 'referencer', 'betingelser', 'privatliv',
+                'sikkerhed',
 
                 // Finnish
                 'tietoja', 'yhteystiedot', 'palvelut', 'tuotteet', 'hinnat', 'työntekijät', 'työpaikat',
-                'uutiset', 'asiakaspalvelu', 'kirjaudu', 'asiakkaat', 'referenssit', 'ehdot',
+                'uutiset', 'asiakaspalvelu', 'kirjaudu', 'asiakkaat', 'referenssit', 'ehdot', 'turvallisuus',
 
                 // German
                 'über uns', 'kontakt', 'dienstleistungen', 'produkte', 'preise', 'team', 'karriere',
                 'neuigkeiten', 'blog', 'support', 'anmelden', 'lösungen', 'branchen', 'ressourcen',
-                'kunden', 'partner', 'referenzen', 'impressum', 'datenschutz', 'agb',
+                'kunden', 'partner', 'referenzen', 'impressum', 'datenschutz', 'agb', 'sicherheit',
 
                 // French
                 'à propos', 'contact', 'services', 'produits', 'tarifs', 'équipe', 'carrières',
                 'actualités', 'blog', 'support', 'connexion', 'solutions', 'secteurs', 'ressources',
-                'clients', 'partenaires', 'références', 'mentions légales', 'confidentialité',
+                'clients', 'partenaires', 'références', 'mentions légales', 'confidentialité', 'sécurité',
 
                 // Spanish
                 'sobre nosotros', 'contacto', 'servicios', 'productos', 'precios', 'equipo', 'empleo',
                 'noticias', 'blog', 'soporte', 'iniciar sesión', 'soluciones', 'industrias', 'recursos',
-                'clientes', 'socios', 'referencias', 'aviso legal', 'privacidad'
+                'clientes', 'socios', 'referencias', 'aviso legal', 'privacidad', 'seguridad'
             ];
 
-            // Heuristic: If text matches keywords OR is very short & distinct (CamelCase?)
-            if (relevantKeywords.some(k => lowerText.includes(k)) || (text.length < 20 && /^[A-ZÅÆØÄÖ]/.test(text))) {
-                // Extract meta description or first paragraph as description
-                const description = extractLinkDescription(text, lowerText);
+            // Filter out obviously irrelevant or generic text that might match vaguely
+            const irrelevant = ['read more', 'les mer', 'click here', 'se mer', 'cookie', 'cookies'];
+            if (irrelevant.some(i => normalizedTitle.includes(i))) continue;
+
+            const isKeywordMatch = relevantKeywords.some(k => normalizedTitle.includes(k) || normalizedTitle === k);
+            const isCapitalizedShort = text.length < 25 && /^[A-ZÅÆØÄÖ][a-zåæøäö]+/.test(text) && !text.includes(' '); // e.g. "Pricing", "Team"
+
+            if (isKeywordMatch || isCapitalizedShort) {
+                // Use title attribute as description if available, otherwise fallback
+                let description = titleAttr && titleAttr.length > 10 ? titleAttr : extractLinkDescription(text, normalizedTitle);
 
                 sitelinks.push({
                     title: text,
@@ -572,13 +589,14 @@ function extractSitelinks(html: string, baseUrl: string): { title: string; url: 
                     description
                 });
                 seenUrls.add(absoluteUrl);
+                seenTitles.add(normalizedTitle);
             }
         } catch (e) {
             // Invalid URL
         }
     }
 
-    return sitelinks.slice(0, 12); // Limit to top 12 (increased from 8)
+    return sitelinks.slice(0, 8); // Limit to top 8
 }
 
 /**
@@ -588,60 +606,52 @@ function extractLinkDescription(title: string, lowerTitle: string): string {
     // Map common navigation items to descriptions
     const descriptionMap: Record<string, string> = {
         // English
-        'about': 'Learn about our company',
-        'contact': 'Get in touch with us',
-        'services': 'Explore our services',
-        'products': 'Browse our products',
-        'pricing': 'View pricing options',
-        'careers': 'Join our team',
-        'blog': 'Read our latest insights',
-        'support': 'Get help and support',
-        'privacy': 'Privacy Policy',
+        'about': 'Learn about our company mission and values',
+        'contact': 'Get in touch with our team',
+        'services': 'Explore our professional services',
+        'products': 'Browse our product catalog',
+        'pricing': 'View pricing plans and options',
+        'careers': 'Join our growing team',
+        'blog': 'Read our latest insights and news',
+        'support': 'Get help and documentation',
+        'login': 'Access your customer account',
+        'signup': 'Create a new account',
+        'demo': 'Request a product demonstration',
+        'solutions': 'See solutions for your industry',
+        'privacy': 'Read our Privacy Policy',
         'terms': 'Terms and Conditions',
+        'security': 'Our security and compliance standards',
+        'developers': 'API documentation and developer resources',
 
         // Norwegian
         'om oss': 'Lær mer om oss',
-        'kontakt': 'Kontakt oss',
-        // 'contact': 'Kontakt oss', // DUPLICATE KEY REMOVED
+        'kontakt': 'Kontakt oss for en prat',
         'tjenester': 'Utforsk våre tjenester',
         'produkter': 'Se våre produkter',
-        'priser': 'Se priser',
-        'jobb': 'Bli en del av teamet',
-        'aktuelt': 'Les siste nytt',
+        'priser': 'Se våre priser og pakker',
+        'jobb': 'Se ledige stillinger',
+        'aktuelt': 'Les siste nytt og artikler',
         'kundeservice': 'Få hjelp og støtte',
-        'regnskap': 'Regnskapstjenester',
-        'lønn': 'Lønnstjenester',
-        'personvern': 'Personvernerklæring',
+        'logg inn': 'Logg inn på din konto',
 
         // German
         'über uns': 'Über unser Unternehmen',
-        // 'kontakt': 'Kontaktieren Sie uns', // DUPLICATE KEY REMOVED
         'dienstleistungen': 'Unsere Leistungen',
         'produkte': 'Unsere Produkte',
-        // 'preise': 'Preise ansehen', // DUPLICATE KEY REMOVED (priser vs preise - wait, priser != preise ok)
-        // 'team': 'Unser Team', // DUPLICATE if English has team
-        'karriere': 'Werden Sie Teil des Teams',
-        // 'blog': 'Aktuelle Einblicke', // DUPLICATE KEY REMOVED
+        'karriere': 'Offene Stellen',
         'impressum': 'Rechtliche Informationen',
 
         // French
         'à propos': 'À propos de nous',
-        // 'contact': 'Contactez-nous', // DUPLICATE KEY REMOVED
-        // 'services': 'Nos services', // DUPLICATE KEY REMOVED
         'produits': 'Nos produits',
         'tarifs': 'Voir les tarifs',
-        'carrières': 'Rejoignez notre équipe',
-        // 'blog': 'Dernières actualités', // DUPLICATE KEY REMOVED
+        'carrières': 'Offres d\'emploi',
         'mentions légales': 'Mentions légales',
 
         // Spanish
         'sobre nosotros': 'Sobre nuestra empresa',
         'contacto': 'Contáctenos',
-        // 'servicios': 'Nuestros servicios', // DUPLICATE CAREFUL services (en/fr) vs servicios (es) ok
-        // 'productos': 'Nuestros productos', // DUPLICATE productos (es) vs products (en) vs produits (fr) vs produkte (de) vs produkter (no) - ok
-        // 'precios': 'Ver precios', // DUPLICATE precios (es) vs prices (en) vs priser (no) vs preise (de) - ok
-        'empleo': 'Únete a nuestro equipo',
-        // 'blog': 'Últimas noticias', // DUPLICATE KEY REMOVED 
+        'empleo': 'Trabaja con nosotros',
         'aviso legal': 'Información legal'
     };
 

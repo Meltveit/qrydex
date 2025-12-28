@@ -20,6 +20,7 @@
     "scrape": "npx tsx --env-file=.env.local lib-external/parallel-scraper.ts",
     "translate": "npx tsx --env-file=.env.local lib-external/translation-bot.ts",
     "registry-crawler": "npx tsx --env-file=.env.local src/lib/crawler/registry-crawler.ts",
+    "global-crawler": "npx tsx --env-file=.env.local src/lib/crawler/improved-global-crawler.ts",
     "website-discovery": "npx tsx --env-file=.env.local src/lib/crawler/website-discovery-cli.ts",
     "website-scraper": "npx tsx --env-file=.env.local src/lib/crawler/website-scraper-cli.ts",
     "news-crawler": "npx tsx --env-file=.env.local src/lib/crawler/news-crawler-cli.ts",

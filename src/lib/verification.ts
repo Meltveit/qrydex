@@ -14,41 +14,49 @@ import type { BusinessInsert, RegistryData, QualityAnalysis } from '@/types/data
 
 export interface VerifyBusinessRequest {
     orgNumber: string;
-    countryCode: string;
+    countryCode: string; // ISO code (NO, US, SE, etc)
     websiteUrl?: string;
     stateCode?: string; // For US
+    knownRegistryData?: Partial<RegistryData>; // If we already scraped it from a trusted source
 }
 
-export interface VerifyBusinessResponse {
-    success: boolean;
-    business?: any; // Using any for now to avoid type conflicts during transition
-    error?: string;
-}
+// ... existing code ...
 
-/**
- * Full verification flow: Registry -> Enhanced Scraping -> AI Scam Check -> Trust Score
- */
 export async function verifyAndStoreBusiness(
     request: VerifyBusinessRequest
 ): Promise<VerifyBusinessResponse> {
     const supabase = createServerClient();
 
     try {
-        // Step 1: Registry verification
-        const registryResult = await verifyBusiness(
-            request.orgNumber,
-            request.countryCode,
-            { stateCode: request.stateCode }
-        );
+        // Step 1: Registry verification (or use known data)
+        let registryData: RegistryData;
+        let verificationSource = 'Registry';
 
-        if (!registryResult.success || !registryResult.data) {
-            return {
-                success: false,
-                error: registryResult.error || 'Business not found in registry',
-            };
+        if (request.knownRegistryData) {
+            // Trust the crawler provided data
+            registryData = {
+                org_nr: request.orgNumber,
+                country_code: request.countryCode,
+                company_status: 'Active', // Assumed active if found in crawl
+                ...request.knownRegistryData
+            } as RegistryData;
+            verificationSource = 'TrustedCrawler';
+        } else {
+            const registryResult = await verifyBusiness(
+                request.orgNumber,
+                request.countryCode,
+                { stateCode: request.stateCode }
+            );
+
+            if (!registryResult.success || !registryResult.data) {
+                return {
+                    success: false,
+                    error: registryResult.error || 'Business not found in registry',
+                };
+            }
+            registryData = registryResult.data;
+            verificationSource = registryResult.source;
         }
-
-        const registryData: RegistryData = registryResult.data;
 
         // Step 2: Website Discovery & Scraping
         const websiteUrl = request.websiteUrl || registryData.registered_address; // Logic to guess URL if address is a URL?
@@ -158,7 +166,7 @@ export async function verifyAndStoreBusiness(
             verification_type: 'registry',
             status: aiResult.isScam ? 'failed' : 'success',
             details: {
-                source: registryResult.source,
+                source: verificationSource,
                 ai_risk_level: aiResult.riskLevel,
                 scam_check: aiResult.isScam,
             },

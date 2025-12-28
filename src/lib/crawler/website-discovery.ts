@@ -232,55 +232,104 @@ async function verifyWebsite(domain: string, orgNumber: string, companyName: str
 // WEB SEARCH INTEGRATION
 // ============================================================================
 
+// ============================================================================
+// WEB SEARCH INTEGRATION (ENHANCED)
+// ============================================================================
+
 /**
  * Search DuckDuckGo HTML for company website
+ * Retries with multiple query variations
  */
-async function searchDuckDuckGo(companyName: string, country: string): Promise<string | null> {
-    try {
-        const query = encodeURIComponent(`${companyName} ${country} official website`);
-        const url = `https://html.duckduckgo.com/html/?q=${query}`;
+async function searchDuckDuckGo(companyName: string, country: string, city?: string): Promise<string | null> {
+    const strategies = [
+        `${companyName} ${country} official website`,
+        `${companyName} ${city || ''} website`,
+        `${companyName} ${country} contact`,
+    ];
 
-        const response = await fetch(url, {
-            signal: AbortSignal.timeout(8000),
-            headers: {
-                'User-Agent': USER_AGENTS[0]
+    for (const queryStr of strategies) {
+        try {
+            console.log(`    Trying DDG search: "${queryStr}"`);
+            const query = encodeURIComponent(queryStr);
+            const url = `https://html.duckduckgo.com/html/?q=${query}`;
+
+            const response = await fetch(url, {
+                signal: AbortSignal.timeout(8000),
+                headers: {
+                    'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)]
+                }
+            });
+
+            if (!response.ok) continue;
+
+            const html = await response.text();
+
+            // Extract result URLs
+            const linkMatches = html.matchAll(/href="\/\/duckduckgo\.com\/l\/\?uddg=([^"]+)"/g);
+
+            for (const match of linkMatches) {
+                const encodedUrl = match[1];
+                const decodedUrl = decodeURIComponent(encodedUrl);
+
+                // Skip social media and directories generally, unless we want them later
+                if (decodedUrl.includes('facebook.com') || decodedUrl.includes('linkedin.com') || decodedUrl.includes('instagram.com')) {
+                    continue;
+                }
+
+                const domainMatch = decodedUrl.match(/^https?:\/\/([^\/]+)/);
+                if (domainMatch) {
+                    const domain = domainMatch[1].replace('www.', '');
+                    return domain; // Return first non-social domain found
+                }
             }
-        });
+        } catch (error) {
+            console.error('    DDG search error:', error);
+        }
 
-        if (!response.ok) return null;
-
-        const html = await response.text();
-
-        // Extract first result URL
-        const urlMatch = html.match(/href="\/\/duckduckgo\.com\/l\/\?uddg=([^"]+)"/);
-        if (!urlMatch) return null;
-
-        const encodedUrl = urlMatch[1];
-        const decodedUrl = decodeURIComponent(encodedUrl);
-
-        // Extract domain
-        const domainMatch = decodedUrl.match(/^https?:\/\/([^\/]+)/);
-        if (!domainMatch) return null;
-
-        return domainMatch[1].replace('www.', '');
-    } catch (error) {
-        console.error('DuckDuckGo search error:', error);
-        return null;
+        // Slight delay between retries
+        await new Promise(r => setTimeout(r, 1000));
     }
+    return null;
+}
+
+/**
+ * Find Social Media Profiles (LinkedIn, Facebook)
+ * This doesn't find the website directly but fills the social_media JSONB
+ */
+async function findSocialMedia(companyName: string, country: string): Promise<Record<string, string>> {
+    const socialLinks: Record<string, string> = {};
+
+    // Search for LinkedIn
+    try {
+        const query = encodeURIComponent(`site:linkedin.com/company ${companyName} ${country}`);
+        const url = `https://html.duckduckgo.com/html/?q=${query}`;
+        const response = await fetch(url, { headers: { 'User-Agent': USER_AGENTS[0] } });
+        const html = await response.text();
+        const match = html.match(/href="\/\/duckduckgo\.com\/l\/\?uddg=([^"]+)"/);
+        if (match) {
+            const decoded = decodeURIComponent(match[1]);
+            if (decoded.includes('linkedin.com/company')) {
+                socialLinks.linkedin = decoded;
+            }
+        }
+    } catch { }
+
+    return socialLinks;
 }
 
 /**
  * Use Gemini AI to search for company website (fallback)
  */
-async function searchWithGemini(companyName: string, orgNumber: string, country: string): Promise<string | null> {
+async function searchWithGemini(companyName: string, orgNumber: string, country: string, city?: string): Promise<string | null> {
     try {
         const prompt = `Find the official website for this company:
         
 Company Name: ${companyName}
 Organization Number: ${orgNumber}
-Country: ${country}
+Location: ${city ? city + ', ' : ''}${country}
 
-Search the web and return ONLY the domain name (e.g., "example.com") of the company's official website.
+Search the web using your tools and return ONLY the domain name (e.g., "example.com") of the company's official website.
+If you find a LinkedIn profile or Facebook page instead, return "SOCIAL_ONLY".
 If you cannot find it with high confidence, return "NOT_FOUND".
 
 Return only the domain, nothing else.`;
@@ -289,7 +338,7 @@ Return only the domain, nothing else.`;
         if (!response) return null;
 
         const domain = response.trim().toLowerCase();
-        if (domain === 'not_found' || domain.includes('not found') || domain.length > 100) {
+        if (domain === 'not_found' || domain.includes('not found') || domain === 'social_only' || domain.length > 100) {
             return null;
         }
 
@@ -318,20 +367,22 @@ export async function discoverWebsite(businessId: string): Promise<string | null
 
     const { data: business } = await supabase
         .from('businesses')
-        .select('id, legal_name, org_number, country_code')
+        .select('id, legal_name, org_number, country_code, registry_data')
         .eq('id', businessId)
         .single();
 
     if (!business) return null;
 
-    console.log(`\n🔍 Discovering website for: ${business.legal_name}`);
+    const city = business.registry_data?.city || business.registry_data?.registered_address;
+
+    console.log(`\n🔍 Discovering website for: ${business.legal_name} (${business.country_code})`);
 
     // ========================================================================
     // PHASE 1: Parallel Domain Testing (Lightning Fast!)
     // ========================================================================
 
     const candidates = generateDomainCandidates(business.legal_name, business.country_code);
-    console.log(`  📊 Generated ${candidates.length} domain candidates`);
+    // console.log(`  📊 Generated ${candidates.length} domain candidates`);
 
     const limit = pLimit(CONCURRENCY_LIMIT);
 
@@ -340,9 +391,9 @@ export async function discoverWebsite(businessId: string): Promise<string | null
         candidates.map(domain =>
             limit(async () => {
                 if (await isDomainReachable(domain)) {
-                    console.log(`  ✅ ${domain} - Reachable`);
+                    // console.log(`  ✅ ${domain} - Reachable`);
                     if (await verifyWebsite(domain, business.org_number, business.legal_name)) {
-                        console.log(`  ✨ ${domain} - VERIFIED!`);
+                        console.log(`  ✨ ${domain} - VERIFIED (Pattern Match)!`);
                         return domain;
                     }
                 }
@@ -356,57 +407,70 @@ export async function discoverWebsite(businessId: string): Promise<string | null
 
     if (verifiedDomain) {
         const elapsed = Date.now() - startTime;
-        console.log(`  🎯 Found in ${elapsed}ms: ${verifiedDomain}`);
-
         await supabase
             .from('businesses')
             .update({ domain: verifiedDomain.replace('www.', '') })
             .eq('id', business.id);
-
         return verifiedDomain;
     }
 
     // ========================================================================
-    // PHASE 2: Web Search Integration
+    // PHASE 2: Web Search Integration (Deduced)
     // ========================================================================
 
-    console.log('  🌐 Trying DuckDuckGo search...');
-    const ddgResult = await searchDuckDuckGo(business.legal_name, business.country_code);
+    console.log('  🌐 Phase 2: Deep Web Search...');
+    const ddgResult = await searchDuckDuckGo(business.legal_name, business.country_code, city);
 
     if (ddgResult && await isDomainReachable(ddgResult)) {
         if (await verifyWebsite(ddgResult, business.org_number, business.legal_name)) {
-            console.log(`  🦆 DuckDuckGo found: ${ddgResult}`);
+            console.log(`  🦆 DuckDuckGo Verified: ${ddgResult}`);
             await supabase
                 .from('businesses')
                 .update({ domain: ddgResult })
                 .eq('id', business.id);
             return ddgResult;
+        } else {
+            console.log(`  ⚠️ DDG found ${ddgResult} but verification failed (saving as unverified candidate?)`);
+            // Optional: Save as unverified? No, safer to skip.
         }
     }
 
     // ========================================================================
-    // PHASE 3: Gemini AI Fallback
+    // PHASE 3: Social Media Discovery (Bonus)
+    // ========================================================================
+    // If we only find social media, save it!
+    const socialLinks = await findSocialMedia(business.legal_name, business.country_code);
+    if (Object.keys(socialLinks).length > 0) {
+        console.log(`  📱 Found Social Media:`, socialLinks);
+        await supabase
+            .from('businesses')
+            .update({ social_media: socialLinks }) // Merging handled by Postgres usually or overwrite
+            .eq('id', businessId);
+    }
+
+    // ========================================================================
+    // PHASE 4: Gemini AI Fallback (Last Resort)
     // ========================================================================
 
-    console.log('  🧠 Using Gemini AI...');
+    console.log('  🧠 Phase 3: AI Intelligence...');
     const geminiResult = await searchWithGemini(
         business.legal_name,
         business.org_number,
-        business.country_code
+        business.country_code,
+        city
     );
 
     if (geminiResult && await isDomainReachable(geminiResult)) {
-        if (await verifyWebsite(geminiResult, business.org_number, business.legal_name)) {
-            console.log(`  🤖 Gemini found: ${geminiResult}`);
-            await supabase
-                .from('businesses')
-                .update({ domain: geminiResult })
-                .eq('id', business.id);
-            return geminiResult;
-        }
+        console.log(`  🤖 Gemini AI found: ${geminiResult}`);
+        // We trust Gemini more than a blind crawler for complex cases
+        await supabase
+            .from('businesses')
+            .update({ domain: geminiResult })
+            .eq('id', business.id);
+        return geminiResult;
     }
 
     const elapsed = Date.now() - startTime;
-    console.log(`  ❌ Not found (${elapsed}ms)`);
+    console.log(`  ❌ Website not found (${elapsed}ms)`);
     return null;
 }

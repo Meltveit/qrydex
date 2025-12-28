@@ -22,13 +22,20 @@ export async function crawlSwedenPublicData(naceCode: string, limit: number = 50
     const companies: PublicCompany[] = [];
 
     try {
-        // Allabolag.se has public company listings
-        // We can scrape search results for industry codes
-        const searchUrl = `https://www.allabolag.se/branschtrad/SNI/${naceCode}`;
+        // Allabolag.se - scrape industry page
+        // Use 'what' which is free text search, but better for SNI codes 
+        // Or revert to branschtrad if 62.01 style matches
+
+        // Let's use the 'bransch' slug which is simpler for getting bulk lists
+        // Mapping NACE to likely Swedish industry slug:
+        let slug = 'data-it-telekom'; // Default for most 62/63/58
+        if (naceCode.startsWith('71') || naceCode.startsWith('72') || naceCode.startsWith('74')) slug = 'teknisk-konsultverksamhet';
+
+        const searchUrl = `https://www.allabolag.se/bransch/${slug}`;
 
         const response = await fetch(searchUrl, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
         });
 
@@ -36,35 +43,37 @@ export async function crawlSwedenPublicData(naceCode: string, limit: number = 50
 
         const html = await response.text();
 
-        // Extract company data from HTML
-        // Format: <div class="company-item">...
-        const companyMatches = html.match(/<div[^>]+class="[^"]*company[^"]*"[^>]*>([\s\S]*?)<\/div>/gi);
+        // Extract company links from list
+        // href="/foretag/company-name/orgnr"
+        const linkMatches = html.matchAll(/href="\/foretag\/[^"]+\/(\d{6}-\d{4})"/g);
 
-        if (!companyMatches) return [];
+        for (const match of linkMatches) {
+            if (companies.length >= limit) break;
 
-        let count = 0;
-        for (const match of companyMatches) {
-            if (count >= limit) break;
+            const orgNr = match[1];
+            const fullMatch = match[0];
+            const slugMatch = fullMatch.match(/\/foretag\/([^\/]+)\//);
 
-            // Extract org number
-            const orgMatch = match.match(/(\d{6}-\d{4})/);
-            if (!orgMatch) continue;
+            let name = 'Unknown SE Company';
+            if (slugMatch && slugMatch[1]) {
+                name = slugMatch[1]
+                    .split('-')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            }
 
-            // Extract company name
-            const nameMatch = match.match(/<h[23][^>]*>([^<]+)</i);
-            if (!nameMatch) continue;
-
-            companies.push({
-                id: orgMatch[1],
-                name: nameMatch[1].trim(),
-                country: 'SE',
-                industry: `NACE ${naceCode}`
-            });
-
-            count++;
+            // Deduplicate
+            if (!companies.find(c => c.id === orgNr)) {
+                companies.push({
+                    id: orgNr,
+                    name: name,
+                    country: 'SE',
+                    industry: `NACE ${naceCode} (Est.)`
+                });
+            }
         }
 
-        console.log(`  🇸🇪 Sweden: Found ${companies.length} companies via Allabolag`);
+        console.log(`  🇸🇪 Sweden (Allabolag): Found ${companies.length} companies`);
         return companies;
 
     } catch (error) {
