@@ -30,7 +30,9 @@ if (require.main === module) {
                     .from('businesses')
                     .select('id, legal_name, org_number, country_code', { count: 'exact' })
                     .is('domain', null)
-                    .limit(20); // Process 20 per cycle
+                    .neq('website_status', 'not_found') // Skip known failures
+                    .order('created_at', { ascending: false }) // Prioritize new ones
+                    .limit(50); // Process 50 per cycle
 
                 if (!businesses || businesses.length === 0) {
                     console.log('✅ All businesses have websites! Waiting for new businesses...');
@@ -41,19 +43,16 @@ if (require.main === module) {
                     for (const business of businesses) {
                         try {
                             await discoverWebsite(business.id);
-
-                            // Rate limiting
-                            console.log('  ⏳ Cooling down (60s)...');
-                            await new Promise(resolve => setTimeout(resolve, 60000));
-
+                            // Minimal cooldown since we target different domains
+                            await new Promise(resolve => setTimeout(resolve, 500));
                         } catch (error: any) {
                             console.error(`  ❌ Error processing ${business.legal_name}:`, error.message);
                         }
                     }
                 }
 
-                console.log('\n⏱️  Sleeping 10 minutes before next cycle...');
-                await new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000)); // 10 min
+                console.log('\n⏱️  Sleeping 10 seconds before next cycle...');
+                await new Promise(resolve => setTimeout(resolve, 10 * 1000)); // 10 sec
 
             } catch (err: any) {
                 console.error('❌ Error in cycle:', err.message);

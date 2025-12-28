@@ -53,85 +53,52 @@ function generateDomainCandidates(companyName: string, country: string): string[
 
     // Country-specific TLDs (Priority Order)
     const countryTLDs: Record<string, string[]> = {
-        'NO': ['.no', '.com', '.net'],
-        'SE': ['.se', '.com', '.nu'],
-        'DK': ['.dk', '.com'],
-        'FI': ['.fi', '.com'],
-        'DE': ['.de', '.com'],
-        'FR': ['.fr', '.com'],
-        'ES': ['.es', '.com'],
-        'GB': ['.co.uk', '.com', '.uk'],
-        'US': ['.com', '.net', '.io'],
-        'IT': ['.it', '.com'],
-        'NL': ['.nl', '.com'],
-        'PL': ['.pl', '.com'],
-        'BE': ['.be', '.com']
+        'NO': ['.no'],
+        'SE': ['.se'],
+        'DK': ['.dk'],
+        'FI': ['.fi'],
+        'DE': ['.de'],
+        'FR': ['.fr'],
+        'ES': ['.es'],
+        'GB': ['.co.uk'],
+        'US': ['.com'],
     };
+    const globalTLDs = ['.com', '.net', '.io', '.eu'];
 
-    const tlds = countryTLDs[country] || ['.com', '.net'];
+    const tlds = [...(countryTLDs[country] || []), ...globalTLDs];
 
     // Base variations
     const words = companyName.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().split(/\s+/);
     const cleanFull = cleanCompanyName(companyName);
     const firstWord = words[0];
-    const firstTwo = words.slice(0, 2).join('');
-    const firstTwoHyphen = words.slice(0, 2).join('-');
-    const firstThree = words.slice(0, 3).join('');
     const acronym = generateAcronym(companyName);
 
     // Generate candidates for each TLD
     for (const tld of tlds) {
-        // 1. First word (highest priority if > 3 chars)
-        if (firstWord && firstWord.length > 2 && !['the', 'det', 'den', 'das', 'der', 'les', 'los'].includes(firstWord)) {
-            patterns.push(`${firstWord}${tld}`);
-            patterns.push(`www.${firstWord}${tld}`);
-        }
-
-        // 2. Acronym (e.g. "Digital Marketing Solutions" -> "dms.com")
-        if (acronym && acronym.length >= 2) {
-            patterns.push(`${acronym}${tld}`);
-        }
-
-        // 3. First two words
-        if (words.length > 1) {
-            patterns.push(`${firstTwo}${tld}`);
-            patterns.push(`${firstTwoHyphen}${tld}`);
-        }
-
-        // 4. First three words (for longer names)
-        if (words.length > 2 && firstThree.length < 25) {
-            patterns.push(`${firstThree}${tld}`);
-        }
-
-        // 5. Full cleaned name (if different and reasonable length)
-        if (cleanFull && cleanFull !== firstWord && cleanFull.length < 30) {
+        // 1. Full Cleaned Name (Highest Priority)
+        // "Norsk Kylling" -> "norskkylling.no"
+        if (cleanFull.length > 3 && cleanFull.length < 35) {
             patterns.push(`${cleanFull}${tld}`);
         }
 
-        // 6. Common abbreviations (e.g. "Norway" -> "nor")
-        const abbreviated = cleanFull
-            .replace(/norway/g, 'nor')
-            .replace(/sweden/g, 'swe')
-            .replace(/denmark/g, 'dk')
-            .replace(/international/g, 'intl')
-            .replace(/services/g, 'srv')
-            .replace(/solutions/g, 'sol')
-            .replace(/consulting/g, 'con');
+        // 2. Acronym (e.g. "DMS" -> "dms.no") - Risky but good for big corps
+        if (acronym && acronym.length >= 3) {
+            patterns.push(`${acronym}${tld}`);
+        }
 
-        if (abbreviated !== cleanFull && abbreviated.length > 3) {
-            patterns.push(`${abbreviated}${tld}`);
+        // 3. First Word (if unique enough, e.g. "Equinor")
+        if (firstWord && firstWord.length > 4 && !['norsk', 'svensk', 'dansk', 'nordic'].includes(firstWord)) {
+            patterns.push(`${firstWord}${tld}`);
+        }
+
+        // 4. Name with hyphens
+        if (words.length > 1) {
+            patterns.push(`${words.join('-')}${tld}`);
         }
     }
 
-    // Add .io for tech companies (if name contains tech keywords)
-    const techKeywords = ['tech', 'digital', 'software', 'data', 'cloud', 'ai', 'cyber', 'app'];
-    if (techKeywords.some(kw => companyName.toLowerCase().includes(kw))) {
-        patterns.push(`${firstWord}.io`);
-        if (acronym) patterns.push(`${acronym}.io`);
-    }
-
-    // Deduplicate and return
-    return [...new Set(patterns)];
+    // Deduplicate and return (limit to top 15 most likely to save time)
+    return [...new Set(patterns)].slice(0, 15);
 }
 
 // ============================================================================
@@ -145,9 +112,10 @@ async function isDomainReachable(domain: string): Promise<boolean> {
     const tryFetch = async (protocol: 'https' | 'http'): Promise<boolean> => {
         try {
             const url = `${protocol}://${domain.replace(/^(https?:\/\/)/, '')}`;
+            // Reduced timeout to 3s for speed
             const response = await fetch(url, {
                 method: 'HEAD',
-                signal: AbortSignal.timeout(TIMEOUT_MS),
+                signal: AbortSignal.timeout(3000),
                 headers: {
                     'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)]
                 }
@@ -170,7 +138,7 @@ async function verifyWebsite(domain: string, orgNumber: string, companyName: str
     try {
         const url = domain.startsWith('http') ? domain : `https://${domain}`;
         const response = await fetch(url, {
-            signal: AbortSignal.timeout(10000),
+            signal: AbortSignal.timeout(6000), // 6s timeout
             headers: {
                 'User-Agent': USER_AGENTS[0]
             }
@@ -181,46 +149,19 @@ async function verifyWebsite(domain: string, orgNumber: string, companyName: str
         const html = (await response.text()).toLowerCase();
         const cleanOrgNumber = orgNumber.replace(/\s/g, '');
 
-        // 1. Strict verification: Organization number present
-        const variations = [
-            cleanOrgNumber,
-            orgNumber,
-            `org.nr: ${orgNumber}`,
-            `org.nr.:${cleanOrgNumber}`,
-            `organisasjonsnummer: ${orgNumber}`,
-            `organization number: ${orgNumber}`,
-            `cvr: ${orgNumber}`, // Denmark
-            `org.nummer: ${orgNumber}` // Sweden
-        ];
+        // 1. Strict verification: Org Number
+        if (html.includes(cleanOrgNumber) || html.includes(orgNumber)) return true;
 
-        for (const variant of variations) {
-            if (html.includes(variant.toLowerCase())) {
-                return true;
-            }
-        }
-
-        // 2. Soft verification: Company name + domain match
+        // 2. Title / Copyright Verification (Looser than before)
         const cleanName = companyName.toLowerCase()
-            .replace(/\s(as|asa|ab|gmbh|ltd|inc|oy|aps)$/i, '')
-            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/\s+(as|asa|ab|gmbh|ltd|inc|oy|aps)$/i, '')
             .trim();
 
-        const nameParts = cleanName.split(' ').filter(p => p.length > 3);
+        const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
+        if (titleMatch && titleMatch[1].toLowerCase().includes(cleanName)) return true;
 
-        // Domain contains company name AND page mentions significant parts
-        if (domain.includes(cleanName.replace(/\s/g, ''))) {
-            if (nameParts.some(part => html.includes(part))) {
-                return true;
-            }
-        }
-
-        // 3. Copyright or title match
-        const currentYear = new Date().getFullYear();
-        if (html.includes(`©${currentYear} ${cleanName}`) ||
-            html.includes(`copyright ${currentYear} ${cleanName}`) ||
-            html.includes(`<title>${cleanName}`)) {
-            return true;
-        }
+        // Check fuzzy match on domain
+        if (domain.includes(cleanName.replace(/[^a-z0-9]/g, ''))) return true;
 
         return false;
     } catch {
@@ -229,34 +170,86 @@ async function verifyWebsite(domain: string, orgNumber: string, companyName: str
 }
 
 // ============================================================================
-// WEB SEARCH INTEGRATION
-// ============================================================================
-
-// ============================================================================
 // WEB SEARCH INTEGRATION (ENHANCED)
 // ============================================================================
+
+/**
+ * Search Google for company website (Experimental scraping)
+ * Uses high-risk scraping, extensive error handling required.
+ */
+async function searchGoogle(companyName: string, country: string): Promise<string | null> {
+    const query = encodeURIComponent(`${companyName} ${country} official website`);
+    const strategies = [
+        `https://www.google.com/search?q=${query}&hl=en&num=3`,
+        `https://www.google.no/search?q=${query}&hl=no&num=3` // Try local google
+    ];
+
+    for (const url of strategies) {
+        try {
+            // console.log(`    Trying Google search...`);
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)],
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Referer': 'https://www.google.com/'
+                },
+                signal: AbortSignal.timeout(6000)
+            });
+
+            if (!response.ok) continue;
+
+            const html = await response.text();
+
+            // Extract URL from Google's specific format (usually in <a href="/url?q=..."> or just <a href="...">)
+            // Modern Google often puts main link in <div class="yuRUbf"><a href="...">
+            const match = html.match(/<a href="\/url\?q=([^&]+)/) || html.match(/<a href="(https:\/\/[^"]+)"/);
+
+            if (match) {
+                let foundUrl = match[1];
+                if (foundUrl.startsWith('/url?q=')) foundUrl = foundUrl.split('/url?q=')[1].split('&')[0];
+
+                try {
+                    const urlObj = new URL(decodeURIComponent(foundUrl));
+                    const domain = urlObj.hostname.replace('www.', '');
+
+                    // Filter junk
+                    const junkDomains = ['google', 'facebook', 'linkedin', 'instagram', 'twitter', 'proff.no', '1881.no', 'gulesider.no', 'purehelp.no', 'allabolag.se'];
+                    if (!junkDomains.some(j => domain.includes(j))) {
+                        return domain;
+                    }
+                } catch { }
+            }
+        } catch (e) { }
+
+        await new Promise(r => setTimeout(r, 1000));
+    }
+    return null;
+}
 
 /**
  * Search DuckDuckGo HTML for company website
  * Retries with multiple query variations
  */
 async function searchDuckDuckGo(companyName: string, country: string, city?: string): Promise<string | null> {
+
+    // Better queries for finding OFFICIAL site
     const strategies = [
-        `${companyName} ${country} official website`,
-        `${companyName} ${city || ''} website`,
-        `${companyName} ${country} contact`,
+        `${companyName} ${country} official site`,
+        `${companyName} ${city || ''} contact`,
     ];
 
     for (const queryStr of strategies) {
         try {
-            console.log(`    Trying DDG search: "${queryStr}"`);
+            // console.log(`    Trying DDG search: "${queryStr}"`);
             const query = encodeURIComponent(queryStr);
             const url = `https://html.duckduckgo.com/html/?q=${query}`;
 
             const response = await fetch(url, {
-                signal: AbortSignal.timeout(8000),
+                signal: AbortSignal.timeout(5000),
                 headers: {
-                    'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)]
+                    'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)],
+                    'Accept-Language': 'en-US,en;q=0.9'
                 }
             });
 
@@ -265,29 +258,34 @@ async function searchDuckDuckGo(companyName: string, country: string, city?: str
             const html = await response.text();
 
             // Extract result URLs
-            const linkMatches = html.matchAll(/href="\/\/duckduckgo\.com\/l\/\?uddg=([^"]+)"/g);
+            // DDG HTML uses specific redirect links
+            const linkMatches = html.matchAll(/class="result__a" href="([^"]+)"/g);
 
             for (const match of linkMatches) {
-                const encodedUrl = match[1];
-                const decodedUrl = decodeURIComponent(encodedUrl);
-
-                // Skip social media and directories generally, unless we want them later
-                if (decodedUrl.includes('facebook.com') || decodedUrl.includes('linkedin.com') || decodedUrl.includes('instagram.com')) {
-                    continue;
+                // Determine actual URL (DDG often returns direct or redirect)
+                // In HTML version, it's often a direct link or /l/?uddg=...
+                let rawUrl = match[1];
+                if (rawUrl.startsWith('//')) rawUrl = 'https:' + rawUrl;
+                if (rawUrl.startsWith('/l/?uddg=')) {
+                    rawUrl = decodeURIComponent(rawUrl.split('=')[1]);
                 }
 
-                const domainMatch = decodedUrl.match(/^https?:\/\/([^\/]+)/);
-                if (domainMatch) {
-                    const domain = domainMatch[1].replace('www.', '');
-                    return domain; // Return first non-social domain found
-                }
+                // Clean URL
+                try {
+                    const urlObj = new URL(rawUrl);
+                    const domain = urlObj.hostname.replace('www.', '');
+
+                    // FILTER OUT JUNK (Directores, Social, News, etc.)
+                    const junkDomains = ['facebook', 'linkedin', 'instagram', 'twitter', 'proff.no', '1881.no', 'gulesider.no', 'purehelp.no', 'allabolag.se', 'eniro.se', 'hitta.se', 'yelp', 'tripadvisor', 'wikipedia', 'bloomberg'];
+                    if (junkDomains.some(j => domain.includes(j))) continue;
+
+                    return domain; // Return first valid domain
+                } catch { }
             }
         } catch (error) {
-            console.error('    DDG search error:', error);
+            // console.error('    DDG search error:', error);
         }
-
-        // Slight delay between retries
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 500));
     }
     return null;
 }
@@ -299,17 +297,18 @@ async function searchDuckDuckGo(companyName: string, country: string, city?: str
 async function findSocialMedia(companyName: string, country: string): Promise<Record<string, string>> {
     const socialLinks: Record<string, string> = {};
 
-    // Search for LinkedIn
+    // Only search LinkedIn for speed
     try {
         const query = encodeURIComponent(`site:linkedin.com/company ${companyName} ${country}`);
         const url = `https://html.duckduckgo.com/html/?q=${query}`;
         const response = await fetch(url, { headers: { 'User-Agent': USER_AGENTS[0] } });
         const html = await response.text();
-        const match = html.match(/href="\/\/duckduckgo\.com\/l\/\?uddg=([^"]+)"/);
+        const match = html.match(/class="result__a" href="([^"]+)"/); // Updated regex
         if (match) {
-            const decoded = decodeURIComponent(match[1]);
-            if (decoded.includes('linkedin.com/company')) {
-                socialLinks.linkedin = decoded;
+            let rawUrl = match[1];
+            if (rawUrl.startsWith('/l/?uddg=')) rawUrl = decodeURIComponent(rawUrl.split('=')[1]);
+            if (rawUrl.includes('linkedin.com/company')) {
+                socialLinks.linkedin = rawUrl;
             }
         }
     } catch { }
@@ -325,31 +324,19 @@ async function searchWithGemini(companyName: string, orgNumber: string, country:
         const prompt = `Find the official website for this company:
         
 Company Name: ${companyName}
-Organization Number: ${orgNumber}
 Location: ${city ? city + ', ' : ''}${country}
 
-Search the web using your tools and return ONLY the domain name (e.g., "example.com") of the company's official website.
-If you find a LinkedIn profile or Facebook page instead, return "SOCIAL_ONLY".
-If you cannot find it with high confidence, return "NOT_FOUND".
-
-Return only the domain, nothing else.`;
+Search using your tools. Return ONLY the domain (e.g. "example.com").
+If NOT FOUND or only social media, return "NOT_FOUND".`;
 
         const response = await generateText(prompt);
         if (!response) return null;
 
         const domain = response.trim().toLowerCase();
-        if (domain === 'not_found' || domain.includes('not found') || domain === 'social_only' || domain.length > 100) {
-            return null;
-        }
+        if (domain.includes('not_found') || domain.includes(' ') || domain.length > 60) return null;
 
-        // Clean up response
-        return domain
-            .replace(/^https?:\/\//, '')
-            .replace(/^www\./, '')
-            .replace(/\/.*$/, '')
-            .trim();
+        return domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
     } catch (error) {
-        console.error('Gemini search error:', error);
         return null;
     }
 }
@@ -382,18 +369,14 @@ export async function discoverWebsite(businessId: string): Promise<string | null
     // ========================================================================
 
     const candidates = generateDomainCandidates(business.legal_name, business.country_code);
-    // console.log(`  📊 Generated ${candidates.length} domain candidates`);
+    const limit = pLimit(20); // Concurrency
 
-    const limit = pLimit(CONCURRENCY_LIMIT);
-
-    // Test ALL candidates in parallel
+    // Test candidates
     const results = await Promise.all(
         candidates.map(domain =>
             limit(async () => {
                 if (await isDomainReachable(domain)) {
-                    // console.log(`  ✅ ${domain} - Reachable`);
                     if (await verifyWebsite(domain, business.org_number, business.legal_name)) {
-                        console.log(`  ✨ ${domain} - VERIFIED (Pattern Match)!`);
                         return domain;
                     }
                 }
@@ -402,15 +385,14 @@ export async function discoverWebsite(businessId: string): Promise<string | null
         )
     );
 
-    // Find first verified domain
     const verifiedDomain = results.find(d => d !== null);
 
     if (verifiedDomain) {
-        const elapsed = Date.now() - startTime;
         await supabase
             .from('businesses')
             .update({ domain: verifiedDomain.replace('www.', '') })
             .eq('id', business.id);
+        console.log(`  ✨ VERIFIED Domain: ${verifiedDomain}`);
         return verifiedDomain;
     }
 
@@ -418,59 +400,44 @@ export async function discoverWebsite(businessId: string): Promise<string | null
     // PHASE 2: Web Search Integration (Deduced)
     // ========================================================================
 
-    console.log('  🌐 Phase 2: Deep Web Search...');
-    const ddgResult = await searchDuckDuckGo(business.legal_name, business.country_code, city);
+    // console.log('  🌐 Phase 2: Web Search...');
+    let searchResult = await searchDuckDuckGo(business.legal_name, business.country_code, city);
 
-    if (ddgResult && await isDomainReachable(ddgResult)) {
-        if (await verifyWebsite(ddgResult, business.org_number, business.legal_name)) {
-            console.log(`  🦆 DuckDuckGo Verified: ${ddgResult}`);
-            await supabase
-                .from('businesses')
-                .update({ domain: ddgResult })
-                .eq('id', business.id);
-            return ddgResult;
-        } else {
-            console.log(`  ⚠️ DDG found ${ddgResult} but verification failed (saving as unverified candidate?)`);
-            // Optional: Save as unverified? No, safer to skip.
-        }
+    // Fallback to Google if DDG fails
+    if (!searchResult) {
+        searchResult = await searchGoogle(business.legal_name, business.country_code);
+    }
+
+    if (searchResult && await isDomainReachable(searchResult)) {
+        console.log(`  🔎 Web Verified: ${searchResult}`);
+        await supabase.from('businesses').update({ domain: searchResult }).eq('id', business.id);
+        return searchResult;
     }
 
     // ========================================================================
-    // PHASE 3: Social Media Discovery (Bonus)
+    // PHASE 3: Social Media (Async - don't block return)
     // ========================================================================
-    // If we only find social media, save it!
     const socialLinks = await findSocialMedia(business.legal_name, business.country_code);
     if (Object.keys(socialLinks).length > 0) {
-        console.log(`  📱 Found Social Media:`, socialLinks);
-        await supabase
-            .from('businesses')
-            .update({ social_media: socialLinks }) // Merging handled by Postgres usually or overwrite
-            .eq('id', businessId);
+        // console.log(`  📱 Found Social`);
+        await supabase.from('businesses').update({ social_media: socialLinks }).eq('id', businessId);
     }
 
     // ========================================================================
     // PHASE 4: Gemini AI Fallback (Last Resort)
     // ========================================================================
 
-    console.log('  🧠 Phase 3: AI Intelligence...');
-    const geminiResult = await searchWithGemini(
-        business.legal_name,
-        business.org_number,
-        business.country_code,
-        city
-    );
+    // Only use Gemini if purely empty, to save cost/latency
+    const geminiResult = await searchWithGemini(business.legal_name, business.org_number, business.country_code, city);
 
     if (geminiResult && await isDomainReachable(geminiResult)) {
-        console.log(`  🤖 Gemini AI found: ${geminiResult}`);
-        // We trust Gemini more than a blind crawler for complex cases
-        await supabase
-            .from('businesses')
-            .update({ domain: geminiResult })
-            .eq('id', business.id);
+        console.log(`  🤖 AI Found: ${geminiResult}`);
+        await supabase.from('businesses').update({ domain: geminiResult }).eq('id', business.id);
         return geminiResult;
     }
 
-    const elapsed = Date.now() - startTime;
-    console.log(`  ❌ Website not found (${elapsed}ms)`);
+    // MARK AS NOT FOUND to prevent retry loops
+    await supabase.from('businesses').update({ website_status: 'not_found' }).eq('id', business.id);
+    console.log(`  ❌ Not found.`);
     return null;
 }
