@@ -408,7 +408,7 @@ export async function discoverWebsite(businessId: string): Promise<string | null
         searchResult = await searchGoogle(business.legal_name, business.country_code);
     }
 
-    if (searchResult && await isDomainReachable(searchResult)) {
+    if (searchResult && !searchResult.includes('duckduckgo.com') && await isDomainReachable(searchResult)) {
         console.log(`  🔎 Web Verified: ${searchResult}`);
         await supabase.from('businesses').update({ domain: searchResult }).eq('id', business.id);
         return searchResult;

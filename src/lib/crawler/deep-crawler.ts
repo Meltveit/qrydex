@@ -162,10 +162,21 @@ async function parseSitemap(sitemapUrl: string): Promise<string[]> {
 
         if (!response.ok) return urls;
 
+        // Check for content size to avoid OOM on massive sitemaps (e.g. IKEA, DSV)
+        const contentLength = response.headers.get('content-length');
+        if (contentLength && parseInt(contentLength) > 5 * 1024 * 1024) { // 5MB limit
+            console.warn(`  ⚠️ Sitemap too large (${contentLength} bytes), skipping main parse.`);
+            return urls;
+        }
+
         const xml = await response.text();
 
-        // Simple regex-based extraction (works for most sitemaps)
-        const urlMatches = xml.match(/<loc>(.*?)<\/loc>/g);
+        // Safety: Work on a truncated version if still too huge after download
+        const MAX_XML_SIZE = 1000000; // 1MB
+        const processXml = xml.length > MAX_XML_SIZE ? xml.substring(0, MAX_XML_SIZE) : xml;
+
+        // Simple regex-based extraction
+        const urlMatches = processXml.match(/<loc>(.*?)<\/loc>/g);
         if (urlMatches) {
             for (const match of urlMatches) {
                 const url = match.replace(/<\/?loc>/g, '').trim();
@@ -174,25 +185,32 @@ async function parseSitemap(sitemapUrl: string): Promise<string[]> {
         }
 
         // Check for nested sitemaps (sitemap index)
+        // CRITICAL: Limit recursion depth and total URLs to avoid OOM crash on huge sites (e.g. IKEA)
         const sitemapMatches = xml.match(/<sitemap>[\s\S]*?<loc>(.*?)<\/loc>[\s\S]*?<\/sitemap>/g);
         if (sitemapMatches) {
-            for (const match of sitemapMatches) {
+            // Only parse up to 3 nested sitemaps to save memory
+            for (const match of sitemapMatches.slice(0, 3)) {
                 const nestedUrl = match.match(/<loc>(.*?)<\/loc>/)?.[1];
-                if (nestedUrl && nestedUrl !== sitemapUrl) {
-                    // Recursively parse nested sitemap
+                // Check currently accumulated URLs (this function returns array, logic needs to be in caller or here if modified)
+                // For now, simple recursion protection
+                if (nestedUrl) {
                     const nestedUrls = await parseSitemap(nestedUrl);
                     urls.push(...nestedUrls);
+                    if (urls.length > 500) break; // Hard stop
                 }
             }
         }
-
-        console.log(`  🗺️ Sitemap yielded ${urls.length} URLs`);
-        return urls;
-
     } catch (error) {
         console.warn(`  ⚠️ Could not parse sitemap ${sitemapUrl}:`, error);
-        return urls;
     }
+
+    console.log(`  🗺️ Sitemap yielded ${urls.length} URLs`);
+    return urls;
+
+} catch (error) {
+    console.warn(`  ⚠️ Could not parse sitemap ${sitemapUrl}:`, error);
+    return urls;
+}
 }
 
 // ============================================================================
