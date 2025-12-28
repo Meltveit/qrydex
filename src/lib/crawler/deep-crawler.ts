@@ -206,12 +206,9 @@ async function parseSitemap(sitemapUrl: string): Promise<string[]> {
 
     console.log(`  🗺️ Sitemap yielded ${urls.length} URLs`);
     return urls;
+}
 
-} catch (error) {
-    console.warn(`  ⚠️ Could not parse sitemap ${sitemapUrl}:`, error);
-    return urls;
-}
-}
+
 
 // ============================================================================
 // PAGE CRAWLER
