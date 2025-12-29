@@ -1,48 +1,51 @@
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata: Metadata = {
-    title: 'Personvern - Qrydex',
-    description: 'Qrydex personvernerklæring. Ingen sporing, ingen cookies.',
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: 'PrivacyPage' });
+    return {
+        title: t('title'),
+        description: t('noTrackingText').substring(0, 160),
+    };
+}
 
-export default function PrivacyPage() {
+export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: 'PrivacyPage' });
+
     return (
         <div className="min-h-screen bg-[var(--color-background)] py-12 px-4 sm:px-6">
             <div className="max-w-3xl mx-auto bg-[var(--color-surface)] rounded-2xl shadow-xl p-8 sm:p-12 border border-[var(--color-border)]">
                 <header className="mb-10 text-center">
-                    <h1 className="text-3xl font-bold text-[var(--color-text)] mb-4">Personvern hos Qrydex</h1>
+                    <h1 className="text-3xl font-bold text-[var(--color-text)] mb-4">{t('title')}</h1>
                     <div className="inline-block px-4 py-1.5 rounded-full bg-green-100 text-green-800 text-sm font-medium border border-green-200">
-                        🛡️ Ingen sporing. Ingen cookies.
+                        {t('badge')}
                     </div>
                 </header>
 
                 <div className="space-y-8 text-[var(--color-text)] leading-relaxed">
                     <section>
-                        <h2 className="text-xl font-semibold mb-3 text-[var(--color-primary)]">Vi tracker deg ikke</h2>
+                        <h2 className="text-xl font-semibold mb-3 text-[var(--color-primary)]">{t('noTrackingTitle')}</h2>
                         <p className="text-[var(--color-text-secondary)]">
-                            Qrydex er en bedrifts-søkemotor bygget på tillit. Vi tror ikke på å overvåke brukerne våre.
-                            Når du søker hos oss, logger vi ikke IP-adressen din, vi lagrer ikke søkehistorikken din knyttet til deg som person,
-                            og vi selger ingen data om din adferd til tredjeparter.
+                            {t('noTrackingText')}
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="text-xl font-semibold mb-3 text-[var(--color-primary)]">Ingen Cookies</h2>
+                        <h2 className="text-xl font-semibold mb-3 text-[var(--color-primary)]">{t('noCookiesTitle')}</h2>
                         <p className="text-[var(--color-text-secondary)]">
-                            Vi bruker <strong>ingen funksjonelle cookies</strong> eller markedsførings-cookies.
-                            Den eneste gangen vi lagrer noe lokalt i nettleseren din, er for å huske dine preferanser for siden:
+                            {t('noCookiesText')}
                         </p>
                         <ul className="list-disc pl-5 mt-2 space-y-1 text-[var(--color-text-secondary)]">
-                            <li>Hvis du velger "Dark Mode", husker vi dette valget (lagret i `localStorage`).</li>
+                            <li>Local Storage (Dark Mode preferences)</li>
                         </ul>
                     </section>
 
                     <section>
-                        <h2 className="text-xl font-semibold mb-3 text-[var(--color-primary)]">Offentlig Data</h2>
+                        <h2 className="text-xl font-semibold mb-3 text-[var(--color-primary)]">{t('publicDataTitle')}</h2>
                         <p className="text-[var(--color-text-secondary)]">
-                            Informasjonen vi viser om bedrifter er utelukkende basert på offentlig tilgjengelig data fra registre som
-                            Brønnøysundregistrene, selskapsregistre i USA/Europa, og åpne nettsider. Vi sammenstiller denne informasjonen
-                            for å gjøre B2B-markedet mer transparent.
+                            {t('publicDataText')}
                         </p>
                     </section>
 
@@ -50,10 +53,10 @@ export default function PrivacyPage() {
 
                     <div className="text-center">
                         <p className="text-sm text-[var(--color-text-secondary)]">
-                            Har du spørsmål om personvern eller ønsker informasjon om din bedrift fjernet?
+                            {t('contactText').split('privacy@qrydex.com')[0]}
                             <br />
                             <a href="mailto:privacy@qrydex.com" className="text-[var(--color-primary)] hover:underline mt-2 inline-block">
-                                Kontakt oss på privacy@qrydex.com
+                                privacy@qrydex.com
                             </a>
                         </p>
                     </div>

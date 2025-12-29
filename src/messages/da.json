@@ -84,19 +84,32 @@
         "kmAway": "km væk"
     },
     "TrustScore": {
-        "highlyTrusted": "Meget Troværdig",
-        "trusted": "Troværdig",
-        "moderatelyTrusted": "Moderat Troværdig",
+        "highlyTrusted": "Meget Pålidelig",
+        "trusted": "Pålidelig",
+        "moderatelyTrusted": "Moderat Pålidelig",
         "requiresVerification": "Kræver Verifikation",
         "lowTrust": "Lav Tillid",
         "notVerified": "Ikke Verificeret",
         "highQuality": "Høj Kvalitet",
         "moderate": "Moderat",
         "lowQuality": "Lav Kvalitet",
-        "positive": "Positiv",
-        "neutral": "Neutral",
-        "negative": "Negativ",
+        "positive": "Positivt",
+        "neutral": "Neutralt",
+        "negative": "Negativt",
         "verified": "Verificeret",
         "unverified": "Uverificeret"
+    },
+    "SearchPage": {
+        "showingResults": "Viser {count} virksomheder",
+        "andArticles": " og {count} artikler",
+        "forQuery": " for \"{query}\"",
+        "relevantNews": "Relevante Nyheder",
+        "businesses": "Virksomheder",
+        "noResults": "Ingen resultater fundet",
+        "noResultsQuery": "Fandt ingen verificerede virksomheder eller nyheder for \"{query}\"",
+        "searchPrompt": "Begynd med at søge efter en virksomhed",
+        "previous": "Forrige",
+        "next": "Næste",
+        "pageIndicator": "Side {page} af {total}"
     }
 }

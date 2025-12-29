@@ -87,7 +87,7 @@
         "highlyTrusted": "Erittäin Luotettava",
         "trusted": "Luotettava",
         "moderatelyTrusted": "Kohtalaisen Luotettava",
-        "requiresVerification": "Vaatii Vahvistusta",
+        "requiresVerification": "Vaatii Vahvistuksen",
         "lowTrust": "Matala Luottamus",
         "notVerified": "Ei Vahvistettu",
         "highQuality": "Korkea Laatu",
@@ -98,5 +98,18 @@
         "negative": "Negatiivinen",
         "verified": "Vahvistettu",
         "unverified": "Vahvistamaton"
+    },
+    "SearchPage": {
+        "showingResults": "Näytetään {count} yritystä",
+        "andArticles": " ja {count} artikkelia",
+        "forQuery": " haulla \"{query}\"",
+        "relevantNews": "Aiheeseen liittyvät uutiset",
+        "businesses": "Yritykset",
+        "noResults": "Tuloksia ei löytynyt",
+        "noResultsQuery": "Ei vahvistettuja yrityksiä tai uutisia haulla \"{query}\"",
+        "searchPrompt": "Aloita etsimällä yritystä",
+        "previous": "Edellinen",
+        "next": "Seuraava",
+        "pageIndicator": "Sivu {page} / {total}"
     }
 }

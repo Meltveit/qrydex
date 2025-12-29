@@ -89,7 +89,7 @@
         "moderatelyTrusted": "Måttligt Pålitlig",
         "requiresVerification": "Kräver Verifiering",
         "lowTrust": "Lågt Förtroende",
-        "notVerified": "Inte Verifierad",
+        "notVerified": "Ej Verifierad",
         "highQuality": "Hög Kvalitet",
         "moderate": "Måttlig",
         "lowQuality": "Låg Kvalitet",
@@ -97,6 +97,19 @@
         "neutral": "Neutral",
         "negative": "Negativ",
         "verified": "Verifierad",
-        "unverified": "Overifierad"
+        "unverified": "Ej Verifierad"
+    },
+    "SearchPage": {
+        "showingResults": "Visar {count} företag",
+        "andArticles": " och {count} artiklar",
+        "forQuery": " för \"{query}\"",
+        "relevantNews": "Relevanta Nyheter",
+        "businesses": "Företag",
+        "noResults": "Inga resultat hittades",
+        "noResultsQuery": "Hittade inga verifierade företag eller nyheter för \"{query}\"",
+        "searchPrompt": "Börja med att söka efter ett företag",
+        "previous": "Föregående",
+        "next": "Nästa",
+        "pageIndicator": "Sida {page} av {total}"
     }
 }

@@ -4,6 +4,7 @@ import { searchBusinesses } from '@/lib/search';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
+import { getTranslations } from 'next-intl/server';
 
 interface SearchPageProps {
     params: Promise<{ locale: string }>;
@@ -18,6 +19,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
     const searchParamsValues = await searchParams;
     const query = searchParamsValues.q || '';
     const page = searchParamsValues.page ? parseInt(searchParamsValues.page, 10) : 1;
+    const t = await getTranslations({ locale, namespace: 'SearchPage' });
 
     // Analytics Context (Bot B)
     const headersList = await headers();
@@ -60,16 +62,16 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
                 {/* Results info */}
                 <div className="mb-4 md:mb-6">
                     <p className="text-sm md:text-base text-[var(--color-text-secondary)] dark:text-gray-400">
-                        Viser {results.total} bedrifter
-                        {results.articles && results.articles.length > 0 && ` og ${results.articles.length} artikler`}
-                        {query && ` for "${query}"`}
+                        {t('showingResults', { count: results.total })}
+                        {results.articles && results.articles.length > 0 && t('andArticles', { count: results.articles.length })}
+                        {query && t('forQuery', { query })}
                     </p>
                 </div>
 
                 {/* News Articles Section (if any) */}
                 {results.articles && results.articles.length > 0 && (
                     <div className="mb-8">
-                        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Relevante Nyheter</h2>
+                        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">{t('relevantNews')}</h2>
                         <div className="grid gap-3">
                             {results.articles.map((article) => (
                                 <a
@@ -104,7 +106,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
 
                 <div className="mb-3">
                     {results.businesses.length > 0 && (
-                        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Bedrifter</h2>
+                        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">{t('businesses')}</h2>
                     )}
                 </div>
 
@@ -128,12 +130,12 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
                                 </svg>
                             </div>
                             <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">
-                                Ingen resultater funnet
+                                {t('noResults')}
                             </h3>
                             <p className="text-[var(--color-text-secondary)]">
                                 {query
-                                    ? `Fant ingen verifiserte bedrifter eller nyheter for "${query}"`
-                                    : 'Begynn med å søke etter en bedrift'}
+                                    ? t('noResultsQuery', { query })
+                                    : t('searchPrompt')}
                             </p>
                         </div>
                     )
@@ -147,18 +149,18 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
                                 href={`/${locale}/search?q=${query}&page=${page - 1}`}
                                 className="px-4 py-2 text-sm font-medium text-[var(--color-primary)] hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg dark:text-blue-400"
                             >
-                                ← Forrige
+                                ← {t('previous')}
                             </Link>
                         )}
                         <span className="px-4 py-2 text-sm text-[var(--color-text-secondary)] dark:text-gray-400">
-                            Side {page} av {Math.ceil(results.total / results.pageSize)}
+                            {t('pageIndicator', { page: page, total: Math.ceil(results.total / results.pageSize) })}
                         </span>
                         {page < Math.ceil(results.total / results.pageSize) && (
                             <Link
                                 href={`/${locale}/search?q=${query}&page=${page + 1}`}
                                 className="px-4 py-2 text-sm font-medium text-[var(--color-primary)] hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg dark:text-blue-400"
                             >
-                                Neste →
+                                {t('next')} →
                             </Link>
                         )}
                     </div>

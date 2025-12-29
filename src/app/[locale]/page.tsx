@@ -60,7 +60,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-export default async function Home() {
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   const headersList = await headers();
   // Use Vercel headers for instant, free geolocation
   const city = headersList.get('x-vercel-ip-city') || 'Norge';
@@ -78,7 +79,7 @@ export default async function Home() {
   const [location, businessCount] = await Promise.all([ ... ]);
   */
 
-  const t = await getTranslations('HomePage');
+  const t = await getTranslations({ locale, namespace: 'HomePage' });
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full px-4 md:px-6">

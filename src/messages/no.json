@@ -93,10 +93,23 @@
         "highQuality": "Høy Kvalitet",
         "moderate": "Moderat",
         "lowQuality": "Lav Kvalitet",
-        "positive": "Positiv",
-        "neutral": "Nøytral",
-        "negative": "Negativ",
+        "positive": "Positivt",
+        "neutral": "Nøytralt",
+        "negative": "Negativt",
         "verified": "Verifisert",
         "unverified": "Uverifisert"
+    },
+    "SearchPage": {
+        "showingResults": "Viser {count} bedrifter",
+        "andArticles": " og {count} artikler",
+        "forQuery": " for \"{query}\"",
+        "relevantNews": "Relevante Nyheter",
+        "businesses": "Bedrifter",
+        "noResults": "Ingen resultater funnet",
+        "noResultsQuery": "Fant ingen verifiserte bedrifter eller nyheter for \"{query}\"",
+        "searchPrompt": "Begynn med å søke etter en bedrift",
+        "previous": "Forrige",
+        "next": "Neste",
+        "pageIndicator": "Side {page} av {total}"
     }
 }

@@ -87,16 +87,29 @@
         "highlyTrusted": "Sehr Vertrauenswürdig",
         "trusted": "Vertrauenswürdig",
         "moderatelyTrusted": "Mäßig Vertrauenswürdig",
-        "requiresVerification": "Erfordert Überprüfung",
+        "requiresVerification": "Verifizierung erforderlich",
         "lowTrust": "Geringes Vertrauen",
         "notVerified": "Nicht Verifiziert",
         "highQuality": "Hohe Qualität",
         "moderate": "Mittelmäßig",
-        "lowQuality": "Niedrige Qualität",
+        "lowQuality": "Geringe Qualität",
         "positive": "Positiv",
         "neutral": "Neutral",
         "negative": "Negativ",
         "verified": "Verifiziert",
-        "unverified": "Unverifiziert"
+        "unverified": "Nicht Verifiziert"
+    },
+    "SearchPage": {
+        "showingResults": "Zeige {count} Unternehmen",
+        "andArticles": " und {count} Artikel",
+        "forQuery": " für \"{query}\"",
+        "relevantNews": "Relevante Nachrichten",
+        "businesses": "Unternehmen",
+        "noResults": "Keine Ergebnisse gefunden",
+        "noResultsQuery": "Keine verifizierten Unternehmen oder Nachrichten für \"{query}\" gefunden",
+        "searchPrompt": "Beginnen Sie mit der Suche nach einem Unternehmen",
+        "previous": "Zurück",
+        "next": "Weiter",
+        "pageIndicator": "Seite {page} von {total}"
     }
 }

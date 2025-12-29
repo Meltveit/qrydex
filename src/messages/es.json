@@ -98,5 +98,18 @@
         "negative": "Negativo",
         "verified": "Verificado",
         "unverified": "No Verificado"
+    },
+    "SearchPage": {
+        "showingResults": "Mostrando {count} empresas",
+        "andArticles": " y {count} artículos",
+        "forQuery": " para \"{query}\"",
+        "relevantNews": "Noticias Relevantes",
+        "businesses": "Empresas",
+        "noResults": "No se encontraron resultados",
+        "noResultsQuery": "No se encontraron empresas verificadas o noticias para \"{query}\"",
+        "searchPrompt": "Comience buscando una empresa",
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "pageIndicator": "Página {page} de {total}"
     }
 }
