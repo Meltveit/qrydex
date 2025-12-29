@@ -171,30 +171,79 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
             {
                 Array.isArray(business.sitelinks) && (business.sitelinks as any[]).length > 0 && (
                     <div className="flex flex-wrap gap-2 md:gap-3 mb-4 relative z-20">
-                        {(business.sitelinks as Array<{ title: string; url: string; description?: string }>).slice(0, 3).map((link, i) => (
-                            <a
-                                key={i}
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="group flex flex-col gap-0.5 px-2.5 py-1.5 md:px-3 md:py-2 text-xs md:text-sm bg-blue-50 dark:bg-slate-700/50 
-                                         hover:bg-blue-100 dark:hover:bg-slate-700 rounded-lg transition-all border border-blue-100 dark:border-slate-600 hover:border-blue-200
-                                         hover:shadow-sm max-w-[160px] md:max-w-[200px]"
-                            >
-                                <div className="flex items-center gap-1.5 font-medium text-blue-700 dark:text-blue-300 group-hover:text-blue-800 dark:group-hover:text-blue-200">
-                                    <svg className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                    </svg>
-                                    <span className="truncate">{link.title}</span>
-                                </div>
-                                {link.description && (
-                                    <span className="hidden md:block text-xs text-blue-600/70 dark:text-blue-300/70 group-hover:text-blue-700/80 dark:group-hover:text-blue-200/80 line-clamp-1">
-                                        {link.description}
-                                    </span>
-                                )}
-                            </a>
-                        ))}
+                        {(business.sitelinks as Array<{ title: string; url: string; description?: string; type?: string }>).slice(0, 3).map((link, i) => {
+                            // Icon mapping based on type
+                            const getIcon = (type?: string) => {
+                                switch (type) {
+                                    case 'contact':
+                                        return (
+                                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                        );
+                                    case 'about':
+                                        return (
+                                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        );
+                                    case 'team':
+                                        return (
+                                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        );
+                                    case 'products':
+                                        return (
+                                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                            </svg>
+                                        );
+                                    case 'investors':
+                                        return (
+                                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                            </svg>
+                                        );
+                                    case 'news':
+                                        return (
+                                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                            </svg>
+                                        );
+                                    default:
+                                        // Default external link icon
+                                        return (
+                                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                        );
+                                }
+                            };
+
+                            return (
+                                <a
+                                    key={i}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="group flex flex-col gap-0.5 px-2.5 py-1.5 md:px-3 md:py-2 text-xs md:text-sm bg-blue-50 dark:bg-slate-700/50 
+                                             hover:bg-blue-100 dark:hover:bg-slate-700 rounded-lg transition-all border border-blue-100 dark:border-slate-600 hover:border-blue-200
+                                             hover:shadow-sm max-w-[160px] md:max-w-[200px]"
+                                >
+                                    <div className="flex items-center gap-1.5 font-medium text-blue-700 dark:text-blue-300 group-hover:text-blue-800 dark:group-hover:text-blue-200">
+                                        {getIcon(link.type)}
+                                        <span className="truncate">{link.title}</span>
+                                    </div>
+                                    {link.description && (
+                                        <span className="hidden md:block text-xs text-blue-600/70 dark:text-blue-300/70 group-hover:text-blue-700/80 dark:group-hover:text-blue-200/80 line-clamp-1">
+                                            {link.description}
+                                        </span>
+                                    )}
+                                </a>
+                            );
+                        })}
                     </div>
                 )
             }
