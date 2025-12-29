@@ -148,7 +148,7 @@ export interface TrustScoreDisplay {
     labelKey: string;
     breakdown: {
         registry: { score: number; max: number };
-        content: { score: number; max: number };
+        quality: { score: number; max: number };
         social: { score: number; max: number };
         technical: { score: number; max: number };
     };
@@ -164,7 +164,8 @@ export function formatTrustScore(business: { trust_score: number; trust_score_br
     // Calculate category scores based on raw components
     const registryScore = (raw.registry_verified || 0); // Max 40
 
-    const contentScore = (raw.has_description || 0) + (raw.detailed_description || 0) +
+    // Content quality = Quality score
+    const qualityScore = (raw.has_description || 0) + (raw.detailed_description || 0) +
         (raw.has_logo || 0) + (raw.has_categories || 0) + (raw.has_translations || 0) + (raw.has_industry || 0);
 
     const socialScore = (raw.has_social || 0) + (raw.multi_social || 0) + (raw.professional_email || 0);
@@ -181,7 +182,7 @@ export function formatTrustScore(business: { trust_score: number; trust_score_br
                         score >= 20 ? 'lowTrust' : 'notVerified',
         breakdown: {
             registry: { score: registryScore, max: 40 },
-            content: { score: contentScore, max: 25 },
+            quality: { score: qualityScore, max: 25 },
             social: { score: socialScore, max: 15 },
             technical: { score: technicalScore, max: 20 }
         }
