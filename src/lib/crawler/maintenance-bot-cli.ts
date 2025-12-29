@@ -1,7 +1,10 @@
 
+
 import { createServerClient } from '../supabase';
 import { analyzeBusinessCredibility } from '../ai/scam-detector';
 import { scrapeWebsite } from './website-scraper';
+import { calculateTrustScore } from '../trust-score';
+import { verifyBusiness } from '../registry-apis';
 import pLimit from 'p-limit';
 
 // CLI execution - RUNS CONTINUOUSLY
@@ -166,6 +169,7 @@ if (require.main === module) {
                                     // Add enriched data from deep crawl
                                     website_url: enrichedData?.homepage_url || qa?.website_url,
                                     contact_email: enrichedData?.contact_info?.emails?.[0] || qa?.contact_email,
+                                    all_emails: enrichedData?.contact_info?.emails || qa?.all_emails,
                                     contact_phone: enrichedData?.contact_info?.phones?.[0] || qa?.contact_phone,
                                     industry_category: enrichedData?.industry_category || qa?.industry_category,
                                     ai_summary: enrichedData?.company_description || qa?.ai_summary,
@@ -174,16 +178,67 @@ if (require.main === module) {
                                     scam_checked_at: new Date().toISOString()
                                 };
 
+                                // Calculate trust score based on data completeness
+                                const { score, breakdown } = calculateTrustScore({
+                                    registry_data: business.registry_data,
+                                    company_description: updates.company_description || business.company_description,
+                                    logo_url: updates.logo_url || business.logo_url,
+                                    social_media: updates.social_media || enrichedData?.contact_info?.social_media,
+                                    sitelinks: enrichedData?.sitelinks,
+                                    product_categories: [
+                                        ...(enrichedData?.products?.en || []),
+                                        ...(enrichedData?.services?.en || [])
+                                    ],
+                                    translations: (business as any).translations,
+                                    industry_category: enrichedData?.industry_category,
+                                    quality_analysis: updatedQuality,
+                                    indexed_pages_count: enrichedData?.total_pages_indexed
+                                });
+
+                                // Verify org_number against registry (periodically - once per week)
+                                let registryUpdate: any = {};
+                                const lastVerified = business.registry_data?.last_verified_at;
+                                const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+                                if (!lastVerified || new Date(lastVerified) < oneWeekAgo) {
+                                    console.log(`   🔍 Verifying org_number against registry...`);
+                                    try {
+                                        const verifyResult = await verifyBusiness(
+                                            business.org_number,
+                                            (business.registry_data as any)?.country_code || 'NO'
+                                        );
+
+                                        if (verifyResult.success && verifyResult.data) {
+                                            registryUpdate.registry_data = {
+                                                ...business.registry_data,
+                                                ...verifyResult.data,
+                                                last_verified_at: new Date().toISOString()
+                                            };
+
+                                            // Check if business status changed
+                                            if (verifyResult.data.company_status !== (business.registry_data as any)?.company_status) {
+                                                console.log(`   📋 Status changed: ${(business.registry_data as any)?.company_status} → ${verifyResult.data.company_status}`);
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.log(`   ⚠️ Registry verification failed (might be rate limited)`);
+                                    }
+                                }
+
                                 // Update with both quality_analysis AND scraped fields
                                 await supabase
                                     .from('businesses')
                                     .update({
                                         quality_analysis: updatedQuality,
-                                        ...updates
+                                        trust_score: score,
+                                        trust_score_breakdown: breakdown,
+                                        industry_category: enrichedData?.industry_category || null,
+                                        ...updates,
+                                        ...registryUpdate
                                     })
                                     .eq('id', business.id);
 
-                                console.log(`  ✅ Success: ${business.legal_name}`);
+                                console.log(`  ✅ Success: ${business.legal_name} (Trust Score: ${score}/100)`);
                             }
                         }));
 
