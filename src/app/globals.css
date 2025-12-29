@@ -2,9 +2,6 @@
 @source "../../src/app/**/*.{js,ts,jsx,tsx}";
 @source "../../src/components/**/*.{js,ts,jsx,tsx}";
 
-/* Font - Inter (must be first) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 /* Tailwind base styles */
 @import "tailwindcss";
 
@@ -72,7 +69,7 @@
   }
 
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    /* font-family property removed to let next/font handle it via className on body tag */
     background: var(--color-background);
     color: var(--color-text);
     -webkit-font-smoothing: antialiased;

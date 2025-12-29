@@ -7,6 +7,10 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata: Metadata = {
   title: {
     default: "Qrydex - The Intelligent B2B Search Engine",
@@ -60,7 +64,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="antialiased min-h-screen flex flex-col bg-[var(--color-background)] text-[var(--color-text)]">
+      <body className={`${inter.className} antialiased min-h-screen flex flex-col bg-[var(--color-background)] text-[var(--color-text)]`}>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <SchemaOrganization />
