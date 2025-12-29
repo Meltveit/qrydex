@@ -25,12 +25,18 @@ if (require.main === module) {
 
             try {
                 // Get businesses with domains but no scraped data
+                // Get businesses to scrape:
+                // 1. Never scraped (company_description is null AND no last_scraped_at)
+                // 2. Failed scrapes (company_description still null but was scraped in last 24h)
+                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
                 const { data: businesses, count } = await supabase
                     .from('businesses')
-                    .select('id, domain, legal_name, org_number, registry_data, quality_analysis', { count: 'exact' })
-                    .not('domain', 'is', null)
+                    .select('id, domain, legal_name, org_number, registry_data, quality_analysis, scrape_count', { count: 'exact' })
                     .not('domain', 'is', null)
                     .is('company_description', null)
+                    // Include both never-scraped AND recently-failed scrapes
+                    .or(`last_scraped_at.is.null,last_scraped_at.lt.${yesterday}`)
                     .order('created_at', { ascending: false }) // Prioritize new items
                     .limit(20); // Process 20 per cycle
 
@@ -82,15 +88,29 @@ if (require.main === module) {
                                 await supabase
                                     .from('businesses')
                                     .update({
-                                        company_description: enrichedData?.company_description || data.description || 'Verified via Qrydex DeepScan',
-                                        products: enrichedData?.products?.en || data.products,
-                                        services: enrichedData?.services?.en || data.services,
+                                        company_description: enrichedData?.company_description || data.description || null,
+                                        // Combine products + services into product_categories array (max 10)
+                                        product_categories: [
+                                            ...(enrichedData?.products?.en || []),
+                                            ...(enrichedData?.services?.en || [])
+                                        ].slice(0, 10),
                                         logo_url: enrichedData?.logo_url || data.logoUrl,
                                         social_media: enrichedData?.contact_info?.social_media || data.socialMedia,
                                         sitelinks: enrichedData?.sitelinks || null,
                                         translations: data.translations || {},
-                                        quality_analysis: updatedQuality,
-                                        last_scraped_at: new Date().toISOString() // Must use date object/string
+                                        quality_analysis: {
+                                            ...updatedQuality,
+                                            // Store full multilingual products/services in quality_analysis
+                                            products: enrichedData?.products,
+                                            services: enrichedData?.services
+                                        },
+                                        // Critical tracking fields
+                                        indexed_pages_count: enrichedData?.total_pages_indexed || 0,
+                                        website_last_crawled: new Date().toISOString(),
+                                        scrape_count: (business.scrape_count || 0) + 1,
+                                        last_scraped_at: new Date().toISOString(),
+                                        next_scrape_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                                        website_status: 'active'
                                     })
                                     .eq('id', business.id);
 
