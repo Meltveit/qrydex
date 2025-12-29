@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
-    const limit = 20000; // Increase limit for single file
 
     // Static pages
     const staticPages: MetadataRoute.Sitemap = [
@@ -28,23 +27,48 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
 
     // Dynamic business pages
-    let businessPages: MetadataRoute.Sitemap = [];
+    const businessPages: MetadataRoute.Sitemap = [];
+    const BATCH_SIZE = 1000;
+    const MAX_URLS = 45000; // Keep under Google's 50k limit for single file
 
     try {
-        const { data: businesses } = await supabase
-            .from('businesses')
-            .select('org_number, updated_at, trust_score')
-            .order('trust_score', { ascending: false })
-            .limit(limit);
+        let hasMore = true;
+        let start = 0;
 
-        if (businesses) {
-            businessPages = businesses.map((business) => ({
-                url: `${baseUrl}/business/${business.org_number}`,
-                lastModified: new Date(business.updated_at),
-                changeFrequency: 'weekly',
-                priority: business.trust_score > 70 ? 0.8 : 0.6,
-            }));
+        while (hasMore && businessPages.length < MAX_URLS) {
+            const end = start + BATCH_SIZE - 1;
+
+            const { data: businesses, error } = await supabase
+                .from('businesses')
+                .select('org_number, updated_at, trust_score')
+                .order('trust_score', { ascending: false })
+                .range(start, end);
+
+            if (error) {
+                console.error('Error fetching sitemap batch:', error);
+                break;
+            }
+
+            if (!businesses || businesses.length === 0) {
+                hasMore = false;
+            } else {
+                const batch = businesses.map((business) => ({
+                    url: `${baseUrl}/business/${business.org_number}`,
+                    lastModified: new Date(business.updated_at),
+                    changeFrequency: 'weekly' as const,
+                    priority: business.trust_score > 70 ? 0.8 : 0.6,
+                }));
+
+                businessPages.push(...batch);
+
+                if (businesses.length < BATCH_SIZE) {
+                    hasMore = false;
+                }
+
+                start += BATCH_SIZE;
+            }
         }
+
     } catch (error) {
         console.error('Error generating sitemap:', error);
     }
