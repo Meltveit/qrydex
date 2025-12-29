@@ -88,6 +88,7 @@ if (require.main === module) {
                                         logo_url: enrichedData?.logo_url || data.logoUrl,
                                         social_media: enrichedData?.contact_info?.social_media || data.socialMedia,
                                         sitelinks: enrichedData?.sitelinks || null,
+                                        translations: data.translations || {},
                                         quality_analysis: updatedQuality,
                                         last_scraped_at: new Date().toISOString() // Must use date object/string
                                     })

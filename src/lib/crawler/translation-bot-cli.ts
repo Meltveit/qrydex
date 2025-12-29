@@ -32,6 +32,7 @@ interface TranslationTask {
         products?: string[];
         industry_text?: string;
     };
+    existingTranslations?: any;
 }
 
 /**
@@ -73,14 +74,21 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
     const supabase = createServerClient();
     console.log(`  🌍 Translating business ${task.businessId}...`);
 
-    const translations: Record<string, any> = {};
+    // Start with existing translations to preserve scraper data
+    const translations: Record<string, any> = { ...(task.existingTranslations || {}) };
 
     try {
         // Translate company description
         if (task.sourceData.company_description) {
             for (const lang of LANGUAGES) {
+                // Skip if already exists and has content (Don't overwrite scraper/human data)
+                if (translations[lang]?.company_description && translations[lang].company_description.length > 10) {
+                    continue;
+                }
+
                 if (lang === task.sourceLanguage) {
                     translations[lang] = {
+                        ...translations[lang],
                         company_description: task.sourceData.company_description
                     };
                 } else {
@@ -91,6 +99,7 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
                     );
 
                     translations[lang] = {
+                        ...translations[lang],
                         company_description: translated
                     };
 
@@ -104,6 +113,9 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
         if (task.sourceData.services && task.sourceData.services.length > 0) {
             for (const lang of LANGUAGES) {
                 if (!translations[lang]) translations[lang] = {};
+
+                // Skip if already exists
+                if (translations[lang].services && translations[lang].services.length > 0) continue;
 
                 if (lang === task.sourceLanguage) {
                     translations[lang].services = task.sourceData.services;
@@ -123,6 +135,9 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
         if (task.sourceData.industry_text) {
             for (const lang of LANGUAGES) {
                 if (!translations[lang]) translations[lang] = {};
+
+                // Skip if already exists
+                if (translations[lang].industry_text) continue;
 
                 if (lang === task.sourceLanguage) {
                     translations[lang].industry_text = task.sourceData.industry_text;
@@ -280,7 +295,8 @@ if (require.main === module) {
                                     services: [], // Services col missing
                                     products: business.product_categories || [], // Map product_categories
                                     industry_text: industryTextToTranslate
-                                }
+                                },
+                                existingTranslations: business.translations // Pass existing translations
                             };
 
                             await translateBusiness(task);

@@ -12,6 +12,7 @@
     "crawler:web": "node scripts/web-crawler.js",
     "indexer": "node scripts/index-websites.js",
     "bot:discovery": "node scripts/bots/web-discovery.js",
+    "fire-bots": "npx tsx --env-file=.env.local lib-external/master-bot.ts",
     "bot:discovery:continuous": "node scripts/bots/web-discovery.js 999",
     "scheduler": "node scripts/scheduler.js",
     "bot-status": "node --env-file=.env.local check-data-status.mjs",

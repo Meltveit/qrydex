@@ -1,24 +1,31 @@
 #!/usr/bin/env node
 
 /**
- * Bot Runner with Environment Variables
- * Loads .env.local and runs the master bot
+ * Bot Runner Wrapper
+ * Executes the TypeScript master bot using tsx
  */
 
-require('dotenv').config({ path: '.env.local' });
+const { spawn } = require('child_process');
+const path = require('path');
 
-console.log('✅ Environment loaded');
-console.log(`   Supabase URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30)}...`);
-console.log(`   Service Key: ${process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Set' : '❌ Missing'}`);
-console.log(`   Gemini Key: ${process.env.GEMINI_API_KEY ? '✅ Set' : '❌ Missing'}\n`);
+console.log('🚀 Launching Qrydex Master Bot sequence...');
 
-// Import and run master bot
-(async () => {
-    try {
-        const { runAllBots } = await import('./lib-external/master-bot.js');
-        await runAllBots();
-    } catch (error) {
-        console.error('❌ Error:', error);
-        process.exit(1);
-    }
-})();
+const scriptPath = path.join(__dirname, 'lib-external', 'master-bot.ts');
+const cmd = 'npx';
+const args = ['tsx', '--env-file=.env.local', scriptPath, ...process.argv.slice(2)];
+
+const child = spawn(cmd, args, {
+    stdio: 'inherit',
+    shell: true,
+    env: process.env
+});
+
+child.on('close', (code) => {
+    console.log(`\n✅ Bot sequence finished with code ${code}`);
+    process.exit(code);
+});
+
+child.on('error', (err) => {
+    console.error('❌ Failed to start bots:', err);
+    process.exit(1);
+});

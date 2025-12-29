@@ -56,6 +56,7 @@ export interface WebsiteData {
     responseTime?: number;
     detectedLanguage?: string;
     enrichedData?: any;
+    translations?: any;
 }
 
 /**
@@ -409,7 +410,8 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 50): 
             securityHeaders: undefined,
             responseTime: enrichedData.response_time_ms,
             // NEW: Store ALL enriched data
-            enrichedData: enrichedData
+            enrichedData: enrichedData,
+            translations: enrichedData.translations
         } as any;
 
     } catch (error) {
