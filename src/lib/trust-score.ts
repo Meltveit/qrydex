@@ -141,3 +141,23 @@ export function getScoreExplanation(breakdown: Record<string, number>): string[]
 
     return explanations;
 }
+
+/**
+ * Format Trust Score for display
+ */
+export function formatTrustScore(business: { trust_score: number; trust_score_breakdown?: any }): {
+    score: number;
+    color: 'green' | 'yellow' | 'red';
+    labelKey: string;
+} {
+    const score = business.trust_score || 0;
+    return {
+        score,
+        color: score >= 70 ? 'green' : score >= 40 ? 'yellow' : 'red',
+        labelKey: score >= 80 ? 'highlyTrusted' :
+            score >= 70 ? 'trusted' :
+                score >= 50 ? 'moderatelyTrusted' :
+                    score >= 40 ? 'requiresVerification' :
+                        score >= 20 ? 'lowTrust' : 'notVerified'
+    };
+}

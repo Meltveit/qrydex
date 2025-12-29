@@ -9,7 +9,7 @@ import { verifyBusiness, calculateRegistryScore } from '@/lib/registry-apis';
 // import { analyzeBusinessQuality, calculateQualityScore } from '@/lib/ai-analysis/quality-analyzer'; // Replacing this
 import { scrapeWebsite } from '@/lib/crawler/website-scraper';
 import { analyzeBusinessCredibility } from '@/lib/ai/scam-detector';
-import { calculateTrustScore } from '@/lib/trust-engine';
+import { calculateTrustScore } from '@/lib/trust-score';
 import type { BusinessInsert, RegistryData, QualityAnalysis } from '@/types/database';
 
 export interface VerifyBusinessRequest {
@@ -123,11 +123,13 @@ export async function verifyAndStoreBusiness(
         };
 
         // Step 4: Calculate Trust Score
-        const { score, breakdown } = calculateTrustScore(
-            registryData,
-            qualityAnalysis,
-            []
-        );
+        const { score, breakdown } = calculateTrustScore({
+            registry_data: registryData,
+            quality_analysis: qualityAnalysis,
+            company_description: websiteData?.description || aiResult.summary,
+            logo_url: websiteData?.logoUrl,
+            social_media: websiteData?.socialMedia
+        });
 
         // Step 5: Upsert business record
         const businessData: BusinessInsert = {
@@ -139,7 +141,7 @@ export async function verifyAndStoreBusiness(
             quality_analysis: qualityAnalysis,
             news_signals: [],
             trust_score: score,
-            trust_score_breakdown: breakdown,
+            trust_score_breakdown: breakdown as any,
             last_verified_at: new Date().toISOString(),
             verification_status: aiResult.isScam ? 'failed' : 'verified',
             // New enhanced fields

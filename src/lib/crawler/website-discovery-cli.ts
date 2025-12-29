@@ -7,8 +7,13 @@ import { createServerClient } from '../supabase';
 import { discoverWebsite } from './website-discovery';
 
 // CLI execution - RUNS CONTINUOUSLY
+// CLI execution - RUNS CONTINUOUSLY
 if (require.main === module) {
-    console.log('🌐 Website Discovery Bot - CONTINUOUS MODE');
+    const args = process.argv.slice(2);
+    const WORKER_ID = args[0] ? parseInt(args[0]) : 0;
+    const TOTAL_WORKERS = args[1] ? parseInt(args[1]) : 1;
+
+    console.log(`🌐 Website Discovery Bot - Worker ${WORKER_ID + 1}/${TOTAL_WORKERS}`);
     console.log('   Continuously discovering business websites');
     console.log('   Press Ctrl+C to stop\n');
 
@@ -21,62 +26,48 @@ if (require.main === module) {
         while (true) {
             cycleCount++;
             console.log(`\n${'='.repeat(60)}`);
-            console.log(`🔄 CYCLE ${cycleCount} - ${new Date().toLocaleString()}`);
+            console.log(`🔄 CYCLE ${cycleCount} - ${new Date().toLocaleTimeString()} [Worker ${WORKER_ID + 1}]`);
             console.log(`${'='.repeat(60)}\n`);
 
             try {
-                // 1. Get businesses without domains and NOT marked as discovering/not_found
-                // We fetch a slightly larger batch and try to lock them one by one or in bulk
+                // 1. Fetch available candidates
                 const { data: candidates, count } = await supabase
                     .from('businesses')
                     .select('id, legal_name, org_number, country_code', { count: 'exact' })
                     .is('domain', null)
                     .neq('website_status', 'not_found')
-                    .neq('website_status', 'discovering') // SKIP locked items
+                    .neq('website_status', 'discovering')
                     .order('created_at', { ascending: false })
-                    .limit(20); // Smaller batch to reduce race condition window
+                    .limit(100); // Fetch larger batch for client-side filtering
 
                 if (!candidates || candidates.length === 0) {
-                    console.log('✅ queue empty or all locked! Waiting...');
-                } else {
-                    console.log(`Found ~${count} pending. Locking batch of ${candidates.length}...`);
+                    console.log('✅ Queue empty! Waiting...');
+                    await new Promise(resolve => setTimeout(resolve, 30 * 1000));
+                    continue;
+                }
 
-                    // 2. LOCK items (optimistic locking)
-                    // We only process those we successfully updated to 'discovering'
-                    const lockedBusinesses: typeof candidates = [];
+                // 2. Filter for THIS worker (Deterministic Sharding)
+                const myCandidates = candidates.filter(b => {
+                    const hash = parseInt(b.id.replace(/-/g, '').substring(0, 8), 16);
+                    return (hash % TOTAL_WORKERS) === WORKER_ID;
+                }).slice(0, 10); // Process 10 at a time
 
-                    for (const candidate of candidates) {
-                        const { error } = await supabase
-                            .from('businesses')
-                            .update({ website_status: 'discovering' })
-                            .eq('id', candidate.id)
-                            // Safety check: ensure it wasn't snatched by another bot ms ago
-                            .is('domain', null)
-                            .neq('website_status', 'discovering');
+                if (myCandidates.length === 0) {
+                    console.log('✅ No tasks for this worker in current batch.');
+                    await new Promise(resolve => setTimeout(resolve, 5 * 1000));
+                    continue;
+                }
 
-                        if (!error) {
-                            lockedBusinesses.push(candidate);
-                        }
-                    }
+                console.log(`🎯 Found ${myCandidates.length} tasks for Worker ${WORKER_ID + 1}`);
 
-                    console.log(`🔐 Successfully locked ${lockedBusinesses.length} items for this bot.`);
-
-                    // 3. Process LOCKED items
-                    for (const business of lockedBusinesses) {
-                        try {
-                            console.log(`🔍 Processing: ${business.legal_name}`);
-                            await discoverWebsite(business.id);
-                            // Cleanup is handled inside discoverWebsite (it sets domain or not_found)
-                            // If discoverWebsite FAILS exception, we should probably reset status or let it hang for manual fix?
-                            // Currently discoverWebsite handles errors internally mostly.
-
-                            // Minimal cooldown
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                        } catch (error: any) {
-                            console.error(`  ❌ Critical Error processing ${business.legal_name}:`, error.message);
-                            // Unlock if crashed
-                            await supabase.from('businesses').update({ website_status: null }).eq('id', business.id);
-                        }
+                // 3. Process items
+                for (const business of myCandidates) {
+                    try {
+                        console.log(`🔍 Disovering: ${business.legal_name}`);
+                        await discoverWebsite(business.id);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    } catch (error: any) {
+                        console.error(`  ❌ Error: ${error.message}`);
                     }
                 }
 

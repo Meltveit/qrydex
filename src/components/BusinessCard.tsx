@@ -1,7 +1,7 @@
 'use client';
 
 import { Business } from '@/types/database';
-import { formatTrustScore } from '@/lib/trust-engine';
+import { formatTrustScore } from '@/lib/trust-score';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 
