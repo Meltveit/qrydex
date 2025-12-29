@@ -94,13 +94,16 @@ export function getTrustScoreColor(score: number): 'green' | 'yellow' | 'red' {
 /**
  * Get Trust Score label
  */
-export function getTrustScoreLabel(score: number): string {
-    if (score >= 80) return 'Highly Trusted';
-    if (score >= 70) return 'Trusted';
-    if (score >= 50) return 'Moderately Trusted';
-    if (score >= 40) return 'Requires Verification';
-    if (score >= 20) return 'Low Trust';
-    return 'Not Verified';
+/**
+ * Get Trust Score label key
+ */
+export function getTrustScoreLabelKey(score: number): string {
+    if (score >= 80) return 'highlyTrusted';
+    if (score >= 70) return 'trusted';
+    if (score >= 50) return 'moderatelyTrusted';
+    if (score >= 40) return 'requiresVerification';
+    if (score >= 20) return 'lowTrust';
+    return 'notVerified';
 }
 
 /**
@@ -109,11 +112,11 @@ export function getTrustScoreLabel(score: number): string {
 export function formatTrustScore(business: Business): {
     score: number;
     color: 'green' | 'yellow' | 'red';
-    label: string;
+    labelKey: string;
     breakdown: {
-        registry: { score: number; max: number; label: string };
-        quality: { score: number; max: number; label: string };
-        news: { score: number; max: number; label: string };
+        registry: { score: number; max: number; labelKey: string };
+        quality: { score: number; max: number; labelKey: string };
+        news: { score: number; max: number; labelKey: string };
     };
 } {
     const breakdown = business.trust_score_breakdown || {
@@ -125,24 +128,24 @@ export function formatTrustScore(business: Business): {
     return {
         score: business.trust_score,
         color: getTrustScoreColor(business.trust_score),
-        label: getTrustScoreLabel(business.trust_score),
+        labelKey: getTrustScoreLabelKey(business.trust_score),
         breakdown: {
             registry: {
                 score: breakdown.registry_verified,
                 max: 40,
-                label: breakdown.registry_verified >= 30 ? 'Verified' : 'Unverified',
+                labelKey: breakdown.registry_verified >= 30 ? 'verified' : 'unverified',
             },
             quality: {
                 score: breakdown.quality_score,
                 max: 35,
-                label: breakdown.quality_score >= 25 ? 'High Quality' :
-                    breakdown.quality_score >= 15 ? 'Moderate' : 'Low Quality',
+                labelKey: breakdown.quality_score >= 25 ? 'highQuality' :
+                    breakdown.quality_score >= 15 ? 'moderate' : 'lowQuality',
             },
             news: {
                 score: breakdown.news_sentiment,
                 max: 25,
-                label: breakdown.news_sentiment >= 18 ? 'Positive' :
-                    breakdown.news_sentiment >= 8 ? 'Neutral' : 'Negative',
+                labelKey: breakdown.news_sentiment >= 18 ? 'positive' :
+                    breakdown.news_sentiment >= 8 ? 'neutral' : 'negative',
             },
         },
     };

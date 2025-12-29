@@ -42,6 +42,24 @@ async function getBusinessCount() {
   }
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const baseUrl = 'https://qrydex.com';
+  const languages: Record<string, string> = {};
+  const locales = ['en', 'no', 'de', 'fr', 'es', 'da', 'sv', 'fi'];
+
+  locales.forEach(l => {
+    languages[l] = `${baseUrl}/${l}`;
+  });
+
+  return {
+    alternates: {
+      canonical: `${baseUrl}/${locale}`,
+      languages: languages,
+    },
+  };
+}
+
 export default async function Home() {
   const headersList = await headers();
   // Use Vercel headers for instant, free geolocation

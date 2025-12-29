@@ -75,6 +75,28 @@
         "privacyCookies": "Confidentialité et Cookies",
         "verifiedAgainstRegistries": "Toutes les entreprises vérifiées auprès des registres officiels",
         "searchInIndustry": "Rechercher dans l'industrie",
-        "orgNr": "N° Org."
+        "orgNr": "N° Siren"
+    },
+    "BusinessCard": {
+        "visitWebsite": "Visiter le site",
+        "viewProfile": "Voir le profil",
+        "employees": "employés",
+        "kmAway": "km de distance"
+    },
+    "TrustScore": {
+        "highlyTrusted": "Très Fiable",
+        "trusted": "Fiable",
+        "moderatelyTrusted": "Moyennement Fiable",
+        "requiresVerification": "Nécessite Vérification",
+        "lowTrust": "Faible Confiance",
+        "notVerified": "Non Vérifié",
+        "highQuality": "Haute Qualité",
+        "moderate": "Modéré",
+        "lowQuality": "Faible Qualité",
+        "positive": "Positif",
+        "neutral": "Neutre",
+        "negative": "Négatif",
+        "verified": "Vérifié",
+        "unverified": "Non Vérifié"
     }
 }

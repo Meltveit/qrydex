@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: 'Qrydex',
     images: [
       {
-        url: '/og-image.png', // We will need to ensure this exists or use a generated one
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Qrydex B2B Search Engine',
@@ -48,7 +48,6 @@ export const metadata: Metadata = {
     google: "Gd9vQ5iIHxGUWZLLh6093CEMMu0f8mhPBnclOPSN-fI",
   },
 };
-
 export default async function RootLayout({
   children,
   params

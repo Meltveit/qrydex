@@ -75,6 +75,28 @@
         "privacyCookies": "Datenschutz & Cookies",
         "verifiedAgainstRegistries": "Alle Unternehmen gegen offizielle Register geprüft",
         "searchInIndustry": "Suche in Branche",
-        "orgNr": "Org.Nr."
+        "orgNr": "Handelsregisternummer"
+    },
+    "BusinessCard": {
+        "visitWebsite": "Webseite besuchen",
+        "viewProfile": "Profil ansehen",
+        "employees": "Angestellte",
+        "kmAway": "km entfernt"
+    },
+    "TrustScore": {
+        "highlyTrusted": "Sehr Vertrauenswürdig",
+        "trusted": "Vertrauenswürdig",
+        "moderatelyTrusted": "Mäßig Vertrauenswürdig",
+        "requiresVerification": "Erfordert Überprüfung",
+        "lowTrust": "Geringes Vertrauen",
+        "notVerified": "Nicht Verifiziert",
+        "highQuality": "Hohe Qualität",
+        "moderate": "Mittelmäßig",
+        "lowQuality": "Niedrige Qualität",
+        "positive": "Positiv",
+        "neutral": "Neutral",
+        "negative": "Negativ",
+        "verified": "Verifiziert",
+        "unverified": "Unverifiziert"
     }
 }

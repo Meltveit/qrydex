@@ -3,6 +3,7 @@
 import { Business } from '@/types/database';
 import { formatTrustScore } from '@/lib/trust-engine';
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 interface BusinessCardProps {
     business: Business;
@@ -44,6 +45,8 @@ const countryNames: Record<string, Record<string, string>> = {
 };
 
 export default function BusinessCard({ business, distance, locale = 'no' }: BusinessCardProps) {
+    const t = useTranslations('BusinessCard');
+    const tTrust = useTranslations('TrustScore');
     const trustScore = formatTrustScore(business);
     const trustColor = trustScore.score >= 70
         ? 'text-green-600 bg-green-50'
@@ -62,7 +65,7 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
             <Link
                 href={`/business/${business.org_number}`}
                 className="absolute inset-0 z-0"
-                aria-label={`Gå til ${business.legal_name}`}
+                aria-label={`${t('viewProfile')} ${business.legal_name}`}
             />
 
             <div className="relative z-10 pointer-events-none">
@@ -89,7 +92,7 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
                     {/* Trust Score Badge */}
                     <div className={`self-start flex-shrink-0 px-2.5 py-1 rounded-full text-xs md:text-sm font-semibold ${trustColor}
                                     transition-all duration-200 group-hover:scale-105`}>
-                        ⭐ {trustScore.score}
+                        ⭐ {tTrust(trustScore.labelKey)}
                     </div>
                 </div>
 
@@ -148,7 +151,7 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
                             <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
-                            {business.registry_data.employee_count} ansatte
+                            {business.registry_data.employee_count} {t('employees')}
                         </span>
                     )}
 
@@ -158,7 +161,7 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
                             <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
-                            {distance} km unna
+                            {distance} {t('kmAway')}
                         </span>
                     )}
                 </div>
@@ -213,7 +216,7 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
-                    Besøk nettside
+                    {t('visitWebsite')}
                 </button>
 
                 <Link
@@ -221,7 +224,7 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
                     className="ml-auto flex items-center gap-1 text-xs md:text-sm font-medium text-blue-600 dark:text-blue-400
                              hover:text-blue-700 dark:hover:text-blue-300 transition-colors group/link w-full md:w-auto justify-end md:justify-start mt-2 md:mt-0"
                 >
-                    Se profil
+                    {t('viewProfile')}
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -230,3 +233,4 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
         </div >
     );
 }
+

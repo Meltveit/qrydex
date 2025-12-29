@@ -76,5 +76,27 @@
         "verifiedAgainstRegistries": "Alle virksomheder verificeret mod officielle registre",
         "searchInIndustry": "Søg i branche",
         "orgNr": "CVR-nr."
+    },
+    "BusinessCard": {
+        "visitWebsite": "Besøg hjemmeside",
+        "viewProfile": "Se profil",
+        "employees": "ansatte",
+        "kmAway": "km væk"
+    },
+    "TrustScore": {
+        "highlyTrusted": "Meget Troværdig",
+        "trusted": "Troværdig",
+        "moderatelyTrusted": "Moderat Troværdig",
+        "requiresVerification": "Kræver Verifikation",
+        "lowTrust": "Lav Tillid",
+        "notVerified": "Ikke Verificeret",
+        "highQuality": "Høj Kvalitet",
+        "moderate": "Moderat",
+        "lowQuality": "Lav Kvalitet",
+        "positive": "Positiv",
+        "neutral": "Neutral",
+        "negative": "Negativ",
+        "verified": "Verificeret",
+        "unverified": "Uverificeret"
     }
 }

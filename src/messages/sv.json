@@ -76,5 +76,27 @@
         "verifiedAgainstRegistries": "Alla företag verifierade mot officiella register",
         "searchInIndustry": "Sök i bransch",
         "orgNr": "Org.nr"
+    },
+    "BusinessCard": {
+        "visitWebsite": "Besök webbplats",
+        "viewProfile": "Visa profil",
+        "employees": "anställda",
+        "kmAway": "km bort"
+    },
+    "TrustScore": {
+        "highlyTrusted": "Mycket Pålitlig",
+        "trusted": "Pålitlig",
+        "moderatelyTrusted": "Måttligt Pålitlig",
+        "requiresVerification": "Kräver Verifiering",
+        "lowTrust": "Lågt Förtroende",
+        "notVerified": "Inte Verifierad",
+        "highQuality": "Hög Kvalitet",
+        "moderate": "Måttlig",
+        "lowQuality": "Låg Kvalitet",
+        "positive": "Positiv",
+        "neutral": "Neutral",
+        "negative": "Negativ",
+        "verified": "Verifierad",
+        "unverified": "Overifierad"
     }
 }

@@ -71,9 +71,21 @@ export async function generateMetadata(
         ogImages.push('/og-image.png');
     }
 
+    const baseUrl = 'https://qrydex.com';
+    const languages: Record<string, string> = {};
+    const locales = ['en', 'no', 'de', 'fr', 'es', 'da', 'sv', 'fi'];
+
+    locales.forEach(l => {
+        languages[l] = `${baseUrl}/${l}/business/${orgNumber}`;
+    });
+
     return {
         title: `${business.legal_name} - Verified Business Profile`,
         description: metaDescription,
+        alternates: {
+            canonical: `${baseUrl}/${locale}/business/${orgNumber}`,
+            languages: languages,
+        },
         openGraph: {
             title: `${business.legal_name} | Qrydex`,
             description: metaDescription,
@@ -96,6 +108,7 @@ export default async function BusinessPage(props: any) {
     const params = await props.params;
     const { orgNumber, locale } = params;
     const t = await getTranslations({ locale, namespace: 'Business' });
+    const tTrust = await getTranslations({ locale, namespace: 'TrustScore' });
     const tNav = await getTranslations({ locale, namespace: 'Navigation' });
     const tHome = await getTranslations({ locale, namespace: 'HomePage' });
 
@@ -210,7 +223,7 @@ export default async function BusinessPage(props: any) {
                                 <TrustScoreBadge
                                     score={trustScore.score}
                                     color={trustScore.color}
-                                    label={trustScore.label}
+                                    label={tTrust(trustScore.labelKey)}
                                     size="lg"
                                 />
                                 <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('trustScore')}</span>

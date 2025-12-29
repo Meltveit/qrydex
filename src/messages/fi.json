@@ -76,5 +76,27 @@
         "verifiedAgainstRegistries": "Kaikki yritykset tarkistettu virallisista rekistereistä",
         "searchInIndustry": "Hae toimialalta",
         "orgNr": "Y-tunnus"
+    },
+    "BusinessCard": {
+        "visitWebsite": "Käy sivustolla",
+        "viewProfile": "Näytä profiili",
+        "employees": "työntekijää",
+        "kmAway": "km päässä"
+    },
+    "TrustScore": {
+        "highlyTrusted": "Erittäin Luotettava",
+        "trusted": "Luotettava",
+        "moderatelyTrusted": "Kohtalaisen Luotettava",
+        "requiresVerification": "Vaatii Vahvistusta",
+        "lowTrust": "Matala Luottamus",
+        "notVerified": "Ei Vahvistettu",
+        "highQuality": "Korkea Laatu",
+        "moderate": "Kohtalainen",
+        "lowQuality": "Matala Laatu",
+        "positive": "Positiivinen",
+        "neutral": "Neutraali",
+        "negative": "Negatiivinen",
+        "verified": "Vahvistettu",
+        "unverified": "Vahvistamaton"
     }
 }

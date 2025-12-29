@@ -76,5 +76,27 @@
         "verifiedAgainstRegistries": "Alle bedrifter verifisert mot offisielle registre",
         "searchInIndustry": "Søk i bransje",
         "orgNr": "Org.nr"
+    },
+    "BusinessCard": {
+        "visitWebsite": "Besøk nettside",
+        "viewProfile": "Se profil",
+        "employees": "ansatte",
+        "kmAway": "km unna"
+    },
+    "TrustScore": {
+        "highlyTrusted": "Meget Pålitelig",
+        "trusted": "Pålitelig",
+        "moderatelyTrusted": "Moderat Pålitelig",
+        "requiresVerification": "Krever Verifisering",
+        "lowTrust": "Lav Tillit",
+        "notVerified": "Ikke Verifisert",
+        "highQuality": "Høy Kvalitet",
+        "moderate": "Moderat",
+        "lowQuality": "Lav Kvalitet",
+        "positive": "Positiv",
+        "neutral": "Nøytral",
+        "negative": "Negativ",
+        "verified": "Verifisert",
+        "unverified": "Uverifisert"
     }
 }

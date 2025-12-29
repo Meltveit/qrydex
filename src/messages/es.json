@@ -75,6 +75,28 @@
         "privacyCookies": "Privacidad y Cookies",
         "verifiedAgainstRegistries": "Todas las empresas verificadas contra registros oficiales",
         "searchInIndustry": "Buscar en industria",
-        "orgNr": "Nº Org."
+        "orgNr": "NIF"
+    },
+    "BusinessCard": {
+        "visitWebsite": "Visitar sitio web",
+        "viewProfile": "Ver perfil",
+        "employees": "empleados",
+        "kmAway": "km de distancia"
+    },
+    "TrustScore": {
+        "highlyTrusted": "Altamente Confiable",
+        "trusted": "Confiable",
+        "moderatelyTrusted": "Moderadamente Confiable",
+        "requiresVerification": "Requiere Verificación",
+        "lowTrust": "Baja Confianza",
+        "notVerified": "No Verificado",
+        "highQuality": "Alta Calidad",
+        "moderate": "Moderada",
+        "lowQuality": "Baja Calidad",
+        "positive": "Positivo",
+        "neutral": "Neutral",
+        "negative": "Negativo",
+        "verified": "Verificado",
+        "unverified": "No Verificado"
     }
 }

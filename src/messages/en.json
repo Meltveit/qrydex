@@ -76,5 +76,27 @@
         "verifiedAgainstRegistries": "All businesses verified against official registries",
         "searchInIndustry": "Search in industry",
         "orgNr": "Org. No."
+    },
+    "BusinessCard": {
+        "visitWebsite": "Visit Website",
+        "viewProfile": "View Profile",
+        "employees": "employees",
+        "kmAway": "km away"
+    },
+    "TrustScore": {
+        "highlyTrusted": "Highly Trusted",
+        "trusted": "Trusted",
+        "moderatelyTrusted": "Moderately Trusted",
+        "requiresVerification": "Requires Verification",
+        "lowTrust": "Low Trust",
+        "notVerified": "Not Verified",
+        "highQuality": "High Quality",
+        "moderate": "Moderate",
+        "lowQuality": "Low Quality",
+        "positive": "Positive",
+        "neutral": "Neutral",
+        "negative": "Negative",
+        "verified": "Verified",
+        "unverified": "Unverified"
     }
 }
