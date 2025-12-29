@@ -60,6 +60,21 @@
         "secure": "Sikker",
         "active": "Aktiv",
         "inactive": "Inaktiv",
-        "verified": "Verificeret"
+        "verified": "Verificeret",
+        "professionalEmail": "Professionel E-mail",
+        "contactEmail": "Kontakt E-mail",
+        "contentFreshness": "Indholdsfriskhed",
+        "redFlags": "Røde Flag Registreret",
+        "yes": "Ja",
+        "no": "Nej",
+        "notSecure": "Ikke Sikker",
+        "webHighlights": "Hjemmeside Højdepunkter"
+    },
+    "Common": {
+        "searchingFrom": "Søger fra",
+        "privacyCookies": "Privatliv & Cookies",
+        "verifiedAgainstRegistries": "Alle virksomheder verificeret mod officielle registre",
+        "searchInIndustry": "Søg i branche",
+        "orgNr": "CVR-nr."
     }
 }

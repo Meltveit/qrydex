@@ -60,6 +60,21 @@
         "secure": "Säker",
         "active": "Aktiv",
         "inactive": "Inaktiv",
-        "verified": "Verifierad"
+        "verified": "Verifierad",
+        "professionalEmail": "Professionell E-post",
+        "contactEmail": "Kontakt E-post",
+        "contentFreshness": "Innehållsaktualitet",
+        "redFlags": "Röda Flaggor Upptäckta",
+        "yes": "Ja",
+        "no": "Nej",
+        "notSecure": "Inte Säker",
+        "webHighlights": "Webbplats Höjdpunkter"
+    },
+    "Common": {
+        "searchingFrom": "Söker från",
+        "privacyCookies": "Integritet & Cookies",
+        "verifiedAgainstRegistries": "Alla företag verifierade mot officiella register",
+        "searchInIndustry": "Sök i bransch",
+        "orgNr": "Org.nr"
     }
 }

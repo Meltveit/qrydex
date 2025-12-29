@@ -60,6 +60,21 @@
         "secure": "Sikker",
         "active": "Aktiv",
         "inactive": "Inaktiv",
-        "verified": "Verifisert"
+        "verified": "Verifisert",
+        "professionalEmail": "Profesjonell E-post",
+        "contactEmail": "Kontakt E-post",
+        "contentFreshness": "Innholdsferskhet",
+        "redFlags": "Røde Flagg Oppdaget",
+        "yes": "Ja",
+        "no": "Nei",
+        "notSecure": "Ikke Sikker",
+        "webHighlights": "Nettside Høydepunkter"
+    },
+    "Common": {
+        "searchingFrom": "Søker fra",
+        "privacyCookies": "Personvern og cookies",
+        "verifiedAgainstRegistries": "Alle bedrifter verifisert mot offisielle registre",
+        "searchInIndustry": "Søk i bransje",
+        "orgNr": "Org.nr"
     }
 }

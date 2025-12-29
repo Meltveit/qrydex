@@ -60,6 +60,21 @@
         "secure": "Secure",
         "active": "Active",
         "inactive": "Inactive",
-        "verified": "Verified"
+        "verified": "Verified",
+        "professionalEmail": "Ammattimainen sähköposti",
+        "contactEmail": "Yhteystiedot sähköposti",
+        "contentFreshness": "Sisällön tuoreus",
+        "redFlags": "Havaitut varoitusmerkit",
+        "yes": "Kyllä",
+        "no": "Ei",
+        "notSecure": "Ei turvallinen",
+        "webHighlights": "Sivuston kohokohdat"
+    },
+    "Common": {
+        "searchingFrom": "Haku sijainnista",
+        "privacyCookies": "Tietosuoja ja evästeet",
+        "verifiedAgainstRegistries": "Kaikki yritykset tarkistettu virallisista rekistereistä",
+        "searchInIndustry": "Hae toimialalta",
+        "orgNr": "Y-tunnus"
     }
 }

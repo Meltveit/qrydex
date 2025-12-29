@@ -290,20 +290,20 @@ export default async function BusinessPage(props: any) {
                                 {t('aiAnalysis')}
                             </h2>
                             <div className="grid sm:grid-cols-2 gap-3 md:gap-4">
-                                <InfoRow label="Industry Category" value={quality.industry_category} />
+                                <InfoRow label={t('industry')} value={quality.industry_category} />
                                 <InfoRow label={t('website')} value={quality.website_url} link />
                                 <InfoRow
                                     label={t('sslHttps')}
-                                    value={quality.has_ssl ? t('secure') : 'Not Secure'}
+                                    value={quality.has_ssl ? t('secure') : t('notSecure')}
                                     badge={quality.has_ssl ? 'green' : 'red'}
                                 />
                                 <InfoRow
-                                    label="Professional Email"
-                                    value={quality.professional_email ? 'Yes' : 'No'}
+                                    label={t('professionalEmail')}
+                                    value={quality.professional_email ? t('yes') : t('no')}
                                     badge={quality.professional_email ? 'green' : 'yellow'}
                                 />
-                                <InfoRow label="Contact Email" value={quality.contact_email} />
-                                <InfoRow label="Content Freshness" value={quality.content_freshness} />
+                                <InfoRow label={t('contactEmail')} value={quality.contact_email} />
+                                <InfoRow label={t('contentFreshness')} value={quality.content_freshness} />
                             </div>
 
                             {quality.red_flags && quality.red_flags.length > 0 && (
@@ -312,7 +312,7 @@ export default async function BusinessPage(props: any) {
                                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                         </svg>
-                                        Red Flags Detected
+                                        {t('redFlags')}
                                     </h3>
                                     <ul className="space-y-1">
                                         {(quality.red_flags as string[]).map((flag, i) => (
@@ -415,7 +415,7 @@ export default async function BusinessPage(props: any) {
                                 <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                 </svg>
-                                {t('webHighlights') || 'Website Highlights'}
+                                {t('webHighlights')}
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {(business.sitelinks as any[]).slice(0, 8).map((link: any, i: number) => (

@@ -60,6 +60,21 @@
         "secure": "Secure",
         "active": "Active",
         "inactive": "Inactive",
-        "verified": "Verified"
+        "verified": "Verified",
+        "professionalEmail": "Professional Email",
+        "contactEmail": "Contact Email",
+        "contentFreshness": "Content Freshness",
+        "redFlags": "Red Flags Detected",
+        "yes": "Yes",
+        "no": "No",
+        "notSecure": "Not Secure",
+        "webHighlights": "Website Highlights"
+    },
+    "Common": {
+        "searchingFrom": "Searching from",
+        "privacyCookies": "Privacy & Cookies",
+        "verifiedAgainstRegistries": "All businesses verified against official registries",
+        "searchInIndustry": "Search in industry",
+        "orgNr": "Org. No."
     }
 }

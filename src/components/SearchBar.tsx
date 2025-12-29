@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 interface SearchBarProps {
     defaultQuery?: string;
@@ -16,8 +17,9 @@ export default function SearchBar({
     className = '',
     size = 'default',
     autoFocus = false,
-    placeholder = 'Søk etter produkter, tjenester eller bedrifter...'
+    placeholder
 }: SearchBarProps) {
+    const t = useTranslations('Common');
     const [suggestions, setSuggestions] = useState<Array<{ label: string; value: string; type: string; logo: string | null }>>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [query, setQuery] = useState(defaultQuery);
@@ -40,7 +42,6 @@ export default function SearchBar({
         }
     };
 
-    // Effect for fetching suggestions
     // Effect for fetching suggestions
     const firstRender = useRef(true);
     useEffect(() => {
@@ -155,7 +156,7 @@ export default function SearchBar({
                             <div>
                                 <div className="font-medium text-gray-900 dark:text-gray-100">{item.label}</div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    {item.type === 'category' ? 'Søk i bransje' : `Org.nr: ${item.value}`}
+                                    {item.type === 'category' ? t('searchInIndustry') : `${t('orgNr')}: ${item.value}`}
                                 </div>
                             </div>
                         </button>

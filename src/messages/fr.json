@@ -60,6 +60,21 @@
         "secure": "Sécurisé",
         "active": "Actif",
         "inactive": "Inactif",
-        "verified": "Vérifié"
+        "verified": "Vérifié",
+        "professionalEmail": "E-mail professionnel",
+        "contactEmail": "E-mail de contact",
+        "contentFreshness": "Fraîcheur du contenu",
+        "redFlags": "Drapeaux rouges détectés",
+        "yes": "Oui",
+        "no": "Non",
+        "notSecure": "Non sécurisé",
+        "webHighlights": "Points forts du site"
+    },
+    "Common": {
+        "searchingFrom": "Recherche depuis",
+        "privacyCookies": "Confidentialité et Cookies",
+        "verifiedAgainstRegistries": "Toutes les entreprises vérifiées auprès des registres officiels",
+        "searchInIndustry": "Rechercher dans l'industrie",
+        "orgNr": "N° Org."
     }
 }
