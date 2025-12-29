@@ -1,0 +1,143 @@
+/**
+ * Trust Score Calculator
+ * Calculates business trust score (0-100) based on data completeness and quality
+ */
+
+export interface TrustScoreInput {
+    registry_data: any;
+    company_description?: string;
+    logo_url?: string;
+    social_media?: any;
+    sitelinks?: any[];
+    product_categories?: string[];
+    translations?: any;
+    industry_category?: string;
+    quality_analysis?: any;
+    indexed_pages_count?: number;
+}
+
+export interface TrustScoreResult {
+    score: number;
+    breakdown: Record<string, number>;
+}
+
+/**
+ * Calculate trust score based on profile completeness and quality
+ * 
+ * Scoring Formula:
+ * - Base: 40 (registry verified)
+ * - Data Completeness: 30 max
+ * - Data Quality: 20 max
+ * - Technical Quality: 10 max
+ * Total: 100 max
+ */
+export function calculateTrustScore(business: TrustScoreInput): TrustScoreResult {
+    const breakdown: Record<string, number> = {};
+
+    // Base Score: Registry Verification (40 points)
+    breakdown.registry_verified = 40;
+
+    // === DATA COMPLETENESS (30 points max) ===
+
+    // Has description (+5)
+    if (business.company_description && business.company_description.length > 0) {
+        breakdown.has_description = 5;
+    }
+
+    // Has logo (+5)
+    if (business.logo_url) {
+        breakdown.has_logo = 5;
+    }
+
+    // Has social media (+5)
+    if (business.social_media && Object.keys(business.social_media).filter(k => business.social_media[k]).length > 0) {
+        breakdown.has_social = 5;
+    }
+
+    // Has quality sitelinks (+5)
+    if (business.sitelinks && business.sitelinks.length >= 3) {
+        breakdown.has_sitelinks = 5;
+    }
+
+    // Has product/service categories (+5)
+    if (business.product_categories && business.product_categories.length > 0) {
+        breakdown.has_categories = 5;
+    }
+
+    // Has translations (at least 3 languages) (+5)
+    if (business.translations && Object.keys(business.translations).length >= 3) {
+        breakdown.has_translations = 5;
+    }
+
+    // === DATA QUALITY (20 points max) ===
+
+    // Detailed description (>200 chars) (+5)
+    if (business.company_description && business.company_description.length > 200) {
+        breakdown.detailed_description = 5;
+    }
+
+    // Professional email found (+5)
+    if (business.quality_analysis?.professional_email) {
+        breakdown.professional_email = 5;
+    }
+
+    // Multiple social platforms (2+) (+5)
+    if (business.social_media && Object.keys(business.social_media).filter(k => business.social_media[k]).length >= 2) {
+        breakdown.multi_social = 5;
+    }
+
+    // Industry category identified (+5)
+    if (business.industry_category && business.industry_category !== 'Unknown') {
+        breakdown.has_industry = 5;
+    }
+
+    // === TECHNICAL QUALITY (10 points max) ===
+
+    // Has SSL certificate (+5)
+    if (business.quality_analysis?.has_ssl) {
+        breakdown.has_ssl = 5;
+    }
+
+    // Well-indexed site (>10 pages) (+5)
+    if (business.indexed_pages_count && business.indexed_pages_count > 10) {
+        breakdown.well_indexed = 5;
+    }
+
+    // Calculate total score
+    const score = Object.values(breakdown).reduce((sum, val) => sum + val, 0);
+
+    return { score, breakdown };
+}
+
+/**
+ * Get human-readable trust level based on score
+ */
+export function getTrustLevel(score: number): 'low' | 'medium' | 'good' | 'excellent' {
+    if (score >= 80) return 'excellent';
+    if (score >= 65) return 'good';
+    if (score >= 50) return 'medium';
+    return 'low';
+}
+
+/**
+ * Get breakdown explanation for UI display
+ */
+export function getScoreExplanation(breakdown: Record<string, number>): string[] {
+    const explanations: string[] = [];
+
+    if (breakdown.registry_verified) explanations.push('✅ Verified in official registry');
+    if (breakdown.has_description) explanations.push('✅ Company description provided');
+    if (breakdown.detailed_description) explanations.push('✅ Detailed profile (200+ characters)');
+    if (breakdown.has_logo) explanations.push('✅ Logo uploaded');
+    if (breakdown.has_social) explanations.push('✅ Social media presence');
+    if (breakdown.multi_social) explanations.push('✅ Multiple social platforms');
+    if (breakdown.has_sitelinks) explanations.push('✅ Important pages indexed');
+    if (breakdown.has_categories) explanations.push('✅ Products/services listed');
+    if (breakdown.has_translations) explanations.push('✅ Multilingual content');
+    if (breakdown.has_industry) explanations.push('✅ Industry identified');
+    if (breakdown.professional_email) explanations.push('✅ Professional contact email');
+    if (breakdown.has_ssl) explanations.push('✅ Secure website (SSL)');
+    if (breakdown.well_indexed) explanations.push('✅ Comprehensive website (10+ pages)');
+
+    return explanations;
+}

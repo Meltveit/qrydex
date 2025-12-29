@@ -4,6 +4,7 @@ dotenv.config({ path: '.env.local' });
 import { createServerClient } from '../supabase';
 import { scrapeWebsite } from './website-scraper';
 import { analyzeBusinessCredibility } from '../ai/scam-detector';
+import { calculateTrustScore } from '../trust-score';
 
 // CLI execution - RUNS CONTINUOUSLY
 if (require.main === module) {
@@ -68,7 +69,8 @@ if (require.main === module) {
                                     ...analysis, // isScam, confidence, redFlags, trustSignals, riskLevel, summary
                                     // Add enriched data from deep crawl
                                     website_url: enrichedData?.homepage_url || existingQuality?.website_url,
-                                    contact_email: enrichedData?.contact_info?.emails?.[0] || existingQuality?.contact_email,
+                                    contact_email: enrichedData?.contact_info?.emails?.[0] || existingQuality?.contact_email, // Now prioritized!
+                                    all_emails: enrichedData?.contact_info?.emails || existingQuality?.all_emails, // Store all for reference
                                     contact_phone: enrichedData?.contact_info?.phones?.[0] || existingQuality?.contact_phone,
                                     industry_category: enrichedData?.industry_category || existingQuality?.industry_category,
                                     ai_summary: enrichedData?.company_description || data.description || existingQuality?.ai_summary,
@@ -85,10 +87,29 @@ if (require.main === module) {
                                     email: updatedQuality.contact_email
                                 });
 
+                                // Calculate trust score based on data completeness
+                                const { score, breakdown } = calculateTrustScore({
+                                    registry_data: business.registry_data,
+                                    company_description: enrichedData?.company_description,
+                                    logo_url: enrichedData?.logo_url,
+                                    social_media: enrichedData?.contact_info?.social_media,
+                                    sitelinks: enrichedData?.sitelinks,
+                                    product_categories: [
+                                        ...(enrichedData?.products?.en || []),
+                                        ...(enrichedData?.services?.en || [])
+                                    ],
+                                    translations: data.translations,
+                                    industry_category: enrichedData?.industry_category,
+                                    quality_analysis: updatedQuality,
+                                    indexed_pages_count: enrichedData?.total_pages_indexed
+                                });
+
+                                // Update database
                                 await supabase
                                     .from('businesses')
                                     .update({
                                         company_description: enrichedData?.company_description || data.description || null,
+                                        industry_category: enrichedData?.industry_category || null,
                                         // Combine products + services into product_categories array (max 10)
                                         product_categories: [
                                             ...(enrichedData?.products?.en || []),
@@ -104,6 +125,9 @@ if (require.main === module) {
                                             products: enrichedData?.products,
                                             services: enrichedData?.services
                                         },
+                                        // Trust score (data-driven)
+                                        trust_score: score,
+                                        trust_score_breakdown: breakdown,
                                         // Critical tracking fields
                                         indexed_pages_count: enrichedData?.total_pages_indexed || 0,
                                         website_last_crawled: new Date().toISOString(),

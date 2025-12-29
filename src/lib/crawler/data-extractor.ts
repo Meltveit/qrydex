@@ -149,11 +149,97 @@ function extractContactInfo(crawlResult: DeepCrawlResult) {
         }
     }
 
+    // Prioritize emails by importance
+    const prioritizedEmails = Array.from(emails).map(email => {
+        const localPart = email.split('@')[0].toLowerCase();
+
+        let priority = 3; // Default: generic
+
+        // Tier 1: Executives (highest priority)
+        const execKeywords = ['ceo', 'cfo', 'cto', 'president', 'founder', 'chairman', 'director', 'vp', 'investor', 'ir', 'coo'];
+        if (execKeywords.some(kw => localPart.includes(kw))) {
+            priority = 1;
+        }
+        // Tier 2: Departments
+        else if (['sales', 'marketing', 'hr', 'support', 'business', 'bd', 'contact'].some(kw => localPart.includes(kw))) {
+            priority = 2;
+        }
+
+        // Exclude no-reply emails
+        if (['noreply', 'no-reply', 'donotreply'].some(kw => localPart.includes(kw))) {
+            return null;
+        }
+
+        return { email, priority };
+    })
+        .filter((item): item is { email: string; priority: number } => item !== null)
+        .sort((a, b) => a.priority - b.priority) // Sort by priority (1 = highest)
+        .slice(0, 10)
+        .map(item => item.email);
+
     return {
-        emails: Array.from(emails).slice(0, 10), // Max 10 emails
+        emails: prioritizedEmails,
         phones: Array.from(phones).slice(0, 5), // Max 5 phones
         social_media: social
     };
+}
+
+/**
+ * Smart sitelink selection - prioritize important pages
+ * Returns top 6 most valuable pages based on priority scoring
+ */
+function selectSmartSitelinks(pages: DeepCrawlResult['pages']): Array<{
+    title: string;
+    url: string;
+    description?: string;
+}> {
+    // Priority keywords for scoring
+    const priorityKeywords = {
+        high: ['contact', 'about', 'team', 'leadership', 'investor', 'career', 'executive', 'management'],
+        medium: ['product', 'service', 'solution', 'industry', 'technology', 'offering'],
+        low: ['news', 'blog', 'resource', 'press', 'article']
+    };
+
+    // Pages to exclude entirely (low value)
+    const excludeKeywords = ['privacy', 'cookie', 'terms', 'legal', 'disclaimer', 'gdpr', 'policy'];
+
+    const scoredPages = pages
+        .slice(1) // Skip homepage
+        .map(page => {
+            const urlLower = page.url.toLowerCase();
+            const titleLower = page.title.toLowerCase();
+
+            // Exclude low-value pages
+            if (excludeKeywords.some(kw => urlLower.includes(kw) || titleLower.includes(kw))) {
+                return null;
+            }
+
+            // Calculate priority score
+            let score = 0;
+            if (priorityKeywords.high.some(kw => urlLower.includes(kw) || titleLower.includes(kw))) {
+                score = 3;
+            } else if (priorityKeywords.medium.some(kw => urlLower.includes(kw) || titleLower.includes(kw))) {
+                score = 2;
+            } else if (priorityKeywords.low.some(kw => urlLower.includes(kw) || titleLower.includes(kw))) {
+                score = 1;
+            }
+
+            return {
+                page,
+                score
+            };
+        })
+        .filter(Boolean) as Array<{ page: any; score: number }>;
+
+    // Sort by priority score (high to low), then take top 6
+    return scoredPages
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6)
+        .map(item => ({
+            title: item.page.title || item.page.headings.h1[0] || 'Page',
+            url: item.page.url,
+            description: item.page.meta.description?.slice(0, 160)
+        }));
 }
 
 /**
@@ -205,12 +291,12 @@ async function analyzeWithAI(crawlResult: DeepCrawlResult): Promise<Partial<Enri
         const prompt = `Analyze this business website content and extract structured data. Return ONLY valid JSON:
 
 {
-  "company_description_no": "Professional 2-sentence summary in Norwegian",
-  "company_description_en": "Professional 2-sentence summary in English",
-  "company_description_de": "Professional 2-sentence summary in German",
-  "company_description_fr": "Professional 2-sentence summary in French",
-  "company_description_es": "Professional 2-sentence summary in Spanish",
-  "industry_category": "Primary industry (e.g., 'IT Services', 'Manufacturing')",
+  "company_description_no": "Professional 3-4 sentence summary in Norwegian (300-400 characters). Include: what they do, key products/services, and industry positioning or notable achievements.",
+  "company_description_en": "Professional 3-4 sentence summary in English (300-400 characters). Include: what they do, key products/services, and industry positioning or notable achievements.",
+  "company_description_de": "Professional 3-4 sentence summary in German (300-400 characters). Include: what they do, key products/services, and industry positioning or notable achievements.",
+  "company_description_fr": "Professional 3-4 sentence summary in French (300-400 characters). Include: what they do, key products/services, and industry positioning or notable achievements.",
+  "company_description_es": "Professional 3-4 sentence summary in Spanish (300-400 characters). Include: what they do, key products/services, and industry positioning or notable achievements.",
+  "industry_category": "Primary industry (e.g., 'IT Services', 'Manufacturing', 'Mining', 'Healthcare', 'Finance')",
   "services_no": ["Service 1 (Norwegian)", "Service 2"],
   "services_en": ["Service 1 (English)", "Service 2"],
   "services_de": ["Service 1 (German)", "Service 2"],
@@ -322,18 +408,13 @@ export async function processDeepCrawl(crawlResult: DeepCrawlResult): Promise<En
     const jsonLdData = crawlResult.pages
         .flatMap(p => p.structuredData || []);
 
+
     // AI Analysis (async)
     console.log('🧠 Running AI analysis...');
     const aiData = await analyzeWithAI(crawlResult);
 
-    // Build sitelinks (top pages)
-    const sitelinks = crawlResult.pages
-        .slice(1, 7) // Skip homepage, take next 6
-        .map(page => ({
-            title: page.title || page.headings.h1[0] || 'Page',
-            url: page.url,
-            description: page.meta.description?.slice(0, 160)
-        }));
+    // Build smart sitelinks (prioritized, quality pages only)
+    const sitelinks = selectSmartSitelinks(crawlResult.pages);
 
     return {
         company_description: aiData.company_description || metaDescriptions[0] || '',
