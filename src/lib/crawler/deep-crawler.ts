@@ -245,7 +245,13 @@ async function crawlPage(url: string): Promise<CrawledPage | null> {
             }
         });
 
-        if (!response.ok || !response.headers.get('content-type')?.includes('html')) {
+        // CRITICAL: Exclude pages with non-2xx status codes (404, 403, 500, etc.)
+        if (response.status < 200 || response.status >= 300) {
+            console.log(`  ⚠️ Skipping ${url} (HTTP ${response.status})`);
+            return null;
+        }
+
+        if (!response.headers.get('content-type')?.includes('html')) {
             return null;
         }
 
