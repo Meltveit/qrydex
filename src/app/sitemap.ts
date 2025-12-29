@@ -1,34 +1,12 @@
 import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 
-export async function generateSitemaps() {
-    // Determine how many sitemaps we need based on total businesses
-    try {
-        const { count } = await supabase
-            .from('businesses')
-            .select('*', { count: 'exact', head: true });
-
-        const totalBusinesses = count || 0;
-        const limit = 10000;
-        const numberOfSitemaps = Math.ceil(totalBusinesses / limit);
-
-        // Generate IDs from 0 to numberOfSitemaps
-        return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i }));
-    } catch (e) {
-        // Fallback if DB fails
-        return [{ id: 0 }];
-    }
-}
-
-export default async function sitemap({ id }: { id: Promise<number> }): Promise<MetadataRoute.Sitemap> {
-    const sitemapId = await id;
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
-    const limit = 10000;
-    const start = sitemapId * limit;
-    const end = start + limit - 1;
+    const limit = 20000; // Increase limit for single file
 
-    // Static pages (only on first sitemap)
-    const staticPages: MetadataRoute.Sitemap = sitemapId === 0 ? [
+    // Static pages
+    const staticPages: MetadataRoute.Sitemap = [
         {
             url: baseUrl,
             lastModified: new Date(),
@@ -38,7 +16,7 @@ export default async function sitemap({ id }: { id: Promise<number> }): Promise<
         {
             url: `${baseUrl}/search`,
             lastModified: new Date(),
-            changeFrequency: 'always', // Search results change constantly
+            changeFrequency: 'always',
             priority: 0.9,
         },
         {
@@ -47,7 +25,7 @@ export default async function sitemap({ id }: { id: Promise<number> }): Promise<
             changeFrequency: 'monthly',
             priority: 0.7,
         },
-    ] : [];
+    ];
 
     // Dynamic business pages
     let businessPages: MetadataRoute.Sitemap = [];
@@ -56,16 +34,15 @@ export default async function sitemap({ id }: { id: Promise<number> }): Promise<
         const { data: businesses } = await supabase
             .from('businesses')
             .select('org_number, updated_at, trust_score')
-            // Remove .eq('verification_status', 'verified') to include seeded companies
             .order('trust_score', { ascending: false })
-            .range(start, end);
+            .limit(limit);
 
         if (businesses) {
             businessPages = businesses.map((business) => ({
                 url: `${baseUrl}/business/${business.org_number}`,
                 lastModified: new Date(business.updated_at),
                 changeFrequency: 'weekly',
-                priority: business.trust_score > 70 ? 0.8 : 0.6, // Higher priority for trusted
+                priority: business.trust_score > 70 ? 0.8 : 0.6,
             }));
         }
     } catch (error) {
