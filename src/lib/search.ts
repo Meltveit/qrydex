@@ -125,11 +125,13 @@ export async function searchBusinesses(
                     `quality_analysis->>services.ilike.%${cleanQuery}%`,
                     `quality_analysis->>products.ilike.%${cleanQuery}%`,
                     // Multilingual Support (Global Expansion)
+                    // Tier 1: English (Global)
                     `translations->en->>services.ilike.%${cleanQuery}%`,
                     `translations->en->>products.ilike.%${cleanQuery}%`,
                     `translations->en->>company_description.ilike.%${cleanQuery}%`,
                     `translations->en->>industry_text.ilike.%${cleanQuery}%`,
 
+                    // Tier 2: Major European
                     `translations->fr->>services.ilike.%${cleanQuery}%`,
                     `translations->fr->>products.ilike.%${cleanQuery}%`,
                     `translations->fr->>company_description.ilike.%${cleanQuery}%`,
@@ -144,6 +146,28 @@ export async function searchBusinesses(
                     `translations->es->>products.ilike.%${cleanQuery}%`,
                     `translations->es->>company_description.ilike.%${cleanQuery}%`,
                     `translations->es->>industry_text.ilike.%${cleanQuery}%`,
+
+                    // Tier 3: Nordic Market (Added per user request)
+                    `translations->no->>services.ilike.%${cleanQuery}%`,
+                    `translations->no->>products.ilike.%${cleanQuery}%`,
+                    `translations->no->>company_description.ilike.%${cleanQuery}%`,
+                    `translations->no->>industry_text.ilike.%${cleanQuery}%`,
+
+                    `translations->sv->>services.ilike.%${cleanQuery}%`,
+                    `translations->sv->>products.ilike.%${cleanQuery}%`,
+                    `translations->sv->>company_description.ilike.%${cleanQuery}%`,
+                    `translations->sv->>industry_text.ilike.%${cleanQuery}%`,
+
+                    `translations->da->>services.ilike.%${cleanQuery}%`,
+                    `translations->da->>products.ilike.%${cleanQuery}%`,
+                    `translations->da->>company_description.ilike.%${cleanQuery}%`,
+                    `translations->da->>industry_text.ilike.%${cleanQuery}%`,
+
+                    `translations->fi->>services.ilike.%${cleanQuery}%`,
+                    `translations->fi->>products.ilike.%${cleanQuery}%`,
+                    `translations->fi->>company_description.ilike.%${cleanQuery}%`,
+                    `translations->fi->>industry_text.ilike.%${cleanQuery}%`,
+
                     // New Multilingual Keywords Field
                     `quality_analysis->>search_keywords.ilike.%${cleanQuery}%`
                 );
