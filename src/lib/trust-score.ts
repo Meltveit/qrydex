@@ -142,15 +142,35 @@ export function getScoreExplanation(breakdown: Record<string, number>): string[]
     return explanations;
 }
 
-/**
- * Format Trust Score for display
- */
-export function formatTrustScore(business: { trust_score: number; trust_score_breakdown?: any }): {
+export interface TrustScoreDisplay {
     score: number;
     color: 'green' | 'yellow' | 'red';
     labelKey: string;
-} {
+    breakdown: {
+        registry: { score: number; max: number };
+        content: { score: number; max: number };
+        social: { score: number; max: number };
+        technical: { score: number; max: number };
+    };
+}
+
+/**
+ * Format Trust Score for display
+ */
+export function formatTrustScore(business: { trust_score: number; trust_score_breakdown?: any }): TrustScoreDisplay {
     const score = business.trust_score || 0;
+    const raw = business.trust_score_breakdown || {};
+
+    // Calculate category scores based on raw components
+    const registryScore = (raw.registry_verified || 0); // Max 40
+
+    const contentScore = (raw.has_description || 0) + (raw.detailed_description || 0) +
+        (raw.has_logo || 0) + (raw.has_categories || 0) + (raw.has_translations || 0) + (raw.has_industry || 0);
+
+    const socialScore = (raw.has_social || 0) + (raw.multi_social || 0) + (raw.professional_email || 0);
+
+    const technicalScore = (raw.has_sitelinks || 0) + (raw.has_ssl || 0) + (raw.well_indexed || 0);
+
     return {
         score,
         color: score >= 70 ? 'green' : score >= 40 ? 'yellow' : 'red',
@@ -158,6 +178,12 @@ export function formatTrustScore(business: { trust_score: number; trust_score_br
             score >= 70 ? 'trusted' :
                 score >= 50 ? 'moderatelyTrusted' :
                     score >= 40 ? 'requiresVerification' :
-                        score >= 20 ? 'lowTrust' : 'notVerified'
+                        score >= 20 ? 'lowTrust' : 'notVerified',
+        breakdown: {
+            registry: { score: registryScore, max: 40 },
+            content: { score: contentScore, max: 25 },
+            social: { score: socialScore, max: 15 },
+            technical: { score: technicalScore, max: 20 }
+        }
     };
 }
