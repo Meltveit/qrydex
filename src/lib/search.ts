@@ -55,14 +55,6 @@ export async function searchBusinesses(
             .from('businesses')
             .select('*', { count: 'exact' });
 
-        // ... existing query logic ... (re-verify that we don't overwrite lines 43-98 unnecessarily, but I need to insert imports or interface above)
-        // Wait, I am replacing a large chunk to inject 'context' param in signature.
-        // It is safer to replace the signature and the logging block separately?
-        // No, I can do it in one go if I am careful.
-
-        // Let's replace the signature first.
-
-
         // Text search
         if (query && query.trim()) {
             let cleanQuery = query.trim().replace(/'/g, "''"); // Escape quotes
@@ -116,139 +108,138 @@ export async function searchBusinesses(
                     cleanQuery = '';
                 }
             }
-        }
 
 
-        // Populate orConditions with the (potentially modified) cleanQuery
-        // Only if cleanQuery is not empty (could be empty after country filtering)
-        if (cleanQuery) {
-            orConditions.push(
-                `legal_name.ilike.%${cleanQuery}%`,
-                `company_description.ilike.%${cleanQuery}%`,
-                `registry_data->>visiting_address.ilike.%${cleanQuery}%`,
-                `registry_data->>registered_address.ilike.%${cleanQuery}%`,
-                `registry_data->>city.ilike.%${cleanQuery}%`,
-                `registry_data->>nace_description.ilike.%${cleanQuery}%`, // Brreg Industry Description
-                `quality_analysis->>industry_category.ilike.%${cleanQuery}%`, // AI Industry Tag
-                // Deep Scan 2.0: Search in services & products arrays (cast to text)
-                `quality_analysis->>services.ilike.%${cleanQuery}%`,
-                `quality_analysis->>products.ilike.%${cleanQuery}%`,
-                // Multilingual Support (Global Expansion)
-                `translations->en->>services.ilike.%${cleanQuery}%`,
-                `translations->en->>products.ilike.%${cleanQuery}%`,
-                `translations->en->>company_description.ilike.%${cleanQuery}%`,
-                `translations->en->>industry_text.ilike.%${cleanQuery}%`,
+            // Populate orConditions with the (potentially modified) cleanQuery
+            // Only if cleanQuery is not empty (could be empty after country filtering)
+            if (cleanQuery) {
+                orConditions.push(
+                    `legal_name.ilike.%${cleanQuery}%`,
+                    `company_description.ilike.%${cleanQuery}%`,
+                    `registry_data->>visiting_address.ilike.%${cleanQuery}%`,
+                    `registry_data->>registered_address.ilike.%${cleanQuery}%`,
+                    `registry_data->>city.ilike.%${cleanQuery}%`,
+                    `registry_data->>nace_description.ilike.%${cleanQuery}%`, // Brreg Industry Description
+                    `quality_analysis->>industry_category.ilike.%${cleanQuery}%`, // AI Industry Tag
+                    // Deep Scan 2.0: Search in services & products arrays (cast to text)
+                    `quality_analysis->>services.ilike.%${cleanQuery}%`,
+                    `quality_analysis->>products.ilike.%${cleanQuery}%`,
+                    // Multilingual Support (Global Expansion)
+                    `translations->en->>services.ilike.%${cleanQuery}%`,
+                    `translations->en->>products.ilike.%${cleanQuery}%`,
+                    `translations->en->>company_description.ilike.%${cleanQuery}%`,
+                    `translations->en->>industry_text.ilike.%${cleanQuery}%`,
 
-                `translations->fr->>services.ilike.%${cleanQuery}%`,
-                `translations->fr->>products.ilike.%${cleanQuery}%`,
-                `translations->fr->>company_description.ilike.%${cleanQuery}%`,
-                `translations->fr->>industry_text.ilike.%${cleanQuery}%`,
+                    `translations->fr->>services.ilike.%${cleanQuery}%`,
+                    `translations->fr->>products.ilike.%${cleanQuery}%`,
+                    `translations->fr->>company_description.ilike.%${cleanQuery}%`,
+                    `translations->fr->>industry_text.ilike.%${cleanQuery}%`,
 
-                `translations->de->>services.ilike.%${cleanQuery}%`,
-                `translations->de->>products.ilike.%${cleanQuery}%`,
-                `translations->de->>company_description.ilike.%${cleanQuery}%`,
-                `translations->de->>industry_text.ilike.%${cleanQuery}%`,
+                    `translations->de->>services.ilike.%${cleanQuery}%`,
+                    `translations->de->>products.ilike.%${cleanQuery}%`,
+                    `translations->de->>company_description.ilike.%${cleanQuery}%`,
+                    `translations->de->>industry_text.ilike.%${cleanQuery}%`,
 
-                `translations->es->>services.ilike.%${cleanQuery}%`,
-                `translations->es->>products.ilike.%${cleanQuery}%`,
-                `translations->es->>company_description.ilike.%${cleanQuery}%`,
-                `translations->es->>industry_text.ilike.%${cleanQuery}%`,
-                // New Multilingual Keywords Field
-                `quality_analysis->>search_keywords.ilike.%${cleanQuery}%`
-            );
-        }
-
-
-        if (orConditions.length > 0) {
-            businessQueryBuilder = businessQueryBuilder.or(orConditions.join(','));
-        }
-    }
-
-    // Apply filters
-    if (filters?.country) {
-        businessQueryBuilder = businessQueryBuilder.eq('country_code', filters.country.toUpperCase());
-    }
-
-    if (filters?.minTrustScore) {
-        businessQueryBuilder = businessQueryBuilder.gte('trust_score', filters.minTrustScore);
-    }
-
-    if (filters?.verifiedOnly) {
-        businessQueryBuilder = businessQueryBuilder.eq('verification_status', 'verified');
-    }
-
-    if (filters?.industry) {
-        businessQueryBuilder = businessQueryBuilder.ilike('quality_analysis->>industry_category', `%${filters.industry}%`);
-    }
-
-    // Order by trust score (primary) and relevance
-    businessQueryBuilder = businessQueryBuilder
-        .order('trust_score', { ascending: false })
-        .range((page - 1) * pageSize, page * pageSize - 1);
-
-    // Execute queries
-    // If we have a query string, we also search for news
-    let newsPromise = Promise.resolve({ data: [], error: null });
-
-    if (query && query.trim()) {
-        // Simple ILIKE search for news since we don't have FTS column setup in client types yet
-        // Limiting news to 5 for relevance mix
-        newsPromise = supabase
-            .from('news_articles')
-            .select('*')
-            .or(`title.ilike.%${query}%,summary.ilike.%${query}%`)
-            .order('published_at', { ascending: false })
-            .limit(5) as any;
-    }
-
-    const [businessResult, newsResult] = await Promise.all([
-        businessQueryBuilder,
-        newsPromise
-    ]);
-
-    const { data: businessData, error: businessError, count } = businessResult;
-    const { data: newsData, error: newsError } = newsResult;
-
-    if (businessError) {
-        console.error('Search error (business):', businessError);
-        throw businessError;
-    }
-
-    // Log search analytics (fire and forget) - Bot B Pulse
-    if (query && query.trim()) {
-        (async () => {
-            try {
-                await supabase.from('search_logs').insert({
-                    query: query.trim(),
-                    filters: filters,
-                    result_count: count || businessData?.length || 0,
-                    location_country: context?.country || 'Unknown',
-                    location_region: context?.region,
-                    anonymized_session_id: context?.sessionId
-                });
-            } catch (e) {
-                console.error('Pulse logging failed:', e);
+                    `translations->es->>services.ilike.%${cleanQuery}%`,
+                    `translations->es->>products.ilike.%${cleanQuery}%`,
+                    `translations->es->>company_description.ilike.%${cleanQuery}%`,
+                    `translations->es->>industry_text.ilike.%${cleanQuery}%`,
+                    // New Multilingual Keywords Field
+                    `quality_analysis->>search_keywords.ilike.%${cleanQuery}%`
+                );
             }
-        })();
-    }
 
-    return {
-        businesses: JSON.parse(JSON.stringify(businessData || [])),
-        articles: newsData ? JSON.parse(JSON.stringify(newsData)) : [],
-        total: count || 0,
-        page,
-        pageSize,
-    };
-} catch (error) {
-    console.error('Error searching businesses:', error);
-    return {
-        businesses: [],
-        articles: [],
-        total: 0,
-        page,
-        pageSize,
-    };
-}
+
+            if (orConditions.length > 0) {
+                businessQueryBuilder = businessQueryBuilder.or(orConditions.join(','));
+            }
+        }
+
+        // Apply filters
+        if (filters?.country) {
+            businessQueryBuilder = businessQueryBuilder.eq('country_code', filters.country.toUpperCase());
+        }
+
+        if (filters?.minTrustScore) {
+            businessQueryBuilder = businessQueryBuilder.gte('trust_score', filters.minTrustScore);
+        }
+
+        if (filters?.verifiedOnly) {
+            businessQueryBuilder = businessQueryBuilder.eq('verification_status', 'verified');
+        }
+
+        if (filters?.industry) {
+            businessQueryBuilder = businessQueryBuilder.ilike('quality_analysis->>industry_category', `%${filters.industry}%`);
+        }
+
+        // Order by trust score (primary) and relevance
+        businessQueryBuilder = businessQueryBuilder
+            .order('trust_score', { ascending: false })
+            .range((page - 1) * pageSize, page * pageSize - 1);
+
+        // Execute queries
+        // If we have a query string, we also search for news
+        let newsPromise = Promise.resolve({ data: [], error: null });
+
+        if (query && query.trim()) {
+            // Simple ILIKE search for news since we don't have FTS column setup in client types yet
+            // Limiting news to 5 for relevance mix
+            newsPromise = supabase
+                .from('news_articles')
+                .select('*')
+                .or(`title.ilike.%${query}%,summary.ilike.%${query}%`)
+                .order('published_at', { ascending: false })
+                .limit(5) as any;
+        }
+
+        const [businessResult, newsResult] = await Promise.all([
+            businessQueryBuilder,
+            newsPromise
+        ]);
+
+        const { data: businessData, error: businessError, count } = businessResult;
+        const { data: newsData, error: newsError } = newsResult;
+
+        if (businessError) {
+            console.error('Search error (business):', businessError);
+            throw businessError;
+        }
+
+        // Log search analytics (fire and forget) - Bot B Pulse
+        if (query && query.trim()) {
+            (async () => {
+                try {
+                    await supabase.from('search_logs').insert({
+                        query: query.trim(),
+                        filters: filters,
+                        result_count: count || businessData?.length || 0,
+                        location_country: context?.country || 'Unknown',
+                        location_region: context?.region,
+                        anonymized_session_id: context?.sessionId
+                    });
+                } catch (e) {
+                    console.error('Pulse logging failed:', e);
+                }
+            })();
+        }
+
+        return {
+            businesses: JSON.parse(JSON.stringify(businessData || [])),
+            articles: newsData ? JSON.parse(JSON.stringify(newsData)) : [],
+            total: count || 0,
+            page,
+            pageSize,
+        };
+    } catch (error) {
+        console.error('Error searching businesses:', error);
+        return {
+            businesses: [],
+            articles: [],
+            total: 0,
+            page,
+            pageSize,
+        };
+    }
 }
 
 /**
