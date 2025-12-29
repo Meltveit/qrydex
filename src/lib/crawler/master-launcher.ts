@@ -53,7 +53,7 @@ const BOTS: BotConfig[] = [
     }
 ];
 
-const TOTAL_SCRAPER_WORKERS = 3;
+
 
 function launchBot(config: BotConfig, instanceNumber: number, workerConfig?: { id: number, total: number }) {
     const botName = workerConfig
@@ -98,18 +98,16 @@ function startAllBots() {
     const processes: any[] = [];
 
     for (const config of BOTS) {
-        if (config.name === 'Website Scraper') {
-            // Launch scraper workers with proper worker IDs
-            for (let i = 0; i < TOTAL_SCRAPER_WORKERS; i++) {
-                const bot = launchBot(config, i, { id: i, total: TOTAL_SCRAPER_WORKERS });
+        if (config.instances > 1) {
+            // Launch workers with sharding IDs
+            for (let i = 0; i < config.instances; i++) {
+                const bot = launchBot(config, i, { id: i, total: config.instances });
                 processes.push(bot);
             }
         } else {
-            // Launch regular bots
-            for (let i = 0; i < config.instances; i++) {
-                const bot = launchBot(config, i);
-                processes.push(bot);
-            }
+            // Single instance
+            const bot = launchBot(config, 0);
+            processes.push(bot);
         }
     }
 

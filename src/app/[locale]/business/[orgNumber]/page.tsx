@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Business, NewsSignal } from '@/types/database';
 import TrustScoreBadge from '@/components/TrustScoreBadge';
 import { generateBusinessSchema } from '@/lib/seo/schema-generator';
-import { formatTrustScore } from '@/lib/trust-engine';
+import { formatTrustScore } from '@/lib/trust-score';
 import { getTranslations } from 'next-intl/server';
 
 import { ResolvingMetadata } from 'next';
