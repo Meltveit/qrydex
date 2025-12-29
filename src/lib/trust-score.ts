@@ -151,13 +151,14 @@ export interface TrustScoreDisplay {
         quality: { score: number; max: number };
         social: { score: number; max: number };
         technical: { score: number; max: number };
+        news: { score: number; max: number };
     };
 }
 
 /**
  * Format Trust Score for display
  */
-export function formatTrustScore(business: { trust_score: number; trust_score_breakdown?: any }): TrustScoreDisplay {
+export function formatTrustScore(business: { trust_score: number; trust_score_breakdown?: any; news_signals?: any[] }): TrustScoreDisplay {
     const score = business.trust_score || 0;
     const raw = business.trust_score_breakdown || {};
 
@@ -172,6 +173,21 @@ export function formatTrustScore(business: { trust_score: number; trust_score_br
 
     const technicalScore = (raw.has_sitelinks || 0) + (raw.has_ssl || 0) + (raw.well_indexed || 0);
 
+    // News sentiment score (based on news_signals if available)
+    let newsScore = 0;
+    if (business.news_signals && Array.isArray(business.news_signals)) {
+        const signals = business.news_signals;
+        const positiveCount = signals.filter((s: any) => s.sentiment === 'positive').length;
+        const negativeCount = signals.filter((s: any) => s.sentiment === 'negative').length;
+        const totalCount = signals.length;
+
+        if (totalCount > 0) {
+            // Score: 0-5 based on sentiment ratio
+            const ratio = (positiveCount - negativeCount) / totalCount;
+            newsScore = Math.max(0, Math.min(5, Math.round(2.5 + ratio * 2.5)));
+        }
+    }
+
     return {
         score,
         color: score >= 70 ? 'green' : score >= 40 ? 'yellow' : 'red',
@@ -184,7 +200,8 @@ export function formatTrustScore(business: { trust_score: number; trust_score_br
             registry: { score: registryScore, max: 40 },
             quality: { score: qualityScore, max: 25 },
             social: { score: socialScore, max: 15 },
-            technical: { score: technicalScore, max: 20 }
+            technical: { score: technicalScore, max: 20 },
+            news: { score: newsScore, max: 5 }
         }
     };
 }
