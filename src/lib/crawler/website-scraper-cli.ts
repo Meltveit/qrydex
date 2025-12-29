@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+
 import { createServerClient } from '../supabase';
 import { scrapeWebsite } from './website-scraper';
 import { analyzeBusinessCredibility } from '../ai/scam-detector';
@@ -70,6 +73,12 @@ if (require.main === module) {
                                 };
 
                                 // Update database
+                                console.log('DEBUG: Saving Enriched Data:', {
+                                    desc_len: enrichedData?.company_description?.length,
+                                    products: enrichedData?.products?.en?.length,
+                                    email: updatedQuality.contact_email
+                                });
+
                                 await supabase
                                     .from('businesses')
                                     .update({

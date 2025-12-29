@@ -5,6 +5,9 @@
  * Languages: Norwegian (no), Swedish (sv), Danish (da), Finnish (fi), German (de), French (fr), Spanish (es), English (en)
  */
 
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+
 import { createServerClient } from '../supabase';
 import { generateText } from '../ai/gemini-client';
 
@@ -158,6 +161,8 @@ if (require.main === module) {
 
     let cycleCount = 0;
 
+    let offset = 0;
+
     async function runContinuously() {
         const supabase = createServerClient();
 
@@ -165,7 +170,7 @@ if (require.main === module) {
         while (true) {
             cycleCount++;
             console.log(`\n${'='.repeat(60)}`);
-            console.log(`🔄 CYCLE ${cycleCount} - ${new Date().toLocaleString()}`);
+            console.log(`🔄 CYCLE ${cycleCount} - Offset: ${offset} - ${new Date().toLocaleString()}`);
             console.log(`${'='.repeat(60)}\n`);
 
             try {
@@ -175,8 +180,9 @@ if (require.main === module) {
                     .from('businesses')
                     .select('id, company_description, country_code, registry_data, quality_analysis, translations, product_categories', { count: 'exact' })
                     .not('company_description', 'is', null)
+                    .not('last_verified_at', 'is', null) // ONLY translate verified content
                     .order('trust_score', { ascending: false, nullsFirst: false }) // Prioritize trusted businesses
-                    .limit(50); // Process larger batch to filter
+                    .range(offset, offset + 49); // Paginate through the list
 
                 if (error) {
                     console.error('❌ Supabase Query Error:', error);
@@ -216,8 +222,12 @@ if (require.main === module) {
                     return false; // Has complete translations
                 }).slice(0, 3); // Take top 3 valid ones per cycle
 
-                if (!businesses || businesses.length === 0) {
-                    console.log('✅ All businesses translated! Waiting for new data...');
+                if (!rawBusinesses || rawBusinesses.length === 0) {
+                    console.log('✅ End of list reached (or empty). Resetting to top...');
+                    offset = 0;
+                    await new Promise(resolve => setTimeout(resolve, 60000)); // sleep 1 min before restart
+                } else if (!businesses || businesses.length === 0) {
+                    console.log(`⏩ No tasks in this batch of ${rawBusinesses.length}. Moving to next batch...`);
                 } else {
                     console.log(`Found ${count} businesses needing translation`);
                     console.log(`Processing ${businesses.length} in this cycle...\n`);
@@ -293,6 +303,15 @@ if (require.main === module) {
                 console.log('   Retrying in 5 minutes...');
                 await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
             }
+
+            // Pagination Logic
+            offset += 50;
+
+            // If we reached the end of the table (heuristic: if we didn't get a full batch or generic large number check)
+            // Ideally we check 'count', but here we just loop.
+            // If the query returned 0 items, we should reset. But we need access to 'rawBusinesses' here. 
+            // We can check if cycleCount is very high or just let it loop. 
+            // Better: Move this inside the try block where we have access to length.
         }
     }
 
