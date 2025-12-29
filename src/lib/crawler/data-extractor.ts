@@ -187,23 +187,29 @@ function extractContactInfo(crawlResult: DeepCrawlResult) {
 /**
  * Smart sitelink selection - prioritize important pages
  * Returns top 6 most valuable pages based on priority scoring
+ * Now with type classification and deduplication
  */
 function selectSmartSitelinks(pages: DeepCrawlResult['pages']): Array<{
     title: string;
     url: string;
     description?: string;
+    type?: 'contact' | 'about' | 'team' | 'products' | 'investors' | 'news' | 'other';
 }> {
-    // Priority keywords for scoring
-    const priorityKeywords = {
-        high: ['contact', 'about', 'team', 'leadership', 'investor', 'career', 'executive', 'management'],
-        medium: ['product', 'service', 'solution', 'industry', 'technology', 'offering'],
-        low: ['news', 'blog', 'resource', 'press', 'article']
+    // Type classification keywords
+    const typeKeywords = {
+        contact: ['contact', 'get-in-touch', 'reach-us', 'email', 'phone'],
+        about: ['about', 'who-we-are', 'company', 'overview', 'our-story', 'mission'],
+        team: ['team', 'leadership', 'management', 'executives', 'people', 'staff'],
+        products: ['product', 'service', 'solution', 'offering', 'technology', 'platform'],
+        investors: ['investor', 'ir', 'shareholder', 'stock', 'financial', 'earnings'],
+        news: ['news', 'press', 'blog', 'article', 'update', 'announcement']
     };
 
     // Pages to exclude entirely (low value)
     const excludeKeywords = ['privacy', 'cookie', 'terms', 'legal', 'disclaimer', 'gdpr', 'policy'];
 
-    const scoredPages = pages
+    // Classify and score each page
+    const classifiedPages = pages
         .slice(1) // Skip homepage
         .map(page => {
             const urlLower = page.url.toLowerCase();
@@ -214,32 +220,57 @@ function selectSmartSitelinks(pages: DeepCrawlResult['pages']): Array<{
                 return null;
             }
 
-            // Calculate priority score
+            // Determine page type
+            let type: 'contact' | 'about' | 'team' | 'products' | 'investors' | 'news' | 'other' = 'other';
             let score = 0;
-            if (priorityKeywords.high.some(kw => urlLower.includes(kw) || titleLower.includes(kw))) {
-                score = 3;
-            } else if (priorityKeywords.medium.some(kw => urlLower.includes(kw) || titleLower.includes(kw))) {
-                score = 2;
-            } else if (priorityKeywords.low.some(kw => urlLower.includes(kw) || titleLower.includes(kw))) {
-                score = 1;
+
+            // Check each type
+            for (const [typeName, keywords] of Object.entries(typeKeywords)) {
+                if (keywords.some(kw => urlLower.includes(kw) || titleLower.includes(kw))) {
+                    type = typeName as any;
+                    // Priority scoring based on type
+                    switch (type) {
+                        case 'contact': score = 6; break;
+                        case 'about': score = 5; break;
+                        case 'team': score = 4; break;
+                        case 'products': score = 3; break;
+                        case 'investors': score = 3; break;
+                        case 'news': score = 1; break;
+                    }
+                    break;
+                }
             }
 
             return {
                 page,
+                type,
                 score
             };
         })
-        .filter(Boolean) as Array<{ page: any; score: number }>;
+        .filter(Boolean) as Array<{ page: any; type: string; score: number }>;
 
-    // Sort by priority score (high to low), then take top 6
-    return scoredPages
+    // Deduplicate: Keep only the HIGHEST scored page per type
+    const typeMap = new Map<string, any>();
+
+    for (const item of classifiedPages) {
+        const existing = typeMap.get(item.type);
+        if (!existing || item.score > existing.score) {
+            typeMap.set(item.type, item);
+        }
+    }
+
+    // Convert back to array and sort by score
+    const uniquePages = Array.from(typeMap.values())
         .sort((a, b) => b.score - a.score)
-        .slice(0, 6)
-        .map(item => ({
-            title: item.page.title || item.page.headings.h1[0] || 'Page',
-            url: item.page.url,
-            description: item.page.meta.description?.slice(0, 160)
-        }));
+        .slice(0, 6);
+
+    // Return with type labels
+    return uniquePages.map(item => ({
+        title: item.page.title || item.page.headings.h1[0] || 'Page',
+        url: item.page.url,
+        description: item.page.meta.description?.slice(0, 160),
+        type: item.type
+    }));
 }
 
 /**
