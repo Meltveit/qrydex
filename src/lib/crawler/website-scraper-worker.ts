@@ -39,6 +39,7 @@ if (require.main === module) {
                     .select('id, domain, legal_name, org_number, registry_data, quality_analysis, scrape_count, country_code', { count: 'exact' })
                     .not('domain', 'is', null)
                     .is('company_description', null)
+                    .neq('website_status', 'dead') // Exclude dead sites
                     .or(`last_scraped_at.is.null,last_scraped_at.lt.${yesterday}`)
                     .order('created_at', { ascending: false })
                     .limit(100);
@@ -66,7 +67,20 @@ if (require.main === module) {
 
                 for (const business of businesses) {
                     try {
-                        console.log(`  🌐 Scraping: ${business.domain}`);
+                        // Check for max retries
+                        if ((business.scrape_count || 0) >= 4) {
+                            console.log(`⚠️ Giving up on ${business.domain} after 4 attempts. Marking as DEAD.`);
+                            await supabase
+                                .from('businesses')
+                                .update({
+                                    website_status: 'dead',
+                                    last_scraped_at: new Date().toISOString()
+                                })
+                                .eq('id', business.id);
+                            continue;
+                        }
+
+                        console.log(`  🌐 Scraping: ${business.domain} (Attempt ${(business.scrape_count || 0) + 1}/4)`);
 
                         const domain = business.domain;
                         const url = domain.startsWith('http') ? domain : `https://${domain}`;
@@ -127,6 +141,7 @@ if (require.main === module) {
                                 industry_category: enriched.industry_category,
                                 contact_info: websiteData.contactInfo,
                                 sitelinks: websiteData.sitelinks,
+                                business_hours: enriched.business_hours, // Added
                                 scraped_at: new Date().toISOString()
                             },
                             // Trust score
@@ -146,7 +161,7 @@ if (require.main === module) {
                             .eq('id', business.id);
 
                         if (updateError) {
-                            // console.error(`  ❌ DB Update Error: ${updateError.message}`);
+                            console.error(`  ❌ DB Update Error: ${updateError.message}`);
                         } else {
                             console.log(`  ✅ Success: ${business.legal_name} (Trust: ${updates.trust_score})`);
                         }

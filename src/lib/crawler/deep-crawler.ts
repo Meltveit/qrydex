@@ -32,6 +32,8 @@ export interface DeepCrawlResult {
         duration: number;
         failedUrls: string[];
     };
+    sitelinks?: SiteLink[];
+    businessHours?: BusinessHours | null;
 }
 
 const USER_AGENTS = [
@@ -173,17 +175,127 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
 
     const endTime = Date.now();
 
+    // Analyze collected pages for sitelinks and business hours
+    let sitelinks: SiteLink[] = [];
+    let businessHours: BusinessHours | null = null;
+
+    if (pages.length > 0) {
+        // Use the home page (first page usually) or combine data
+        const homePage = pages[0];
+        const $home = cheerio.load(homePage.html);
+
+        // Extract sitelinks from home page + all discovered links
+        // We look at all collected pages' URLs to find "Contact", "About", etc.
+        const allDiscoveredUrls = new Set(pages.map(p => p.url));
+        sitelinks = extractSitelinks(allDiscoveredUrls, baseUrl);
+
+        // Try to find business hours on any page (Home or Contact usually)
+        for (const page of pages) {
+            const $page = cheerio.load(page.html);
+            const hours = extractBusinessHours($page, page.structuredData || []);
+            if (hours) {
+                businessHours = hours;
+                break; // Stop once we find valid hours
+            }
+        }
+    }
+
     return {
         baseUrl,
         totalPages: pages.length,
         pages,
         allImages: Array.from(allImages),
-        sitemapUrls: [], // Sitemaps not implemented in this simple crawler
+        sitemapUrls: [],
         crawlStats: {
             startTime,
             endTime,
             duration: endTime - startTime,
             failedUrls
-        }
+        },
+        sitelinks,
+        businessHours
     };
+}
+
+export interface SiteLink {
+    url: string;
+    title: string;
+    type: 'contact' | 'about' | 'products' | 'services' | 'careers' | 'locations' | 'other';
+}
+
+export interface BusinessHours {
+    raw: string;
+    structured?: {
+        monday?: string;
+        tuesday?: string;
+        wednesday?: string;
+        thursday?: string;
+        friday?: string;
+        saturday?: string;
+        sunday?: string;
+    };
+}
+
+function extractSitelinks(urls: Set<string>, baseUrl: string): SiteLink[] {
+    const links: SiteLink[] = [];
+    const seenTypes = new Set<string>();
+
+    const patterns: Record<string, RegExp> = {
+        contact: /\/(contact|kontakt|contact-us|get-in-touch|kontakt-oss)$/i,
+        about: /\/(about|om-oss|about-us|who-we-are|our-story)$/i,
+        products: /\/(products|produkter|catalog|shop|store|nettbutikk)$/i,
+        services: /\/(services|tjenester|solutions|losninger)$/i,
+        careers: /\/(careers|jobs|vacancies|jobb|karriere)$/i,
+        locations: /\/(locations|offices|find-us|butikker)$/i
+    };
+
+    for (const url of urls) {
+        // Simple logic: if URL matches pattern, add it
+        // We prioritize shortest URLs for each type (e.g. /contact over /contact/form)
+
+        for (const [type, pattern] of Object.entries(patterns)) {
+            if (seenTypes.has(type)) continue;
+
+            if (pattern.test(url)) {
+                // Generate a pretty title
+                const title = type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ');
+
+                links.push({
+                    url,
+                    title,
+                    type: type as SiteLink['type']
+                });
+                seenTypes.add(type); // Only one link per type to avoid clutter
+            }
+        }
+    }
+    return links;
+}
+
+function extractBusinessHours($: cheerio.CheerioAPI, jsonLdData: any[]): BusinessHours | null {
+    // 1. Check schema.org LocalBusiness
+    for (const data of jsonLdData) {
+        if ((data['@type'] === 'LocalBusiness' || data['@type'] === 'Store' || data['@type'] === 'Restaurant') && data.openingHours) {
+            return {
+                raw: Array.isArray(data.openingHours) ? data.openingHours.join(', ') : data.openingHours
+                // Structured parsing could be added here later
+            };
+        }
+        // Handle openingHoursSpecification logic if present (more complex)
+    }
+
+    // 2. HTML pattern matching
+    // Look for common patterns in text
+    const bodyText = $('body').text();
+    // Regex for "Mon-Fri 09:00-17:00" style patterns
+    const hoursRegex = /(opening hours|åpningstider|öppettider)[\s\S]{0,50}?(\w{3}\s?-\s?\w{3}|hverdager|mon-fri)[\s\S]{0,20}?(\d{1,2}[:.]\d{2}\s?-\s?\d{1,2}[:.]\d{2})/i;
+
+    const match = bodyText.match(hoursRegex);
+    if (match) {
+        return {
+            raw: match[0].trim().replace(/\s+/g, ' ')
+        };
+    }
+
+    return null;
 }

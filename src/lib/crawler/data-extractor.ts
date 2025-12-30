@@ -4,7 +4,7 @@
  */
 
 import { generateText } from '@/lib/ai/gemini-client';
-import type { DeepCrawlResult } from './deep-crawler';
+import type { DeepCrawlResult, BusinessHours } from './deep-crawler';
 
 export interface EnrichedBusinessData {
     // Core Data
@@ -84,6 +84,7 @@ export interface EnrichedBusinessData {
     // Crawl Stats
     crawl_timestamp: string;
     crawl_duration_ms: number;
+    business_hours?: BusinessHours;
 }
 
 /**
@@ -447,6 +448,12 @@ export async function processDeepCrawl(crawlResult: DeepCrawlResult): Promise<En
     // Build smart sitelinks (prioritized, quality pages only)
     const sitelinks = selectSmartSitelinks(crawlResult.pages);
 
+    // Merge crawl-detected sitelinks if smart selection missed some important types
+    if (crawlResult.sitelinks) {
+        // Implementation logic could be improved here to deduplicate
+        // For now, let's rely on smart selection as primary
+    }
+
     return {
         company_description: aiData.company_description || metaDescriptions[0] || '',
         industry_category: aiData.industry_category || 'Unknown',
@@ -471,8 +478,7 @@ export async function processDeepCrawl(crawlResult: DeepCrawlResult): Promise<En
         has_ssl: crawlResult.baseUrl.startsWith('https'),
         response_time_ms: crawlResult.crawlStats.duration,
         crawl_timestamp: new Date().toISOString(),
-        crawl_duration_ms: crawlResult.crawlStats.duration
+        crawl_duration_ms: crawlResult.crawlStats.duration,
+        business_hours: crawlResult.businessHours || undefined
     };
 }
-
-

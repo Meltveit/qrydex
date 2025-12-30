@@ -11,6 +11,7 @@ import { lookupSecEdgar, lookupUsStateRegistry } from './usa';
 import { searchDenmarkRegistry } from './denmark';
 import { searchFinlandRegistry } from './finland';
 import { searchSwedenRegistry } from './sweden';
+import { verifyUSCompany } from './opencorporates';
 
 export interface VerificationResult {
     success: boolean;
@@ -85,9 +86,62 @@ export async function verifyBusiness(
             };
         }
 
-        // USA - SEC EDGAR or State Registry
+        // USA - SEC EDGAR, OpenCorporates or State Registry
         if (country === 'US') {
-            // Try SEC first for public companies
+            // Logic:
+            // 1. If we have a state code in the identifier (US-CA-12345), use OpenCorporates for state
+            // 2. If options.stateCode provided, use OpenCorporates
+            // 3. Fallback to SEC Edgar (public companies)
+
+            // Check for composed ID: US-STATE-NUMBER
+            const parts = identifier.split('-');
+            if (parts.length >= 3 && parts[0] === 'US') {
+                const state = parts[1];
+                const number = parts.slice(2).join('-');
+
+                const { success, data: ocData } = await verifyUSCompany(state, number);
+                if (success && ocData) {
+                    return {
+                        success: true,
+                        data: {
+                            legal_name: ocData.name,
+                            org_number: identifier,
+                            country_code: 'US',
+                            company_status: ocData.current_status === 'Active' ? 'Active' : 'Inactive',
+                            registered_address: ocData.registered_address_in_full,
+                            company_type: ocData.company_type,
+                            established_date: ocData.incorporation_date,
+                            last_verified_registry: new Date().toISOString(),
+                            source_url: ocData.registry_url
+                        },
+                        source: 'OpenCorporates',
+                    };
+                }
+            }
+
+            // Try OpenCorporates if state provided in options
+            if (options?.stateCode) {
+                const { success, data: ocData } = await verifyUSCompany(options.stateCode, identifier);
+                if (success && ocData) {
+                    return {
+                        success: true,
+                        data: {
+                            legal_name: ocData.name,
+                            org_number: identifier,
+                            country_code: 'US',
+                            company_status: ocData.current_status === 'Active' ? 'Active' : 'Inactive',
+                            registered_address: ocData.registered_address_in_full,
+                            company_type: ocData.company_type,
+                            established_date: ocData.incorporation_date,
+                            last_verified_registry: new Date().toISOString(),
+                            source_url: ocData.registry_url
+                        },
+                        source: `OpenCorporates (${options.stateCode})`,
+                    };
+                }
+            }
+
+            // Try SEC first for public companies (fallback)
             let data = await lookupSecEdgar(identifier);
             if (data) {
                 return {
@@ -97,21 +151,11 @@ export async function verifyBusiness(
                 };
             }
 
-            // Try state registry if state code provided
-            if (options?.stateCode) {
-                data = await lookupUsStateRegistry(identifier, options.stateCode);
-                return {
-                    success: data !== null,
-                    data,
-                    source: `US State Registry (${options.stateCode})`,
-                };
-            }
-
             return {
                 success: false,
                 data: null,
                 source: 'US Registries',
-                error: 'Company not found in SEC. State code required for state registry lookup.',
+                error: 'Company not found in OpenCorporates or SEC. Ensure ID format is US-STATE-NUMBER or provide stateCode.',
             };
         }
 

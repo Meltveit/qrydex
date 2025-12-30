@@ -13,11 +13,18 @@ dotenv.config({ path: '.env.local' });
 
 import { createServerClient } from '../supabase';
 import { submitBusinessProfiles } from '../seo/indexnow';
+import { loadBotState, saveBotState } from '../bot-state';
 
-// Track pagination offset
-let norwegianOffset = 0;
-let danishOffset = 0;
-let finnishOffset = 0;
+// Track pagination offset - Load from state file
+const savedState = loadBotState('nordic-importer', {
+    norwegianOffset: 0,
+    danishOffset: 0,
+    finnishOffset: 0
+});
+
+let norwegianOffset = savedState.norwegianOffset;
+let danishOffset = savedState.danishOffset;
+let finnishOffset = savedState.finnishOffset;
 
 const BATCH_SIZE = 20; // Per country per cycle
 
@@ -48,12 +55,16 @@ const ALLOWED_INDUSTRIES: Record<string, string> = {
 
 const EXCLUDED_CODES = ['56', '47', '55', '93', '96'];
 
-
 async function fetchNorwegian() {
     try {
         const response = await fetch(
             `https://data.brreg.no/enhetsregisteret/api/enheter?page=${Math.floor(norwegianOffset / 100)}&size=100&registrertIMvaregisteret=true`
         );
+
+        if (!response.ok) {
+            console.error(`  Norwegian API failed: ${response.statusText}`);
+            return [];
+        }
 
         const data = await response.json();
         const enheter = data._embedded?.enheter || [];
@@ -97,7 +108,12 @@ async function fetchNorwegian() {
             });
         }
 
-        norwegianOffset += companies.length;
+        if (companies.length > 0) {
+            norwegianOffset += companies.length;
+            // Save state immediately
+            saveBotState('nordic-importer', { norwegianOffset, danishOffset, finnishOffset });
+        }
+
         return companies;
     } catch (error: any) {
         console.error('  Norwegian API error:', error.message);
@@ -132,6 +148,7 @@ async function fetchDanish() {
 
     const batch = knownCompanies.slice(danishOffset % knownCompanies.length, (danishOffset % knownCompanies.length) + BATCH_SIZE);
     danishOffset += BATCH_SIZE;
+    saveBotState('nordic-importer', { norwegianOffset, danishOffset, finnishOffset });
 
     return batch.map(c => ({
         org_number: c.cvr,
@@ -171,6 +188,7 @@ async function fetchFinnish() {
 
     const batch = knownCompanies.slice(finnishOffset % knownCompanies.length, (finnishOffset % knownCompanies.length) + BATCH_SIZE);
     finnishOffset += BATCH_SIZE;
+    saveBotState('nordic-importer', { norwegianOffset, danishOffset, finnishOffset });
 
     return batch.map(c => ({
         org_number: c.ytunnus,
@@ -192,11 +210,16 @@ async function saveCompanies(companies: any[]) {
 
     for (const biz of companies) {
         try {
-            const { data: existing } = await supabase
+            const { data: existing, error: selectError } = await supabase
                 .from('businesses')
                 .select('id')
                 .eq('org_number', biz.org_number)
                 .single();
+
+            if (selectError && selectError.code !== 'PGRST116') { // PGRST116 is "No rows found" which is good
+                console.error(`⚠️ Select error for ${biz.org_number}: ${selectError.message}`);
+                continue;
+            }
 
             if (existing) {
                 skipped++;
@@ -212,7 +235,7 @@ async function saveCompanies(companies: any[]) {
                 } catch { }
             }
 
-            await supabase.from('businesses').insert({
+            const { error: insertError } = await supabase.from('businesses').insert({
                 org_number: biz.org_number,
                 legal_name: biz.name,
                 country_code: biz.country,
@@ -238,10 +261,15 @@ async function saveCompanies(companies: any[]) {
                 last_verified_at: new Date().toISOString()
             });
 
-            imported++;
-            newOrgNumbers.push(biz.org_number);
+            if (insertError) {
+                console.error(`❌ Insert error for ${biz.name} (${biz.org_number}): ${insertError.message}`);
+            } else {
+                imported++;
+                newOrgNumbers.push(biz.org_number);
+                console.log(`✅ Saved: ${biz.name} (${biz.country})`);
+            }
         } catch (error: any) {
-            // Ignore duplicates silently
+            console.error(`❌ Unexpected error saving ${biz.org_number}:`, error.message);
         }
     }
 
@@ -265,7 +293,7 @@ async function runCycle() {
 
     const allCompanies = [...norwegian, ...danish, ...finnish];
 
-    console.log(`  🇳🇴 Norwegian: ${norwegian.length}`);
+    console.log(`  🇳🇴 Norwegian: ${norwegian.length} (offset: ${norwegianOffset})`);
     console.log(`  🇩🇰 Danish: ${danish.length}`);
     console.log(`  🇫🇮 Finnish: ${finnish.length}`);
 
@@ -277,7 +305,7 @@ async function runCycle() {
 // Continuous mode
 if (require.main === module) {
     console.log('🇳🇴🇩🇰🇫🇮 Nordic Continuous Importer');
-    console.log('   Running every 1 minute');
+    console.log('   Runs every 1 minute');
     console.log('   Press Ctrl+C to stop\n');
 
     let cycleCount = 0;
