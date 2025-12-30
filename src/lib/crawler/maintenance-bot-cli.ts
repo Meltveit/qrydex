@@ -177,6 +177,26 @@ if (require.main === module) {
                                 websiteData
                             );
 
+                            // Address Patching Logic: If registry address is weak (e.g. "DK"), use AI detected address
+                            let registryUpdate: any = {};
+
+                            if (analysis?.detected_address) {
+                                const currentAddress = (business.registry_data as any)?.registered_address || '';
+                                // Check if address is missing or "weak" (shorter than 4 chars, like "NO", "DK")
+                                if (!currentAddress || currentAddress.length <= 3) {
+                                    console.log(`   📍 Augmenting weak address "${currentAddress}" with AI detection: "${analysis.detected_address}"`);
+
+                                    // Deep merge registry_data
+                                    registryUpdate.registry_data = {
+                                        ...business.registry_data as object,
+                                        registered_address: analysis.detected_address,
+                                        visiting_address: analysis.detected_address, // Set both to be safe
+                                        city: analysis.detected_address.split(',').pop()?.trim() || (business.registry_data as any)?.city, // Rough city extraction
+                                        is_augmented: true // Internal flag to know this was AI-patched
+                                    };
+                                }
+                            }
+
                             if (analysis) {
                                 // Merge logic - preserve existing quality analysis and add new data
                                 const updatedQuality = {
@@ -190,6 +210,7 @@ if (require.main === module) {
                                     industry_category: enrichedData?.industry_category || qa?.industry_category,
                                     ai_summary: enrichedData?.company_description || qa?.ai_summary,
                                     has_ssl: enrichedData?.has_ssl ?? qa?.has_ssl,
+                                    detected_address: analysis.detected_address, // Persist detection for future ref
                                     professional_email: enrichedData?.contact_info?.emails?.some((e: string) => !e.includes('gmail') && !e.includes('hotmail')) ?? false,
                                     scam_checked_at: new Date().toISOString()
                                 };
@@ -212,7 +233,7 @@ if (require.main === module) {
                                 });
 
                                 // Verify org_number against registry (periodically - once per week)
-                                let registryUpdate: any = {};
+                                let registryVerifyUpdate: any = {};
                                 const lastVerified = business.registry_data?.last_verified_at;
                                 const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
@@ -225,8 +246,9 @@ if (require.main === module) {
                                         );
 
                                         if (verifyResult.success && verifyResult.data) {
-                                            registryUpdate.registry_data = {
+                                            registryVerifyUpdate.registry_data = {
                                                 ...business.registry_data,
+                                                ...registryUpdate.registry_data, // Preserve detected address if any
                                                 ...verifyResult.data,
                                                 last_verified_at: new Date().toISOString()
                                             };
@@ -252,7 +274,8 @@ if (require.main === module) {
                                         // industry_category: enrichedData?.industry_category || null, // Column missing
                                         updated_at: new Date().toISOString(), // FORCE UPDATE TIMESTAMP
                                         ...updates,
-                                        ...registryUpdate
+                                        ...registryUpdate,
+                                        ...registryVerifyUpdate
                                     })
                                     .eq('id', business.id);
 

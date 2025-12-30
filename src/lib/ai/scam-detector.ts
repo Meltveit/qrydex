@@ -15,6 +15,7 @@ export interface ScamAnalysisResult {
     customerSegment: 'B2B' | 'B2C' | 'BOTH';
     keyFeatures: string[];
     search_keywords: string[]; // Multilingual keywords (EN, NO, DE, etc.)
+    detected_address?: string; // Physical address found on website
     generated_descriptions: Record<string, string>; // { "en": "...", "no": "...", "da": "...", "sv": "...", "fi": "...", "de": "...", "fr": "...", "es": "..." }
 }
 
@@ -101,7 +102,9 @@ function createAnalysisPrompt(
     2. Search Keywords: Generate/Update 10-15 localized keywords (EN, NO, DE, FR, ES) including broad categories (e.g. "Plumbing Services") + specific services.
     3. Descriptions: Write PROFESSIONAL, SEO-optimized descriptions (100-150 words) in ALL 8 languages (en, no, da, sv, fi, de, fr, es). 
        - If website failed (403/Error): Return EMPTY strings. Do NOT HALLUCINATE.
+       - If website failed (403/Error): Return EMPTY strings. Do NOT HALLUCINATE.
        - If website is thin: Be honest ("Limited information available...").
+    4. Address Detection: If the official registry data is incomplete (e.g. just "DK" or "NO"), try to find the full physical address on the website.
     
     Output JSON:
     {
@@ -116,6 +119,7 @@ function createAnalysisPrompt(
         "customerSegment": "B2B/B2C/BOTH",
         "keyFeatures": ["Feature 1", "Feature 2"],
         "search_keywords": ["Keyword1", "Keyword2"],
+        "detected_address": "Street Name 123, 0000 City, Country",
         "generated_descriptions": { "en": "...", "no": "...", "da": "...", "sv": "...", "fi": "...", "de": "...", "fr": "...", "es": "..." }
     }
     `;
