@@ -141,9 +141,9 @@ export default async function BusinessPage(props: any) {
 
             <SchemaBreadcrumbs
                 items={[
-                    { name: 'Home', item: '/' },
-                    { name: tNav('search'), item: '/search' },
-                    { name: business.legal_name, item: `/business/${orgNumber}` }
+                    { name: 'Home', item: `/${locale}` },
+                    { name: tNav('search'), item: `/${locale}/search` },
+                    { name: business.legal_name, item: `/${locale}/business/${orgNumber}` }
                 ]}
             />
 
