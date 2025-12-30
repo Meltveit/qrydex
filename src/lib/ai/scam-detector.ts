@@ -95,6 +95,11 @@ function createAnalysisPrompt(
     - Customer Segment: Is this primarily B2B, B2C, or both?
     - Key Features: 3-5 distinct features or selling points.
     - Search Keywords: Generate 10-15 localized search keywords relevant to this business.
+      Include specific services AND relevant sub-industry categories (e.g., include "VVS" or "Plumbing Services" for a plumber, but NOT just "Services").
+      The goal is to capture users searching for the *category* of work, not just the specific job.
+      Include translations in English, Norwegian, German, French, and Spanish.
+      Example: If an accounting firm, include "Accounting", "Regnskap", "Buchhaltung", "Financial Services", "Økonomitjenester".
+      Ensure high relevance for search indexing.
     - Generated Descriptions: Write a professional, SEO-optimized business description (approx 100-150 words) based on the website content. 
       You MUST provide this description in ALL 8 languages: 
       English (en), Norwegian (no), Danish (da), Swedish (sv), Finnish (fi), German (de), French (fr), Spanish (es).
