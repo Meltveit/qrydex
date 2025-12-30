@@ -12,6 +12,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 import { createServerClient } from '../supabase';
+import { submitBusinessProfiles } from '../seo/indexnow';
 
 // Track pagination offset
 let norwegianOffset = 0;
@@ -170,6 +171,7 @@ async function saveCompanies(companies: any[]) {
 
     let imported = 0;
     let skipped = 0;
+    const newOrgNumbers: string[] = [];
 
     for (const biz of companies) {
         try {
@@ -213,9 +215,16 @@ async function saveCompanies(companies: any[]) {
             });
 
             imported++;
+            newOrgNumbers.push(biz.org_number);
         } catch (error: any) {
             // Ignore duplicates silently
         }
+    }
+
+    // Submit new businesses to IndexNow
+    if (newOrgNumbers.length > 0) {
+        console.log(`\n📡 Submitting ${newOrgNumbers.length} new business(es) to IndexNow...`);
+        await submitBusinessProfiles(newOrgNumbers);
     }
 
     return { imported, skipped };

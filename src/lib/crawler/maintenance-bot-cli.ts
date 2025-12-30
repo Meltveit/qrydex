@@ -5,6 +5,7 @@ import { analyzeBusinessCredibility } from '../ai/scam-detector';
 import { scrapeWebsite } from './website-scraper';
 import { calculateTrustScore } from '../trust-score';
 import { verifyBusiness } from '../registry-apis';
+import { submitBusinessProfiles } from '../seo/indexnow';
 import pLimit from 'p-limit';
 
 // CLI execution - RUNS CONTINUOUSLY
@@ -105,6 +106,9 @@ if (require.main === module) {
                         console.log('✅ All fetched businesses are already analyzed.');
                     } else {
                         console.log(`Found ${toAnalyze.length} businesses needing scam check.`);
+
+                        // Track updated profiles for IndexNow
+                        const updatedOrgNumbers: string[] = [];
 
                         // Process in parallel with concurrency limit
                         const limit = pLimit(3); // Run 3 sites simultaneously
@@ -238,11 +242,20 @@ if (require.main === module) {
                                     })
                                     .eq('id', business.id);
 
+                                // Track for IndexNow submission
+                                updatedOrgNumbers.push(business.org_number);
+
                                 console.log(`  ✅ Success: ${business.legal_name} (Trust Score: ${score}/100)`);
                             }
                         }));
 
                         await Promise.all(tasks);
+
+                        // Submit updated profiles to IndexNow (Bing/Yandex)
+                        if (updatedOrgNumbers.length > 0) {
+                            console.log(`\n📡 Submitting ${updatedOrgNumbers.length} updated profile(s) to IndexNow...`);
+                            await submitBusinessProfiles(updatedOrgNumbers);
+                        }
                     }
                 }
 
