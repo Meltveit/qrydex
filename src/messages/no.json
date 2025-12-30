@@ -81,7 +81,8 @@
         "visitWebsite": "Besøk nettside",
         "viewProfile": "Se profil",
         "employees": "ansatte",
-        "kmAway": "km unna"
+        "kmAway": "km unna",
+        "verified": "Verifisert"
     },
     "TrustScore": {
         "highlyTrusted": "Meget Pålitelig",

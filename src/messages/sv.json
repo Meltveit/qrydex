@@ -81,7 +81,8 @@
         "visitWebsite": "Besök webbplats",
         "viewProfile": "Visa profil",
         "employees": "anställda",
-        "kmAway": "km bort"
+        "kmAway": "km bort",
+        "verified": "Verifierad"
     },
     "TrustScore": {
         "highlyTrusted": "Mycket Pålitlig",

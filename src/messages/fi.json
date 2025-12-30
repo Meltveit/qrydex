@@ -81,7 +81,8 @@
         "visitWebsite": "Käy sivustolla",
         "viewProfile": "Näytä profiili",
         "employees": "työntekijää",
-        "kmAway": "km päässä"
+        "kmAway": "km päässä",
+        "verified": "Vahvistettu"
     },
     "TrustScore": {
         "highlyTrusted": "Erittäin Luotettava",

@@ -81,7 +81,8 @@
         "visitWebsite": "Visiter le site",
         "viewProfile": "Voir le profil",
         "employees": "employés",
-        "kmAway": "km de distance"
+        "kmAway": "km de distance",
+        "verified": "Vérifié"
     },
     "TrustScore": {
         "highlyTrusted": "Très Fiable",

@@ -99,7 +99,7 @@ async function fetchNorwegian() {
                 address_street: e.forretningsadresse?.adresse?.[0],
                 address_city: e.forretningsadresse?.poststed,
                 address_postal_code: e.forretningsadresse?.postnummer,
-                address_country: 'Norway',
+                // address_country: 'Norway', // Removed - already have country: 'NO'
                 // Registry data
                 vat_number: e.registrertIMvaregisteret ? `NO${e.organisasjonsnummer}MVA` : undefined,
                 vat_status: e.registrertIMvaregisteret ? 'Active' : undefined,
@@ -245,7 +245,6 @@ async function saveCompanies(companies: any[]) {
                 address_street: biz.address_street || null,
                 address_city: biz.address_city || biz.city, // Fallback to old 'city' field
                 address_postal_code: biz.address_postal_code || null,
-                address_country: biz.address_country || null,
                 registry_data: {
                     source: biz.source,
                     vat_number: biz.vat_number,

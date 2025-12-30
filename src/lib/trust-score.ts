@@ -158,9 +158,32 @@ export interface TrustScoreDisplay {
 /**
  * Format Trust Score for display
  */
-export function formatTrustScore(business: { trust_score: number; trust_score_breakdown?: any; news_signals?: any[] }): TrustScoreDisplay {
+export function formatTrustScore(business: { trust_score: number; trust_score_breakdown?: any; news_signals?: any[];[key: string]: any }): TrustScoreDisplay {
     const score = business.trust_score || 0;
-    const raw = business.trust_score_breakdown || {};
+    let raw = business.trust_score_breakdown || {};
+
+    // FALLBACK: If breakdown is empty but we have a score, recalculate it on the fly
+    // This fixes the issue where older scraped data has a score but no stored breakdown
+    if (score > 0 && Object.keys(raw).length === 0) {
+        try {
+            const input: TrustScoreInput = {
+                registry_data: business.registry_data,
+                company_description: business.company_description,
+                logo_url: business.logo_url,
+                social_media: business.social_media,
+                sitelinks: business.sitelinks,
+                product_categories: business.product_categories,
+                translations: business.translations,
+                industry_category: business.quality_analysis?.industry_category,
+                quality_analysis: business.quality_analysis,
+                indexed_pages_count: 15 // Assume well-indexed if we have a high score (safe fallback)
+            };
+            const result = calculateTrustScore(input);
+            raw = result.breakdown;
+        } catch (e) {
+            console.error('Error recalculating trust breakdown fallback', e);
+        }
+    }
 
     // Calculate category scores based on raw components
     const registryScore = (raw.registry_verified || 0); // Max 40

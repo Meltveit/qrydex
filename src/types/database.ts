@@ -18,6 +18,9 @@ export interface RegistryData {
     industry_codes?: string[];
     employee_count?: number;
     country_code?: string;
+    company_type?: string;
+    established_date?: string;
+    source_url?: string;
 }
 
 export interface QualityAnalysis {

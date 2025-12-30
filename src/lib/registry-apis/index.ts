@@ -105,7 +105,7 @@ export async function verifyBusiness(
                         success: true,
                         data: {
                             legal_name: ocData.name,
-                            org_number: identifier,
+                            org_nr: identifier,
                             country_code: 'US',
                             company_status: ocData.current_status === 'Active' ? 'Active' : 'Inactive',
                             registered_address: ocData.registered_address_in_full,
@@ -127,7 +127,7 @@ export async function verifyBusiness(
                         success: true,
                         data: {
                             legal_name: ocData.name,
-                            org_number: identifier,
+                            org_nr: identifier,
                             country_code: 'US',
                             company_status: ocData.current_status === 'Active' ? 'Active' : 'Inactive',
                             registered_address: ocData.registered_address_in_full,

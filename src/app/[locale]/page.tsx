@@ -63,21 +63,32 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const headersList = await headers();
-  // Use Vercel headers for instant, free geolocation
-  const city = headersList.get('x-vercel-ip-city') || 'Norge';
-  const country = headersList.get('x-vercel-ip-country') || 'NO';
-  const countryName = country === 'NO' ? 'Norge' : country;
-  // (Simplification: just use headers. No need for ipapi fetch)
+  // Try Vercel headers first
+  let city = headersList.get('x-vercel-ip-city');
+  let country = headersList.get('x-vercel-ip-country');
+  let countryName = country === 'NO' ? 'Norge' : country;
+
+  // Fallback to IP lookup if Vercel headers are missing (e.g. localhost/VPN without edge headers)
+  if (!city || !country) {
+    const forwardedFor = headersList.get('x-forwarded-for');
+    const ip = forwardedFor?.split(',')[0] || '127.0.0.1'; // Local fallback
+    const ipLocation = await getLocationFromIP(ip);
+
+    // Only override if we found something useful
+    if (ipLocation.city !== 'Norge' || ipLocation.country !== 'NO') {
+      city = ipLocation.city;
+      country = ipLocation.country;
+      countryName = ipLocation.countryName;
+    }
+  }
+
+  // Ensure default defaults if still nothing
+  city = city || 'Norge';
+  country = country || 'NO';
+  countryName = countryName || 'Norge';
 
   const location = { city, country, countryName };
   const businessCount = await getBusinessCount();
-
-  /* 
-  // Old logic removed to prevent "IP lookup failed" errors
-  const forwardedFor = headersList.get('x-forwarded-for');
-  const ip = forwardedFor?.split(',')[0] || null;
-  const [location, businessCount] = await Promise.all([ ... ]);
-  */
 
   const t = await getTranslations({ locale, namespace: 'HomePage' });
 
