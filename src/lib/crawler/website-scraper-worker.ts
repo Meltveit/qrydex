@@ -36,7 +36,7 @@ if (require.main === module) {
                 // ADDED: country_code to select
                 const { data: allBusinesses, count } = await supabase
                     .from('businesses')
-                    .select('id, domain, legal_name, org_number, registry_data, quality_analysis, scrape_count, country_code', { count: 'exact' })
+                    .select('id, domain, legal_name, org_number, registry_data, quality_analysis, scrape_count, country_code, website_crawl_count', { count: 'exact' })
                     .not('domain', 'is', null)
                     .is('company_description', null)
                     .neq('website_status', 'dead') // Exclude dead sites
@@ -125,7 +125,8 @@ if (require.main === module) {
                             social_media: websiteData.socialMedia || enriched.contact_info?.social_media,
                             country_code: business.country_code || (websiteData.potentialBusinessIds?.NO?.length ? 'NO' : 'UNKNOWN'),
                             website_status: 'active',
-                            last_crawled_at: new Date().toISOString(),
+                            website_last_crawled: new Date().toISOString(),
+                            website_crawl_count: (business.website_crawl_count || 0) + 1, // Assuming business might have this field
                             last_scraped_at: new Date().toISOString(),
                             scrape_count: (business.scrape_count || 0) + 1,
                             next_scrape_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -147,6 +148,7 @@ if (require.main === module) {
                             // Trust score
                             trust_score: scamAnalysis?.credibilityScore || 0,
                             trust_score_breakdown: {},
+                            translations: scamAnalysis?.generated_descriptions || {},
                             indexed_pages_count: websiteData.subpages.length + 1
                         };
 

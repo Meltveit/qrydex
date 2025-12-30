@@ -242,9 +242,6 @@ async function saveCompanies(companies: any[]) {
                 domain: domain,
                 email: biz.email || null,
                 phone: biz.phone || null,
-                address_street: biz.address_street || null,
-                address_city: biz.address_city || biz.city, // Fallback to old 'city' field
-                address_postal_code: biz.address_postal_code || null,
                 registry_data: {
                     source: biz.source,
                     vat_number: biz.vat_number,
@@ -252,6 +249,7 @@ async function saveCompanies(companies: any[]) {
                     employees: biz.employees,
                     industry_code: biz.industry_code,
                     industry_name: biz.industry_name,
+                    registered_address: [biz.address_street, biz.address_postal_code, biz.address_city, biz.country].filter(Boolean).join(', '),
                     established_date: biz.established_date,
                     verified_at: new Date().toISOString()
                 },

@@ -15,6 +15,7 @@ export interface ScamAnalysisResult {
     customerSegment: 'B2B' | 'B2C' | 'BOTH';
     keyFeatures: string[];
     search_keywords: string[]; // Multilingual keywords (EN, NO, DE, etc.)
+    generated_descriptions: Record<string, string>; // { "en": "...", "no": "...", "da": "...", "sv": "...", "fi": "...", "de": "...", "fr": "...", "es": "..." }
 }
 
 /**
@@ -38,7 +39,8 @@ export async function analyzeBusinessCredibility(
         const result = await maintenanceModel.generateContent({
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             generationConfig: {
-                responseMimeType: "application/json",
+                // responseMimeType: "application/json", // Gemini 1.5 Flash sometimes struggles with strict JSON mode for complex objects, prompt engineering is reliable
+                responseMimeType: "application/json"
             }
         });
 
@@ -70,12 +72,12 @@ function createAnalysisPrompt(
             contactInfo: websiteData.contactInfo,
             hasSsl: true, // Assumed if scraped successfully
             socialLinks: websiteData.socialMedia,
-            contentSnippet: websiteData.homepage.content.slice(0, 1000) // First 1000 chars
+            contentSnippet: websiteData.homepage.content.slice(0, 1500) // Increased snippet size for better descriptions
         } : "Website not scraped or unavailable"
     };
 
     return `
-    You are an expert fraud investigator and business analyst. 
+    You are an expert fraud investigator, SEO copywriter, and business analyst. 
     Analyze the following business data to determine if it is a legitimate B2B company or a potential scam.
     
     Business Data:
@@ -93,9 +95,10 @@ function createAnalysisPrompt(
     - Customer Segment: Is this primarily B2B, B2C, or both?
     - Key Features: 3-5 distinct features or selling points.
     - Search Keywords: Generate 10-15 localized search keywords relevant to this business.
-      Include translations in English, Norwegian, German, French, and Spanish if applicable.
-      Example: If an accounting firm, include "Accounting", "Regnskap", "Buchhaltung", "Payroll", "Lønn".
-      Ensure high relevance for search indexing.
+    - Generated Descriptions: Write a professional, SEO-optimized business description (approx 100-150 words) based on the website content. 
+      You MUST provide this description in ALL 8 languages: 
+      English (en), Norwegian (no), Danish (da), Swedish (sv), Finnish (fi), German (de), French (fr), Spanish (es).
+      If the website content is thin, infer the business activities from the industry code and name, but be honest about limited information.
     
     Return a JSON object with this exact structure:
     {
@@ -109,7 +112,17 @@ function createAnalysisPrompt(
         "certifications": ["Cert 1", "Cert 2"],
         "customerSegment": "B2B/B2C/BOTH",
         "keyFeatures": ["Feature 1", "Feature 2"],
-        "search_keywords": ["Accounting", "Regnskap", "Buchhaltung"]
+        "search_keywords": ["Accounting", "Regnskap", "Buchhaltung"],
+        "generated_descriptions": {
+            "en": "...",
+            "no": "...",
+            "da": "...",
+            "sv": "...",
+            "fi": "...",
+            "de": "...",
+            "fr": "...",
+            "es": "..."
+        }
     }
     `;
 }
@@ -126,6 +139,7 @@ function createFallbackAnalysis(): ScamAnalysisResult {
         certifications: [],
         customerSegment: 'BOTH',
         keyFeatures: [],
-        search_keywords: []
+        search_keywords: [],
+        generated_descriptions: {}
     };
 }
