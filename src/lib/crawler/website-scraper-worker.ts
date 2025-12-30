@@ -143,6 +143,7 @@ if (require.main === module) {
                                 contact_info: websiteData.contactInfo,
                                 sitelinks: websiteData.sitelinks,
                                 business_hours: enriched.business_hours, // Added
+                                search_keywords: scamAnalysis?.search_keywords, // Added for multilingual search
                                 scraped_at: new Date().toISOString()
                             },
                             // Top-level fields for easy access/pSEO
