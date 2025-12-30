@@ -260,7 +260,7 @@ export default function BusinessCard({ business, distance, locale = 'no', hideSi
                                         <span className="truncate">{link.title}</span>
                                     </div>
                                     {link.description && (
-                                        <span className="hidden md:block text-xs text-blue-600/70 dark:text-blue-300/70 group-hover:text-blue-700/80 dark:group-hover:text-blue-200/80 line-clamp-1">
+                                        <span className="hidden md:block text-xs text-blue-600/70 dark:text-blue-300/70 group-hover:text-blue-700/80 dark:group-hover:text-blue-200/80 truncate">
                                             {link.description}
                                         </span>
                                     )}
