@@ -41,7 +41,8 @@ if (require.main === module) {
                     .is('company_description', null)
                     .neq('website_status', 'dead') // Exclude dead sites
                     .or(`last_scraped_at.is.null,last_scraped_at.lt.${yesterday}`)
-                    .order('created_at', { ascending: false })
+                    .order('website_crawl_count', { ascending: true, nullsFirst: true }) // Prioritize never crawled
+                    .order('created_at', { ascending: false }) // Then newest
                     .limit(100);
 
                 if (!allBusinesses || allBusinesses.length === 0) {

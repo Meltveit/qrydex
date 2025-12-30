@@ -21,34 +21,39 @@ interface BotConfig {
 }
 
 const BOTS: BotConfig[] = [
-    {
-        name: 'Registry Importer',
-        script: 'src/lib/crawler/nordic-continuous.ts',
-        instances: 1,
-        color: '\x1b[36m' // Cyan
-    },
-    {
-        name: 'Website Discovery',
-        script: 'src/lib/crawler/website-discovery-cli.ts',
-        instances: 2, // Now running 2 parallel discovery bots!
-        color: '\x1b[34m' // Blue
-    },
+    // --- STEP 1: Data Collection (PAUSED to process backlog of 3000 companies) ---
+    // {
+    //     name: 'Registry Importer',
+    //     script: 'src/lib/crawler/nordic-continuous.ts',
+    //     instances: 1,
+    //     color: '\x1b[36m' // Cyan
+    // },
+    // {
+    //     name: 'Website Discovery',
+    //     script: 'src/lib/crawler/website-discovery-cli.ts',
+    //     instances: 2,
+    //     color: '\x1b[34m' // Blue
+    // },
+
+    // --- STEP 2: Enrichment (SCALED UP) ---
     {
         name: 'Deep Scraper',
         script: 'src/lib/crawler/website-scraper-worker.ts',
-        instances: 3, // 3 parallel workers
+        instances: 5, // 5 parallel workers to process the 3000 backlog
         color: '\x1b[32m' // Green
     },
+
+    // --- STEP 3: Verification & Localization ---
     {
         name: 'Translator',
         script: 'src/lib/crawler/translation-bot-cli.ts',
-        instances: 2, // Run 2 parallel translation workers
+        instances: 2, // 2 parallel translation workers
         color: '\x1b[33m' // Yellow
     },
     {
         name: 'Maintenance',
         script: 'src/lib/crawler/maintenance-bot-cli.ts',
-        instances: 2, // Run 2 parallel maintenance workers
+        instances: 2, // 2 parallel maintenance workers (Trust Score calculation)
         color: '\x1b[35m' // Magenta
     }
 ];

@@ -45,7 +45,7 @@ export interface WebsiteData {
         FI?: string[];
         SE?: string[];
     };
-    sitelinks?: { title: string; url: string; description?: string }[];
+    sitelinks?: { title: string; url: string; description?: string; type?: string }[];
     // Security & Technical
     hasSSL?: boolean;
     securityHeaders?: {

@@ -82,10 +82,21 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     }
   }
 
+  // Improve Country Name from Code (e.g. "US" -> "United States")
+  try {
+    if (country && country.length === 2) {
+      const regionNames = new Intl.DisplayNames([locale], { type: 'region' });
+      countryName = regionNames.of(country) || countryName;
+    }
+  } catch (e) {
+    // Fallback to existing name
+  }
+
   // Ensure default defaults if still nothing
-  city = city || 'Norge';
   country = country || 'NO';
   countryName = countryName || 'Norge';
+  // Don't default city to 'Norge' if country is not Norway. It looks weird ("Norge, USA").
+  city = city || (country === 'NO' ? 'Norge' : null);
 
   const location = { city, country, countryName };
   const businessCount = await getBusinessCount();
@@ -118,9 +129,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <SearchBar size="large" autoFocus placeholder={t('searchPlaceholder')} />
         </div>
 
-        {location.city && (
+        {(location.city || location.countryName) && (
           <p className="text-sm text-[var(--color-text-secondary)] dark:text-gray-400 mb-4 md:mb-6">
-            📍 {t('locationPrefix')} <span className="font-medium dark:text-gray-300">{location.city}, {location.countryName}</span>
+            📍 {t('locationPrefix')} <span className="font-medium dark:text-gray-300">
+              {location.city ? `${location.city}, ` : ''}{location.countryName}
+            </span>
           </p>
         )}
 

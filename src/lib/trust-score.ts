@@ -24,86 +24,39 @@ export interface TrustScoreResult {
 /**
  * Calculate trust score based on profile completeness and quality
  * 
- * Scoring Formula:
- * - Base: 40 (registry verified)
- * - Data Completeness: 30 max
- * - Data Quality: 20 max
- * - Technical Quality: 10 max
- * Total: 100 max
+ * Scoring Formula (Max 100):
+ * - Registry: 35 (Verified)
+ * - Content: 30 (Desc, Detailed, Logo, Cats, Trans, Industry)
+ * - Social: 15 (Presence, Multi, Professional Email)
+ * - Technical: 15 (Sitelinks, SSL, Indexed)
+ * - News: 5 (Sentiment - added dynamically)
  */
 export function calculateTrustScore(business: TrustScoreInput): TrustScoreResult {
     const breakdown: Record<string, number> = {};
 
-    // Base Score: Registry Verification (40 points)
-    breakdown.registry_verified = 40;
+    // Base Score: Registry Verification (35 points)
+    breakdown.registry_verified = 35;
 
-    // === DATA COMPLETENESS (30 points max) ===
+    // === CONTENT & PROFILE (30 points max) ===
+    if ((business.company_description?.length || 0) > 0) breakdown.has_description = 5;
+    if (business.company_description && business.company_description.length > 200) breakdown.detailed_description = 5;
+    if (business.logo_url) breakdown.has_logo = 5;
+    if ((business.product_categories?.length || 0) > 0) breakdown.has_categories = 5;
+    if (business.translations && Object.keys(business.translations).length >= 3) breakdown.has_translations = 5;
+    if (business.industry_category && business.industry_category !== 'Unknown') breakdown.has_industry = 5;
 
-    // Has description (+5)
-    if (business.company_description && business.company_description.length > 0) {
-        breakdown.has_description = 5;
-    }
+    // === SOCIAL & CONTACT (15 points max) ===
+    const socialCount = business.social_media ? Object.keys(business.social_media).filter(k => business.social_media[k]).length : 0;
+    if (socialCount > 0) breakdown.has_social = 5;
+    if (socialCount >= 2) breakdown.multi_social = 5;
+    if (business.quality_analysis?.professional_email) breakdown.professional_email = 5;
 
-    // Has logo (+5)
-    if (business.logo_url) {
-        breakdown.has_logo = 5;
-    }
+    // === TECHNICAL & SECURITY (15 points max) ===
+    if (business.sitelinks && business.sitelinks.length >= 3) breakdown.has_sitelinks = 5;
+    if (business.quality_analysis?.has_ssl) breakdown.has_ssl = 5;
+    if (business.indexed_pages_count && business.indexed_pages_count > 5) breakdown.well_indexed = 5;
 
-    // Has social media (+5)
-    if (business.social_media && Object.keys(business.social_media).filter(k => business.social_media[k]).length > 0) {
-        breakdown.has_social = 5;
-    }
-
-    // Has quality sitelinks (+5)
-    if (business.sitelinks && business.sitelinks.length >= 3) {
-        breakdown.has_sitelinks = 5;
-    }
-
-    // Has product/service categories (+5)
-    if (business.product_categories && business.product_categories.length > 0) {
-        breakdown.has_categories = 5;
-    }
-
-    // Has translations (at least 3 languages) (+5)
-    if (business.translations && Object.keys(business.translations).length >= 3) {
-        breakdown.has_translations = 5;
-    }
-
-    // === DATA QUALITY (20 points max) ===
-
-    // Detailed description (>200 chars) (+5)
-    if (business.company_description && business.company_description.length > 200) {
-        breakdown.detailed_description = 5;
-    }
-
-    // Professional email found (+5)
-    if (business.quality_analysis?.professional_email) {
-        breakdown.professional_email = 5;
-    }
-
-    // Multiple social platforms (2+) (+5)
-    if (business.social_media && Object.keys(business.social_media).filter(k => business.social_media[k]).length >= 2) {
-        breakdown.multi_social = 5;
-    }
-
-    // Industry category identified (+5)
-    if (business.industry_category && business.industry_category !== 'Unknown') {
-        breakdown.has_industry = 5;
-    }
-
-    // === TECHNICAL QUALITY (10 points max) ===
-
-    // Has SSL certificate (+5)
-    if (business.quality_analysis?.has_ssl) {
-        breakdown.has_ssl = 5;
-    }
-
-    // Well-indexed site (>10 pages) (+5)
-    if (business.indexed_pages_count && business.indexed_pages_count > 10) {
-        breakdown.well_indexed = 5;
-    }
-
-    // Calculate total score
+    // Calculate total score (excluding news)
     const score = Object.values(breakdown).reduce((sum, val) => sum + val, 0);
 
     return { score, breakdown };
@@ -159,11 +112,10 @@ export interface TrustScoreDisplay {
  * Format Trust Score for display
  */
 export function formatTrustScore(business: { trust_score: number; trust_score_breakdown?: any; news_signals?: any[];[key: string]: any }): TrustScoreDisplay {
-    const score = business.trust_score || 0;
+    let score = business.trust_score || 0;
     let raw = business.trust_score_breakdown || {};
 
-    // FALLBACK: If breakdown is empty but we have a score, recalculate it on the fly
-    // This fixes the issue where older scraped data has a score but no stored breakdown
+    // FALLBACK Recalculation
     if (score > 0 && Object.keys(raw).length === 0) {
         try {
             const input: TrustScoreInput = {
@@ -176,54 +128,61 @@ export function formatTrustScore(business: { trust_score: number; trust_score_br
                 translations: business.translations,
                 industry_category: business.quality_analysis?.industry_category,
                 quality_analysis: business.quality_analysis,
-                indexed_pages_count: 15 // Assume well-indexed if we have a high score (safe fallback)
+                indexed_pages_count: 15
             };
             const result = calculateTrustScore(input);
             raw = result.breakdown;
+            // Update score if recalculated (ignoring stored mismatch)
+            score = result.score;
         } catch (e) {
             console.error('Error recalculating trust breakdown fallback', e);
         }
     }
 
     // Calculate category scores based on raw components
-    const registryScore = (raw.registry_verified || 0); // Max 40
+    const registryScore = (raw.registry_verified || 0); // Max 35
 
-    // Content quality = Quality score
-    const qualityScore = (raw.has_description || 0) + (raw.detailed_description || 0) +
-        (raw.has_logo || 0) + (raw.has_categories || 0) + (raw.has_translations || 0) + (raw.has_industry || 0);
+    // Content quality (Max 30)
+    const qualityScore = Math.min(30, (raw.has_description || 0) + (raw.detailed_description || 0) +
+        (raw.has_logo || 0) + (raw.has_categories || 0) + (raw.has_translations || 0) + (raw.has_industry || 0));
 
-    const socialScore = (raw.has_social || 0) + (raw.multi_social || 0) + (raw.professional_email || 0);
+    // Social Score (Max 15)
+    const socialScore = Math.min(15, (raw.has_social || 0) + (raw.multi_social || 0) + (raw.professional_email || 0));
 
-    const technicalScore = (raw.has_sitelinks || 0) + (raw.has_ssl || 0) + (raw.well_indexed || 0);
+    // Technical Score (Max 15)
+    const technicalScore = Math.min(15, (raw.has_sitelinks || 0) + (raw.has_ssl || 0) + (raw.well_indexed || 0));
 
-    // News sentiment score (based on news_signals if available)
+    // News sentiment score (Max 5)
     let newsScore = 0;
     if (business.news_signals && Array.isArray(business.news_signals)) {
         const signals = business.news_signals;
-        const positiveCount = signals.filter((s: any) => s.sentiment === 'positive').length;
-        const negativeCount = signals.filter((s: any) => s.sentiment === 'negative').length;
-        const totalCount = signals.length;
-
-        if (totalCount > 0) {
-            // Score: 0-5 based on sentiment ratio
-            const ratio = (positiveCount - negativeCount) / totalCount;
+        if (signals.length > 0) {
+            const positiveCount = signals.filter((s: any) => s.sentiment === 'positive').length;
+            const negativeCount = signals.filter((s: any) => s.sentiment === 'negative').length;
+            const ratio = (positiveCount - negativeCount) / signals.length;
             newsScore = Math.max(0, Math.min(5, Math.round(2.5 + ratio * 2.5)));
         }
     }
 
+    // Final Total Score Recalculation (Ensure visual consistency)
+    const calculatedTotal = registryScore + qualityScore + socialScore + technicalScore + newsScore;
+
+    // Use calculated total if available, otherwise fallback to stored score
+    const finalScore = calculatedTotal > 0 ? calculatedTotal : score;
+
     return {
-        score,
-        color: score >= 70 ? 'green' : score >= 40 ? 'yellow' : 'red',
-        labelKey: score >= 80 ? 'highlyTrusted' :
-            score >= 70 ? 'trusted' :
-                score >= 50 ? 'moderatelyTrusted' :
-                    score >= 40 ? 'requiresVerification' :
-                        score >= 20 ? 'lowTrust' : 'notVerified',
+        score: Math.min(100, finalScore),
+        color: finalScore >= 70 ? 'green' : finalScore >= 40 ? 'yellow' : 'red',
+        labelKey: finalScore >= 80 ? 'highlyTrusted' :
+            finalScore >= 70 ? 'trusted' :
+                finalScore >= 50 ? 'moderatelyTrusted' :
+                    finalScore >= 40 ? 'requiresVerification' :
+                        finalScore >= 20 ? 'lowTrust' : 'notVerified',
         breakdown: {
-            registry: { score: registryScore, max: 40 },
-            quality: { score: qualityScore, max: 25 },
+            registry: { score: registryScore, max: 35 },
+            quality: { score: qualityScore, max: 30 },
             social: { score: socialScore, max: 15 },
-            technical: { score: technicalScore, max: 20 },
+            technical: { score: technicalScore, max: 15 },
             news: { score: newsScore, max: 5 }
         }
     };

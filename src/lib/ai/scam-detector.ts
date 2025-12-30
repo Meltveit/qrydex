@@ -66,46 +66,44 @@ function createAnalysisPrompt(
         domain: business.domain,
         registryDate: registryData.registration_date,
         registryStatus: registryData.company_status,
+        // PASS EXISTING DATA FOR SMART MERGING
+        previousAnalysis: {
+            description: business.company_description,
+            industry: (business.quality_analysis as any)?.industry_category,
+            keywords: (business.quality_analysis as any)?.search_keywords
+        },
         websiteContent: websiteData ? {
             title: websiteData.homepage.title,
             description: websiteData.description,
             contactInfo: websiteData.contactInfo,
-            hasSsl: true, // Assumed if scraped successfully
+            hasSsl: true,
             socialLinks: websiteData.socialMedia,
-            contentSnippet: websiteData.homepage.content.slice(0, 1500) // Increased snippet size for better descriptions
+            contentSnippet: websiteData.homepage.content.slice(0, 1500)
         } : "Website not scraped or unavailable"
     };
 
     return `
-    You are an expert fraud investigator, SEO copywriter, and business analyst. 
-    Analyze the following business data to determine if it is a legitimate B2B company or a potential scam.
-    
+    You are an expert fraud investigator and business analyst. 
+    Analyze the business data to determine credibility and enrich the profile.
+
     Business Data:
     ${JSON.stringify(dataContext, null, 2)}
 
-    Risk Factors to check:
-    1. Discrepancies between registry name/domain and website content.
-    2. Generic, copied, or suspicious website content.
-    3. Lack of contact info (no phone, no physical address).
-    4. Very recent registration date but claims "years of experience".
-    5. Suspicious or high-risk industry codes (e.g., crypto, generic consulting) without proof of work.
+    Risk Factors:
+    1. Registry/Website Discrepancies.
+    2. Generic/Suspicious Content.
+    3. Missing Contact Info.
+    4. Recent registration claiming "years of experience".
+    5. High-risk industry (crypto, etc) without proof.
 
-    Also extract:
-    - Certifications: Any mentioned certifications (ISO, Eco-lighthouse, etc).
-    - Customer Segment: Is this primarily B2B, B2C, or both?
-    - Key Features: 3-5 distinct features or selling points.
-    - Search Keywords: Generate 10-15 localized search keywords relevant to this business.
-      Include specific services AND relevant sub-industry categories (e.g., include "VVS" or "Plumbing Services" for a plumber, but NOT just "Services").
-      The goal is to capture users searching for the *category* of work, not just the specific job.
-      Include translations in English, Norwegian, German, French, and Spanish.
-      Example: If an accounting firm, include "Accounting", "Regnskap", "Buchhaltung", "Financial Services", "Økonomitjenester".
-      Ensure high relevance for search indexing.
-    - Generated Descriptions: Write a professional, SEO-optimized business description (approx 100-150 words) based on the website content. 
-      You MUST provide this description in ALL 8 languages: 
-      English (en), Norwegian (no), Danish (da), Swedish (sv), Finnish (fi), German (de), French (fr), Spanish (es).
-      If the website content is thin, infer the business activities from the industry code and name, but be honest about limited information.
+    Instructions:
+    1. Compare "websiteContent" with "previousAnalysis". If the website content provides NEW or BETTER information, use it. If the website is thin but previous analysis was good, RETAIN the previous insights in your output.
+    2. Search Keywords: Generate/Update 10-15 localized keywords (EN, NO, DE, FR, ES) including broad categories (e.g. "Plumbing Services") + specific services.
+    3. Descriptions: Write PROFESSIONAL, SEO-optimized descriptions (100-150 words) in ALL 8 languages (en, no, da, sv, fi, de, fr, es). 
+       - If website failed (403/Error): Return EMPTY strings. Do NOT HALLUCINATE.
+       - If website is thin: Be honest ("Limited information available...").
     
-    Return a JSON object with this exact structure:
+    Output JSON:
     {
         "isScam": boolean,
         "confidence": number, // 0-100
@@ -113,21 +111,12 @@ function createAnalysisPrompt(
         "redFlags": string[],
         "trustSignals": string[],
         "riskLevel": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-        "summary": "Brief verdict",
-        "certifications": ["Cert 1", "Cert 2"],
+        "summary": "Verdict",
+        "certifications": ["ISO 9001"],
         "customerSegment": "B2B/B2C/BOTH",
         "keyFeatures": ["Feature 1", "Feature 2"],
-        "search_keywords": ["Accounting", "Regnskap", "Buchhaltung"],
-        "generated_descriptions": {
-            "en": "...",
-            "no": "...",
-            "da": "...",
-            "sv": "...",
-            "fi": "...",
-            "de": "...",
-            "fr": "...",
-            "es": "..."
-        }
+        "search_keywords": ["Keyword1", "Keyword2"],
+        "generated_descriptions": { "en": "...", "no": "...", "da": "...", "sv": "...", "fi": "...", "de": "...", "fr": "...", "es": "..." }
     }
     `;
 }

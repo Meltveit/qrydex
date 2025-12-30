@@ -90,98 +90,77 @@ export interface EnrichedBusinessData {
 /**
  * Extract contact information from all pages
  */
+/**
+ * Extract contact information - Combines Regex analysis with Deep Crawl extraction
+ */
 function extractContactInfo(crawlResult: DeepCrawlResult) {
-    const emails = new Set<string>();
-    const phones = new Set<string>();
-    const social = {
-        linkedin: undefined as string | undefined,
-        facebook: undefined as string | undefined,
-        twitter: undefined as string | undefined,
-        instagram: undefined as string | undefined
-    };
+    // 1. Start with explicit extraction (from deep-crawler.ts)
+    const emails = new Set<string>(crawlResult.extractedContact?.emails || []);
+    const phones = new Set<string>(crawlResult.extractedContact?.phones || []);
+    const social = { ...crawlResult.extractedContact?.socials } as any;
 
-    // Email regex
+    // 2. Fallback: Scan text content again if deep crawl missed things (Legacy support)
     const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-
-    // Phone regex (flexible)
     const phoneRegex = /(\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{2,4}[-.\s]?\d{2,4}/g;
 
     for (const page of crawlResult.pages) {
-        // Extract emails
+        // Emails
         const foundEmails = page.content.match(emailRegex);
         if (foundEmails) {
             foundEmails.forEach(email => {
-                // Filter out common false positives
-                if (!email.includes('example.com') && !email.includes('test.com')) {
+                if (!email.includes('example.com') && !email.includes('test.com') && !email.includes('sentry') && !email.includes('wix')) {
                     emails.add(email.toLowerCase());
                 }
             });
         }
 
-        // Extract phones
+        // Phones
         const foundPhones = page.content.match(phoneRegex);
         if (foundPhones) {
             foundPhones.forEach(phone => {
-                // Only keep if it looks like a real phone number
                 const digits = phone.replace(/\D/g, '');
                 if (digits.length >= 8 && digits.length <= 15) {
-                    phones.add(phone);
+                    phones.add(phone.trim());
                 }
             });
-        }
-
-        // Extract social media
-        const html = page.html.toLowerCase();
-        if (!social.linkedin && html.includes('linkedin.com')) {
-            const match = html.match(/https?:\/\/(www\.)?linkedin\.com\/company\/[a-zA-Z0-9-]+/i);
-            if (match) social.linkedin = match[0];
-        }
-        if (!social.facebook && html.includes('facebook.com')) {
-            const match = html.match(/https?:\/\/(www\.)?facebook\.com\/[a-zA-Z0-9.]+/i);
-            if (match) social.facebook = match[0];
-        }
-        if (!social.twitter && (html.includes('twitter.com') || html.includes('x.com'))) {
-            const match = html.match(/https?:\/\/(www\.)?(twitter|x)\.com\/[a-zA-Z0-9_]+/i);
-            if (match) social.twitter = match[0];
-        }
-        if (!social.instagram && html.includes('instagram.com')) {
-            const match = html.match(/https?:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9._]+/i);
-            if (match) social.instagram = match[0];
         }
     }
 
     // Prioritize emails by importance
     const prioritizedEmails = Array.from(emails).map(email => {
         const localPart = email.split('@')[0].toLowerCase();
+        let priority = 3;
 
-        let priority = 3; // Default: generic
-
-        // Tier 1: Executives (highest priority)
-        const execKeywords = ['ceo', 'cfo', 'cto', 'president', 'founder', 'chairman', 'director', 'vp', 'investor', 'ir', 'coo'];
+        // Tier 1: Executives
+        const execKeywords = ['ceo', 'cfo', 'cto', 'president', 'founder', 'dagligleder', 'post', 'kontakt', 'info', 'hello', 'hei'];
         if (execKeywords.some(kw => localPart.includes(kw))) {
             priority = 1;
         }
         // Tier 2: Departments
-        else if (['sales', 'marketing', 'hr', 'support', 'business', 'bd', 'contact'].some(kw => localPart.includes(kw))) {
+        else if (['sales', 'marketing', 'hr', 'support', 'business', 'salg', 'faktura'].some(kw => localPart.includes(kw))) {
             priority = 2;
         }
 
-        // Exclude no-reply emails
-        if (['noreply', 'no-reply', 'donotreply'].some(kw => localPart.includes(kw))) {
-            return null;
-        }
+        if (['noreply', 'no-reply', 'donotreply', 'sentry', 'bug'].some(kw => localPart.includes(kw))) return null;
 
         return { email, priority };
     })
         .filter((item): item is { email: string; priority: number } => item !== null)
-        .sort((a, b) => a.priority - b.priority) // Sort by priority (1 = highest)
-        .slice(0, 10)
+        .sort((a, b) => a.priority - b.priority)
+        .slice(0, 5)
         .map(item => item.email);
 
     return {
         emails: prioritizedEmails,
-        phones: Array.from(phones).slice(0, 5), // Max 5 phones
-        social_media: social
+        phones: Array.from(phones).slice(0, 5),
+        social_media: {
+            linkedin: social.linkedin || undefined,
+            facebook: social.facebook || undefined,
+            twitter: social.twitter || undefined,
+            instagram: social.instagram || undefined,
+            youtube: social.youtube || undefined,
+            tiktok: social.tiktok || undefined
+        }
     };
 }
 
@@ -196,14 +175,38 @@ function selectSmartSitelinks(pages: DeepCrawlResult['pages']): Array<{
     description?: string;
     type?: 'contact' | 'about' | 'team' | 'products' | 'investors' | 'news' | 'other';
 }> {
-    // Type classification keywords
+    // Type classification keywords (Multilingual: EN, NO, SE, DK, FI, DE, FR, ES)
     const typeKeywords = {
-        contact: ['contact', 'get-in-touch', 'reach-us', 'email', 'phone'],
-        about: ['about', 'who-we-are', 'company', 'overview', 'our-story', 'mission'],
-        team: ['team', 'leadership', 'management', 'executives', 'people', 'staff'],
-        products: ['product', 'service', 'solution', 'offering', 'technology', 'platform'],
-        investors: ['investor', 'ir', 'shareholder', 'stock', 'financial', 'earnings'],
-        news: ['news', 'press', 'blog', 'article', 'update', 'announcement']
+        contact: [
+            'contact', 'get-in-touch', 'reach-us', 'email', 'phone',
+            'kontakt', 'kundeservice', 'support', 'ring-oss',
+            'yhteystiedot', 'ota-yhteyttä', 'kontakta', 'kundtjänst'
+        ],
+        about: [
+            'about', 'who-we-are', 'company', 'overview', 'our-story', 'mission',
+            'om-oss', 'hvem-er-vi', 'selskapet', 'bedriften', 'vår-historie',
+            'tietoja', 'yritys', 'om-företaget', 'om-os', 'virksomheden'
+        ],
+        team: [
+            'team', 'leadership', 'management', 'executives', 'people', 'staff',
+            'ansatte', 'ledelse', 'styret', 'medarbeidere', 'vårt-team',
+            'henkilöstö', 'johto', 'tiimi', 'medarbetare', 'leding'
+        ],
+        products: [
+            'product', 'service', 'solution', 'offering', 'technology', 'platform',
+            'produkt', 'tjeneste', 'løsning', 'tilbud', 'teknologi',
+            'tuotteet', 'palvelut', 'ratkaisut', 'produkter', 'tjänster'
+        ],
+        investors: [
+            'investor', 'ir', 'shareholder', 'stock', 'financial', 'earnings',
+            'investorer', 'aksjonær', 'finansiell', 'børs',
+            'sijoittajat', 'osakkeenomistajat', 'tous', 'aktieägare'
+        ],
+        news: [
+            'news', 'press', 'blog', 'article', 'update', 'announcement',
+            'nyheter', 'presse', 'aktuelt', 'artikler', 'oppdatering',
+            'uutiset', 'lehdistö', 'ajankohtaista', 'nyheter', 'pressrum'
+        ]
     };
 
     // Pages to exclude entirely (low value)
@@ -313,12 +316,31 @@ function extractLogo(crawlResult: DeepCrawlResult): string | undefined {
  */
 async function analyzeWithAI(crawlResult: DeepCrawlResult): Promise<Partial<EnrichedBusinessData>> {
     try {
-        // Sample content (first 5000 characters from multiple pages)
-        const sampledContent = crawlResult.pages
-            .slice(0, 5) // First 5 pages
-            .map(p => p.content)
-            .join('\n\n')
-            .slice(0, 5000);
+        // Prioritize "About Us" page content for better descriptions
+        const aboutPatterns = ['about', 'om-oss', 'hvem-er-vi', 'company', 'story'];
+        const aboutPage = crawlResult.pages.find(p =>
+            aboutPatterns.some(pat => p.url.toLowerCase().includes(pat) || p.title.toLowerCase().includes(pat))
+        );
+
+        let contentContext = "";
+
+        if (aboutPage) {
+            // If we have an About page, use it heavily
+            contentContext = `
+            --- ABOUT PAGE CONTENT ---
+            ${aboutPage.content.slice(0, 3000)}
+            
+            --- HOMEPAGE CONTENT ---
+            ${crawlResult.pages[0]?.content.slice(0, 2000) || ""}
+            `;
+        } else {
+            // Fallback: Mix of Home + Other pages
+            contentContext = crawlResult.pages
+                .slice(0, 3)
+                .map(p => `--- PAGE: ${p.title} ---\n${p.content.slice(0, 1500)}`)
+                .join('\n\n')
+                .slice(0, 5000);
+        }
 
         const prompt = `Analyze this business website content and extract structured data. Return ONLY valid JSON:
 
@@ -343,7 +365,7 @@ async function analyzeWithAI(crawlResult: DeepCrawlResult): Promise<Partial<Enri
 }
 
 Website Content:
-${sampledContent}`;
+${contentContext}`;
 
         const response = await generateText(prompt);
         if (!response) return {};

@@ -34,6 +34,12 @@ export interface DeepCrawlResult {
     };
     sitelinks?: SiteLink[];
     businessHours?: BusinessHours | null;
+    extractedContact?: {
+        emails: string[];
+        phones: string[];
+        socials: Record<string, string>;
+    };
+    technologies?: string[];
 }
 
 const USER_AGENTS = [
@@ -51,13 +57,54 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
     const pages: PageResult[] = [];
     const allImages = new Set<string>();
     const failedUrls: string[] = [];
+
+    // Data Collection Sets
+    const allEmails = new Set<string>();
+    const allPhones = new Set<string>();
+    const allTech = new Set<string>();
+    const allSocials: Record<string, string> = {};
+
     const startTime = Date.now();
 
     const rootHostname = new URL(baseUrl).hostname;
 
+    // 1. Robot Compliance & Sitemap Discovery
+    const { disallow, sitemaps } = await checkRobotsTxt(baseUrl);
+
+    // Check if root is disallowed
+    if (disallow.some(path => new URL(baseUrl).pathname.startsWith(path))) {
+        // Respect robots.txt
+        return {
+            baseUrl,
+            totalPages: 0,
+            pages: [],
+            allImages: [],
+            sitemapUrls: sitemaps,
+            crawlStats: { startTime, endTime: Date.now(), duration: 0, failedUrls: [] },
+            sitelinks: [],
+            businessHours: null
+        };
+    }
+
+    // Seed queue with sitemap URLs if available (High priority)
+    for (const sitemap of sitemaps) {
+        const urls = await fetchSitemapUrls(sitemap);
+        for (const url of urls) {
+            if (!queue.includes(url) && new URL(url).hostname.includes(rootHostname)) {
+                queue.push(url);
+            }
+        }
+    }
+
     while (queue.length > 0 && visited.size < maxPages) {
         const currentUrl = queue.shift();
         if (!currentUrl || visited.has(currentUrl)) continue;
+
+        // Check robots.txt disallow for every URL
+        const urlPath = new URL(currentUrl).pathname;
+        if (disallow.some(path => urlPath.startsWith(path))) {
+            continue;
+        }
 
         visited.add(currentUrl);
 
@@ -129,7 +176,60 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
                 }
             });
 
-            // Extract Links for crawling
+            // --- ULTRA-ENRICHMENT: Extract Tokens (Emails, Phones, Socials, Tech) ---
+            const textContent = $('body').text();
+
+            // 1. Social Media
+            const socialPatterns = {
+                linkedin: /linkedin\.com\/(in|company)\/[a-zA-Z0-9-_]+/i,
+                facebook: /facebook\.com\/[a-zA-Z0-9-_\.]+/i,
+                instagram: /instagram\.com\/[a-zA-Z0-9-_\.]+/i,
+                twitter: /(twitter\.com|x\.com)\/[a-zA-Z0-9-_]+/i,
+                youtube: /youtube\.com\/(channel|c|user|@)[a-zA-Z0-9-_]+/i,
+                tiktok: /tiktok\.com\/@[a-zA-Z0-9-_\.]+/i
+            };
+
+            // Scan all hrefs for profiles
+            $('a').each((i, el) => {
+                const href = $(el).attr('href');
+                if (!href) return;
+
+                for (const [platform, regex] of Object.entries(socialPatterns)) {
+                    if (regex.test(href)) {
+                        allSocials[platform] = href; // Upsert social link
+                    }
+                }
+            });
+
+            // 2. Emails (Aggressive Regex)
+            const emails = textContent.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+            if (emails) {
+                emails.forEach(e => {
+                    if (!e.includes('sentry') && !e.includes('wix') && !e.includes('example.com') && !e.endsWith('.png') && !e.endsWith('.jpg')) {
+                        allEmails.add(e.toLowerCase());
+                    }
+                });
+            }
+
+            // 3. Phone Numbers (Nordic Focus + Int)
+            // Matches: +47 123 45 678, 12 34 56 78, 800 12 345
+            const phoneMatches = textContent.match(/(?:\+47|\+46|\+45|\+358|0047|0046|0045|00358)?\s?[1-9]\d{1,2}\s?\d{2}\s?\d{2,3}(?:\s?\d{2})?/g);
+            if (phoneMatches) {
+                phoneMatches.forEach(p => {
+                    const clean = p.replace(/\s+/g, '');
+                    if (clean.length >= 8 && clean.length <= 15) allPhones.add(p.trim());
+                });
+            }
+
+            // 4. Technology Detection (Simple heuristics)
+            if (html.includes('wp-content')) allTech.add('WordPress');
+            if (html.includes('shopify')) allTech.add('Shopify');
+            if (html.includes('next=')) allTech.add('Next.js');
+            if (html.includes('react')) allTech.add('React');
+            if (html.includes('squarespace')) allTech.add('Squarespace');
+            if (html.includes('wix')) allTech.add('Wix');
+
+            // External Links extraction (Preserved from existing)
             const links: string[] = [];
             $('a').each((i, el) => {
                 const href = $(el).attr('href');
@@ -156,8 +256,8 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
             pages.push({
                 url: currentUrl,
                 title,
-                content,
-                html, // Store raw HTML for deeper analysis if needed
+                content: content, // Keep original content
+                html,
                 links,
                 headings: { h1, h2, h3 },
                 meta: {
@@ -168,12 +268,16 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
             });
 
         } catch (error) {
-            // console.error(`Failed to crawl ${currentUrl}`, error);
             failedUrls.push(currentUrl);
         }
     }
 
     const endTime = Date.now();
+
+    // Sort emails/phones to keep clean list
+    const finalEmails = Array.from(allEmails).slice(0, 5); // Top 5
+    const finalPhones = Array.from(allPhones).slice(0, 3);
+    const finalTech = Array.from(allTech);
 
     // Analyze collected pages for sitelinks and business hours
     let sitelinks: SiteLink[] = [];
@@ -187,7 +291,10 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
         // Extract sitelinks from home page + all discovered links
         // We look at all collected pages' URLs to find "Contact", "About", etc.
         const allDiscoveredUrls = new Set(pages.map(p => p.url));
-        sitelinks = extractSitelinks(allDiscoveredUrls, baseUrl);
+        const rawSitelinks = extractSitelinks(allDiscoveredUrls, baseUrl);
+
+        // VALIDATE SITELINKS (Check for 404s)
+        sitelinks = await validateSitelinks(rawSitelinks);
 
         // Try to find business hours on any page (Home or Contact usually)
         for (const page of pages) {
@@ -213,7 +320,13 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
             failedUrls
         },
         sitelinks,
-        businessHours
+        businessHours,
+        extractedContact: {
+            emails: finalEmails,
+            phones: finalPhones,
+            socials: allSocials
+        },
+        technologies: finalTech
     };
 }
 
@@ -236,23 +349,106 @@ export interface BusinessHours {
     };
 }
 
+// Check if links are actually alive (HEAD request)
+async function validateSitelinks(links: SiteLink[]): Promise<SiteLink[]> {
+    const validLinks: SiteLink[] = [];
+    const checkPromises = links.map(async (link) => {
+        try {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 3000); // 3s timeout
+            const res = await fetch(link.url, {
+                method: 'HEAD',
+                signal: controller.signal,
+                headers: { 'User-Agent': 'Mozilla/5.0 (Compatible; QrydexBot/1.0)' }
+            });
+            clearTimeout(id);
+            if (res.ok) return link;
+            return null;
+        } catch {
+            return null; // Assume dead if timeout/error
+        }
+    });
+
+    const results = await Promise.all(checkPromises);
+    return results.filter((l): l is SiteLink => l !== null);
+}
+
+// Basic Robots.txt Parser to respect rules
+async function checkRobotsTxt(baseUrl: string): Promise<{ disallow: string[], sitemaps: string[] }> {
+    try {
+        const robotsUrl = new URL('/robots.txt', baseUrl).toString();
+        const response = await fetch(robotsUrl, {
+            method: 'GET',
+            signal: AbortSignal.timeout(5000),
+            headers: { 'User-Agent': 'Mozilla/5.0 (Compatible; QrydexBot/1.0)' } // Be polite
+        });
+
+        if (!response.ok) {
+            console.log(`⚠️ robots.txt check failed for ${baseUrl} (Status: ${response.status})`);
+            return { disallow: [], sitemaps: [] };
+        }
+
+        const text = await response.text();
+        console.log(`✅ robots.txt found for ${baseUrl}`);
+
+        const disallow: string[] = [];
+        const sitemaps: string[] = [];
+        let currentUserAgent = '*';
+
+        const lines = text.split('\n');
+        for (const line of lines) {
+            const cleanLine = line.trim();
+            if (cleanLine.toLowerCase().startsWith('user-agent:')) {
+                currentUserAgent = cleanLine.split(':')[1].trim();
+            } else if (cleanLine.toLowerCase().startsWith('disallow:') && (currentUserAgent === '*' || currentUserAgent.includes('Bot'))) {
+                const path = cleanLine.split(':')[1].trim();
+                if (path) disallow.push(path);
+            } else if (cleanLine.toLowerCase().startsWith('sitemap:')) {
+                sitemaps.push(cleanLine.split(':', 2)[1].trim() + ":" + cleanLine.split(':', 2)[2]?.trim() || ""); // Handle http: vs https: split weirdness
+            }
+        }
+        return { disallow, sitemaps };
+    } catch (e: any) {
+        console.log(`⚠️ robots.txt check error for ${baseUrl}: ${e.message}`);
+        return { disallow: [], sitemaps: [] };
+    }
+}
+
+// Fetch URLs from Sitemap to find specific high-value pages
+async function fetchSitemapUrls(sitemapUrl: string): Promise<string[]> {
+    try {
+        const response = await fetch(sitemapUrl, { signal: AbortSignal.timeout(10000) });
+        if (!response.ok) return [];
+        const text = await response.text();
+        const urls: string[] = [];
+        // Simple regex for XML (avoiding huge XML parser dep)
+        const matches = text.matchAll(/<loc>(.*?)<\/loc>/g);
+        for (const match of matches) {
+            urls.push(match[1]);
+        }
+        return urls.slice(0, 50); // Limit to top 50 to avoid crawling thousands
+    } catch {
+        return [];
+    }
+}
+
 function extractSitelinks(urls: Set<string>, baseUrl: string): SiteLink[] {
     const links: SiteLink[] = [];
     const seenTypes = new Set<string>();
 
     const patterns: Record<string, RegExp> = {
-        contact: /\/(contact|kontakt|contact-us|get-in-touch|kontakt-oss)$/i,
-        about: /\/(about|om-oss|about-us|who-we-are|our-story)$/i,
-        products: /\/(products|produkter|catalog|shop|store|nettbutikk)$/i,
-        services: /\/(services|tjenester|solutions|losninger)$/i,
-        careers: /\/(careers|jobs|vacancies|jobb|karriere)$/i,
-        locations: /\/(locations|offices|find-us|butikker)$/i
+        management: /\/(management|ledelse|team|board|styret|ansatte|people|employees)$/i,
+        contact: /\/(contact|kontakt|contact-us|get-in-touch|kontakt-oss|kundeservice)$/i,
+        about: /\/(about|om-oss|about-us|who-we-are|our-story|company)$/i,
+        products: /\/(products|produkter|catalog|shop|store|nettbutikk|catalogue)$/i,
+        services: /\/(services|tjenester|solutions|losninger|what-we-do)$/i,
+        careers: /\/(careers|jobs|vacancies|jobb|karriere|work-with-us)$/i,
+        locations: /\/(locations|offices|find-us|butikker|where-to-find)$/i,
+        sustainability: /\/(sustainability|berekraft|miljo|environment|esg)$/i,
+        investors: /\/(investors|investor-relations|ir|aksje)$/i
     };
 
     for (const url of urls) {
-        // Simple logic: if URL matches pattern, add it
-        // We prioritize shortest URLs for each type (e.g. /contact over /contact/form)
-
         for (const [type, pattern] of Object.entries(patterns)) {
             if (seenTypes.has(type)) continue;
 
@@ -265,7 +461,7 @@ function extractSitelinks(urls: Set<string>, baseUrl: string): SiteLink[] {
                     title,
                     type: type as SiteLink['type']
                 });
-                seenTypes.add(type); // Only one link per type to avoid clutter
+                seenTypes.add(type);
             }
         }
     }
