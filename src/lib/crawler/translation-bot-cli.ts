@@ -170,12 +170,15 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
 
 // CLI execution - RUNS CONTINUOUSLY
 if (require.main === module) {
+    const args = process.argv.slice(2);
+    const WORKER_ID = args[0] ? parseInt(args[0]) : 0;
+    const TOTAL_WORKERS = args[1] ? parseInt(args[1]) : 1;
+
     console.log('🌍 Translation Bot - CONTINUOUS MODE');
-    console.log('   Continuously translating business data');
-    console.log('   Press Ctrl+C to stop\n');
+    console.log(`   Worker ${WORKER_ID + 1}/${TOTAL_WORKERS}`);
+    console.log('   MultiLingual support: 8 languages\n');
 
     let cycleCount = 0;
-
     let offset = 0;
 
     async function runContinuously() {
@@ -208,34 +211,41 @@ if (require.main === module) {
                 }
 
                 // Filter in-memory for quality content and missing/incomplete translations
-                const businesses = (rawBusinesses || []).filter(b => {
-                    // MUST have description > 50 chars to be worth translating
-                    if (!b.company_description || b.company_description.length < 50) return false;
+                const businesses = (rawBusinesses || [])
+                    .filter(b => {
+                        // MUST have description > 50 chars to be worth translating
+                        if (!b.company_description || b.company_description.length < 50) return false;
 
-                    // Check if translations are missing or incomplete
-                    if (!b.translations) return true; // No translations at all
+                        // Check if translations are missing or incomplete
+                        if (!b.translations) return true; // No translations at all
 
-                    const translations = b.translations as Record<string, any>;
-                    // Check if empty object
-                    if (Object.keys(translations).length === 0) return true;
+                        const translations = b.translations as Record<string, any>;
+                        // Check if empty object
+                        if (Object.keys(translations).length === 0) return true;
 
-                    // Extract industry code from registry_data
-                    const industryCodeVal = (b.registry_data as any)?.industry_codes;
-                    const hasIndustryCode = Array.isArray(industryCodeVal) && industryCodeVal.length > 0;
+                        // Extract industry code from registry_data
+                        const industryCodeVal = (b.registry_data as any)?.industry_codes;
+                        const hasIndustryCode = Array.isArray(industryCodeVal) && industryCodeVal.length > 0;
 
-                    // Check if all required languages are present and have descriptions AND industry_text
-                    const requiredLanguages = ['no', 'sv', 'da', 'fi', 'en', 'de', 'fr', 'es'];
-                    for (const lang of requiredLanguages) {
-                        if (!translations[lang] ||
-                            !translations[lang].company_description ||
-                            (hasIndustryCode && !translations[lang].industry_text)) { // Check industry_text if code exists
-                            return true; // Missing language or incomplete
+                        // Check if all required languages are present and have descriptions AND industry_text
+                        const requiredLanguages = ['no', 'sv', 'da', 'fi', 'en', 'de', 'fr', 'es'];
+                        for (const lang of requiredLanguages) {
+                            if (!translations[lang] ||
+                                !translations[lang].company_description ||
+                                (hasIndustryCode && !translations[lang].industry_text)) { // Check industry_text if code exists
+                                return true; // Missing language or incomplete
+                            }
                         }
-                    }
 
-                    // console.log(`Debug: Rejecting ${b.id} - already complete`);
-                    return false; // Has complete translations
-                }).slice(0, 3); // Take top 3 valid ones per cycle
+                        // console.log(`Debug: Rejecting ${b.id} - already complete`);
+                        return false; // Has complete translations
+                    })
+                    // Worker sharding: Distribute based on hash of ID
+                    .filter(b => {
+                        const hash = parseInt(b.id.replace(/-/g, '').substring(0, 8), 16);
+                        return (hash % TOTAL_WORKERS) === WORKER_ID;
+                    })
+                    .slice(0, 3); // Take top 3 valid ones per cycle
 
                 if (!rawBusinesses || rawBusinesses.length === 0) {
                     console.log('✅ End of list reached (or empty). Resetting to top...');

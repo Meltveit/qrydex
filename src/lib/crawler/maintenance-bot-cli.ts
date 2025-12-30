@@ -10,7 +10,12 @@ import pLimit from 'p-limit';
 
 // CLI execution - RUNS CONTINUOUSLY
 if (require.main === module) {
+    const args = process.argv.slice(2);
+    const WORKER_ID = args[0] ? parseInt(args[0]) : 0;
+    const TOTAL_WORKERS = args[1] ? parseInt(args[1]) : 1;
+
     console.log('🛡️ Maintenance & Scam Detector Bot - CONTINUOUS MODE');
+    console.log(`   Worker ${WORKER_ID + 1}/${TOTAL_WORKERS}`);
     console.log('   Retroactively checking businesses for scam indicators');
     console.log('   Using dedicated API Key\n');
 
@@ -89,18 +94,24 @@ if (require.main === module) {
                     console.log(`🔎 Mode: ${mode} | Analyizing batch of ${businesses.length} businesses`);
 
                     // Filter for those needing attention (Double Check)
-                    const toAnalyze = businesses.filter(b => {
-                        const qa = b.quality_analysis as any;
+                    const toAnalyze = businesses
+                        .filter(b => {
+                            const qa = b.quality_analysis as any;
 
-                        // Case A: Never scraped or Scrape Failed (no QA object)
-                        if (!qa) return true;
+                            // Case A: Never scraped or Scrape Failed (no QA object)
+                            if (!qa) return true;
 
-                        // Case B: Scraped but empty description (failed content extraction)
-                        if (!b.company_description || b.company_description.length < 10) return true;
+                            // Case B: Scraped but empty description (failed content extraction)
+                            if (!b.company_description || b.company_description.length < 10) return true;
 
-                        // Case C: Missing Intelligence (Scam check or Enrichment)
-                        return qa.scraped_at && (qa.isScam === undefined || qa.certifications === undefined);
-                    });
+                            // Case C: Missing Intelligence (Scam check or Enrichment)
+                            return qa.scraped_at && (qa.isScam === undefined || qa.certifications === undefined);
+                        })
+                        // Worker sharding: Distribute based on hash of ID
+                        .filter(b => {
+                            const hash = parseInt(b.id.replace(/-/g, '').substring(0, 8), 16);
+                            return (hash % TOTAL_WORKERS) === WORKER_ID;
+                        });
 
                     if (toAnalyze.length === 0) {
                         console.log('✅ All fetched businesses are already analyzed.');

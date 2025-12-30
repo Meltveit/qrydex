@@ -69,30 +69,52 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
             />
 
             <div className="relative z-10 pointer-events-none">
-                {/* Header: Company Name + Verification */}
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-4 mb-3">
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                {/* Header: Company Name + Logo + Verification + Trust Score */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                    {/* Company Name */}
+                    <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-gray-100 truncate 
+                                 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 flex-1 min-w-0">
+                        {business.legal_name}
+                    </h3>
+
+                    {/* Right side: Logo + Verified Badge + Trust Score */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* Logo or Avatar */}
+                        <div className="w-10 h-10 md:w-12 md:h-12">
+                            {business.logo_url ? (
+                                <img
+                                    src={business.logo_url}
+                                    alt={`${business.legal_name} logo`}
+                                    className="w-full h-full object-contain rounded-lg bg-white dark:bg-slate-700 p-1 border border-gray-200 dark:border-slate-600"
+                                    onError={(e) => {
+                                        // Fallback to avatar if image fails to load
+                                        e.currentTarget.style.display = 'none';
+                                        const avatar = e.currentTarget.nextElementSibling;
+                                        if (avatar) (avatar as HTMLElement).classList.remove('hidden');
+                                    }}
+                                />
+                            ) : null}
+                            {/* Fallback Avatar (first letter) */}
+                            <div className={`${business.logo_url ? 'hidden' : ''} w-full h-full flex items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white font-bold text-base md:text-lg shadow-md`}>
+                                {business.legal_name.charAt(0).toUpperCase()}
+                            </div>
+                        </div>
+
                         {/* Verified Badge */}
                         {business.verification_status === 'verified' && (
-                            <div className="flex-shrink-0 relative">
-                                <svg className="w-5 h-5 md:w-6 md:h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <div className="flex items-center gap-1 px-2 py-0.5 bg-green-50 dark:bg-green-900/20 rounded-full">
+                                <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
-                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                <span className="text-xs font-medium text-green-700 dark:text-green-300 hidden md:inline">{t('verified')}</span>
                             </div>
                         )}
 
-                        {/* Company Name */}
-                        <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-gray-100 truncate 
-                                     group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
-                            {business.legal_name}
-                        </h3>
-                    </div>
-
-                    {/* Trust Score Badge */}
-                    <div className={`self-start flex-shrink-0 px-2.5 py-1 rounded-full text-xs md:text-sm font-semibold ${trustColor}
-                                    transition-all duration-200 group-hover:scale-105`}>
-                        ⭐ {tTrust(trustScore.labelKey)}
+                        {/* Trust Score Badge with Number */}
+                        <div className={`px-2.5 py-1 rounded-full text-xs md:text-sm font-semibold ${trustColor}
+                                        transition-all duration-200 group-hover:scale-105 whitespace-nowrap`}>
+                            {trustScore.score}/100 · {tTrust(trustScore.labelKey)}
+                        </div>
                     </div>
                 </div>
 

@@ -48,6 +48,7 @@ const ALLOWED_INDUSTRIES: Record<string, string> = {
 
 const EXCLUDED_CODES = ['56', '47', '55', '93', '96'];
 
+
 async function fetchNorwegian() {
     try {
         const response = await fetch(
@@ -65,17 +66,33 @@ async function fetchNorwegian() {
             if (!industryCode || EXCLUDED_CODES.includes(industryCode)) continue;
             if (!(industryCode in ALLOWED_INDUSTRIES)) continue;
 
+            // Extract domain from website field
+            let domain = null;
+            if (e.hjemmeside) {
+                try {
+                    const url = new URL(e.hjemmeside.startsWith('http') ? e.hjemmeside : `https://${e.hjemmeside}`);
+                    domain = url.hostname.replace('www.', '');
+                } catch { }
+            }
+
             companies.push({
                 org_number: e.organisasjonsnummer,
                 name: e.navn,
                 country: 'NO',
+                domain, // Extracted domain
                 website: e.hjemmeside,
                 employees: e.antallAnsatte || 0,
                 industry_code: e.naeringskode1?.kode,
                 industry_name: e.naeringskode1?.beskrivelse,
-                city: e.forretningsadresse?.poststed,
+                // Address fields
+                address_street: e.forretningsadresse?.adresse?.[0],
+                address_city: e.forretningsadresse?.poststed,
+                address_postal_code: e.forretningsadresse?.postnummer,
+                address_country: 'Norway',
+                // Registry data
                 vat_number: e.registrertIMvaregisteret ? `NO${e.organisasjonsnummer}MVA` : undefined,
                 vat_status: e.registrertIMvaregisteret ? 'Active' : undefined,
+                established_date: e.stiftelsesdato,
                 source: 'brreg'
             });
         }
@@ -186,8 +203,9 @@ async function saveCompanies(companies: any[]) {
                 continue;
             }
 
-            let domain = null;
-            if (biz.website) {
+            // Use domain from API data (already extracted), fallback to parsing website
+            let domain = biz.domain;
+            if (!domain && biz.website) {
                 try {
                     const url = new URL(biz.website.startsWith('http') ? biz.website : `https://${biz.website}`);
                     domain = url.hostname.replace('www.', '');
@@ -199,6 +217,12 @@ async function saveCompanies(companies: any[]) {
                 legal_name: biz.name,
                 country_code: biz.country,
                 domain: domain,
+                email: biz.email || null,
+                phone: biz.phone || null,
+                address_street: biz.address_street || null,
+                address_city: biz.address_city || biz.city, // Fallback to old 'city' field
+                address_postal_code: biz.address_postal_code || null,
+                address_country: biz.address_country || null,
                 registry_data: {
                     source: biz.source,
                     vat_number: biz.vat_number,
@@ -206,7 +230,7 @@ async function saveCompanies(companies: any[]) {
                     employees: biz.employees,
                     industry_code: biz.industry_code,
                     industry_name: biz.industry_name,
-                    city: biz.city,
+                    established_date: biz.established_date,
                     verified_at: new Date().toISOString()
                 },
                 verification_status: 'verified',

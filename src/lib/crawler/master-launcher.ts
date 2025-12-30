@@ -42,13 +42,13 @@ const BOTS: BotConfig[] = [
     {
         name: 'Translator',
         script: 'src/lib/crawler/translation-bot-cli.ts',
-        instances: 1,
+        instances: 2, // Run 2 parallel translation workers
         color: '\x1b[33m' // Yellow
     },
     {
         name: 'Maintenance',
         script: 'src/lib/crawler/maintenance-bot-cli.ts',
-        instances: 1,
+        instances: 2, // Run 2 parallel maintenance workers
         color: '\x1b[35m' // Magenta
     }
 ];
