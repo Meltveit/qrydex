@@ -14,7 +14,7 @@ export interface RegistryData {
     legal_name?: string;
     registered_address?: string;
     registration_date?: string;
-    company_status?: 'Active' | 'Dissolved' | 'Liquidation' | 'Unknown';
+    company_status?: 'Active' | 'Dissolved' | 'Liquidation' | 'Inactive' | 'Unknown';
     industry_codes?: string[];
     employee_count?: number;
     country_code?: string;
