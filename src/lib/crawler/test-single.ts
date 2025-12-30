@@ -8,7 +8,7 @@ import { analyzeBusinessCredibility } from '../ai/scam-detector';
 
 async function testSingle() {
     const supabase = createServerClient();
-    const orgNr = '60667'; // Lowes
+    const orgNr = '912676951'; // Advokatene i Valdres
 
     console.log(`🔍 Fetching business with Org Nr: ${orgNr}...`);
     const { data: business, error } = await supabase
@@ -47,8 +47,56 @@ async function testSingle() {
         console.log("\n📉 Analysis Result:");
         console.log(`- Trust Score: ${analysis.credibilityScore}`);
         console.log(`- Confidence: ${analysis.confidence}`);
-        console.log(`- Summary: ${analysis.summary}`);
-        console.log(`- Descriptions Generated: ${Object.keys(analysis.generated_descriptions).length}`);
+
+        // --- SAVE TO DB ---
+        console.log("\n💾 SAVING TO DATABASE...");
+        const enriched = websiteData.enrichedData || {};
+        // Calculate Professional Email (Simple heuristic)
+        const emails = websiteData.contactInfo?.emails || [];
+        const genericDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'online.no', 'live.no'];
+        const hasProfessionalEmail = emails.some(e => {
+            const domain = e.split('@')[1]?.toLowerCase();
+            return domain && !genericDomains.includes(domain);
+        });
+
+        const hasSsl = websiteData.homepage?.url?.startsWith('https') || false;
+
+        const updates = {
+            company_description: websiteData.description || enriched.company_description,
+            logo_url: websiteData.logoUrl || enriched.logo_url,
+            social_media: websiteData.socialMedia || enriched.contact_info?.social_media,
+            website_status: 'active',
+            website_last_crawled: new Date().toISOString(),
+            last_scraped_at: new Date().toISOString(),
+            quality_analysis: {
+                isScam: analysis?.isScam,
+                riskScore: analysis?.riskLevel,
+                confidence: analysis?.confidence,
+                scamReasons: analysis?.redFlags,
+                trustScore: analysis?.credibilityScore,
+                contact_info: websiteData.contactInfo,
+                sitelinks: websiteData.sitelinks,
+                scraped_at: new Date().toISOString(),
+                has_ssl: hasSsl, // ADDED
+                professional_email: hasProfessionalEmail, // ADDED
+                contact_email: emails[0] || null
+            },
+            sitelinks: websiteData.sitelinks,
+            trust_score: analysis?.credibilityScore || 0,
+            trust_score_breakdown: {},
+            indexed_pages_count: websiteData.subpages.length + 1
+        };
+
+        const { error: updateError } = await supabase
+            .from('businesses')
+            .update(updates)
+            .eq('id', business.id);
+
+        if (updateError) {
+            console.error("❌ DB Update Failed:", updateError.message);
+        } else {
+            console.log("✅ DB Update Successful! Check the UI.");
+        }
 
     } catch (e: any) {
         console.error("\n❌ Scrape Failed:", e.message);

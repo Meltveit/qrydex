@@ -28,6 +28,7 @@
         "contactText": "Questions? Contact us at privacy@qrydex.com"
     },
     "Business": {
+        "legalName": "Legal Name",
         "orgNumber": "Organization Number",
         "visitingAddress": "Visiting Address",
         "postalAddress": "Postal Address",

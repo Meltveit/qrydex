@@ -46,9 +46,26 @@ export function calculateTrustScore(business: TrustScoreInput): TrustScoreResult
     if (business.industry_category && business.industry_category !== 'Unknown') breakdown.has_industry = 5;
 
     // === SOCIAL & CONTACT (15 points max) ===
-    const socialCount = business.social_media ? Object.keys(business.social_media).filter(k => business.social_media[k]).length : 0;
-    if (socialCount > 0) breakdown.has_social = 5;
-    if (socialCount >= 2) breakdown.multi_social = 5;
+    let socialScore = 0;
+    if (business.social_media) {
+        const platforms = Object.keys(business.social_media).map(k => k.toLowerCase());
+
+        // Weighted Scoring (LinkedIn 4, FB 3, Twitter 2, Insta 1)
+        if (platforms.some(p => p.includes('linkedin'))) socialScore += 4;
+        if (platforms.some(p => p.includes('facebook'))) socialScore += 3;
+        if (platforms.some(p => p.includes('twitter') || p.includes('x.com'))) socialScore += 2;
+        if (platforms.some(p => p.includes('instagram'))) socialScore += 1;
+
+        // Others get 1 point if they exist but aren't the main ones (e.g. YouTube)
+        const others = platforms.filter(p => !['linkedin', 'facebook', 'twitter', 'x.com', 'instagram'].some(main => p.includes(main)));
+        if (others.length > 0) socialScore += Math.max(0, others.length * 1); // 1 point each for others
+    }
+
+    // Cap social presence score at 10
+    if (socialScore > 0) {
+        breakdown.social_presence = Math.min(10, socialScore);
+    }
+
     if (business.quality_analysis?.professional_email) breakdown.professional_email = 5;
 
     // === TECHNICAL & SECURITY (15 points max) ===
@@ -82,8 +99,15 @@ export function getScoreExplanation(breakdown: Record<string, number>): string[]
     if (breakdown.has_description) explanations.push('✅ Company description provided');
     if (breakdown.detailed_description) explanations.push('✅ Detailed profile (200+ characters)');
     if (breakdown.has_logo) explanations.push('✅ Logo uploaded');
-    if (breakdown.has_social) explanations.push('✅ Social media presence');
-    if (breakdown.multi_social) explanations.push('✅ Multiple social platforms');
+
+    if (breakdown.social_presence) {
+        if (breakdown.social_presence >= 6) {
+            explanations.push('✅ Strong social media presence');
+        } else {
+            explanations.push('✅ Active on social media');
+        }
+    }
+
     if (breakdown.has_sitelinks) explanations.push('✅ Important pages indexed');
     if (breakdown.has_categories) explanations.push('✅ Products/services listed');
     if (breakdown.has_translations) explanations.push('✅ Multilingual content');
@@ -150,7 +174,7 @@ export function formatTrustScore(business: { trust_score: number; trust_score_br
         (raw.has_logo || 0) + (raw.has_categories || 0) + (raw.has_translations || 0) + (raw.has_industry || 0));
 
     // Social Score (Max 15)
-    const socialScore = Math.min(15, (raw.has_social || 0) + (raw.multi_social || 0) + (raw.professional_email || 0));
+    const socialScore = Math.min(15, (raw.social_presence || 0) + (raw.professional_email || 0));
 
     // Technical Score (Max 15)
     const technicalScore = Math.min(15, (raw.has_sitelinks || 0) + (raw.has_ssl || 0) + (raw.well_indexed || 0));

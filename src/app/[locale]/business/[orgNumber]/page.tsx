@@ -240,7 +240,7 @@ export default async function BusinessPage(props: any) {
                             <span className="text-base md:text-xl">{t('officialRegistry')}</span>
                         </h2>
                         <div className="grid sm:grid-cols-2 gap-3 md:gap-4">
-                            <InfoRow label={t('orgNumber')} value={registry?.legal_name} />
+                            <InfoRow label={t('legalName')} value={registry?.legal_name} />
                             <InfoRow label={t('orgNumber')} value={registry?.org_nr} />
 
                             {/* Smart VAT Display - Hide if unknown or redundant */}

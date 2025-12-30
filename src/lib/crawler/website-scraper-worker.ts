@@ -158,8 +158,29 @@ if (require.main === module) {
                         };
 
                         // Add products/services if found
-                        if (websiteData.products?.length > 0) updates.products = websiteData.products;
-                        if (websiteData.services?.length > 0) updates.services = websiteData.services;
+                        // Add products/services if found - TEMPORARILY DISABLED (Missing DB Columns)
+                        // if (websiteData.products?.length > 0) updates.products = websiteData.products;
+                        // if (websiteData.services?.length > 0) updates.services = websiteData.services;
+
+                        // Calculate Professional Email (Simple heuristic)
+                        const emails = websiteData.contactInfo?.emails || [];
+                        const genericDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'online.no', 'live.no'];
+                        const hasProfessionalEmail = emails.some(e => {
+                            const domain = e.split('@')[1]?.toLowerCase();
+                            return domain && !genericDomains.includes(domain);
+                        });
+
+                        // Determine SSL Status from scraped URL
+                        const hasSsl = websiteData.homepage?.url?.startsWith('https') || false;
+
+                        // Enrich quality_analysis with missing fields
+                        const qa = updates.quality_analysis || {};
+                        updates.quality_analysis = {
+                            ...qa,
+                            has_ssl: hasSsl, // NOW INCLUDED
+                            professional_email: hasProfessionalEmail, // NOW INCLUDED
+                            contact_email: emails[0] || null // Save primary email
+                        };
 
                         // Update database
                         const { error: updateError } = await supabase

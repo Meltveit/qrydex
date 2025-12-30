@@ -28,6 +28,7 @@
         "contactText": "Spørsmål? Kontakt oss på privacy@qrydex.com"
     },
     "Business": {
+        "legalName": "Foretaksnavn",
         "orgNumber": "Organisasjonsnummer",
         "visitingAddress": "Besøksadresse",
         "postalAddress": "Postadresse",

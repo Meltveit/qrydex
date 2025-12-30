@@ -113,17 +113,37 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
             await new Promise(r => setTimeout(r, 500 + Math.random() * 1000));
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30s
 
             const userAgent = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
 
-            const response = await fetch(currentUrl, {
-                headers: {
-                    'User-Agent': userAgent,
-                    'Accept': 'text/html'
-                },
-                signal: controller.signal
-            });
+            // Try Fetch
+            let response: Response;
+            try {
+                response = await fetch(currentUrl, {
+                    headers: {
+                        'User-Agent': userAgent,
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                        'Accept-Language': 'no,nb;q=0.9,en-US;q=0.8,en;q=0.7' // "Norwegian" browser
+                    },
+                    signal: controller.signal
+                });
+            } catch (e: any) {
+                // If HTTPS fails, try HTTP for root domain only
+                if (currentUrl.startsWith('https') && e.name === 'TypeError') { // Often network error
+                    const httpUrl = currentUrl.replace('https://', 'http://');
+                    console.log(`⚠️ retrying ${currentUrl} as HTTP...`);
+                    response = await fetch(httpUrl, {
+                        headers: {
+                            'User-Agent': userAgent,
+                            'Accept': 'text/html'
+                        },
+                        signal: AbortSignal.timeout(30000)
+                    });
+                } else {
+                    throw e;
+                }
+            }
 
             clearTimeout(timeoutId);
 

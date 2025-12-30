@@ -163,12 +163,13 @@ if (require.main === module) {
                             }
 
                             // Save products & services
-                            if (enrichedData?.products) {
-                                updates.products = enrichedData.products.en || [];
-                            }
-                            if (enrichedData?.services) {
-                                updates.services = enrichedData.services.en || [];
-                            }
+                            // Save products & services - DISABLED (Schema missing)
+                            // if (enrichedData?.products) {
+                            //     updates.products = enrichedData.products.en || [];
+                            // }
+                            // if (enrichedData?.services) {
+                            //     updates.services = enrichedData.services.en || [];
+                            // }
 
                             const analysis = await analyzeBusinessCredibility(
                                 business,
