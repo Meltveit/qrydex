@@ -240,8 +240,6 @@ async function saveCompanies(companies: any[]) {
                 legal_name: biz.name,
                 country_code: biz.country,
                 domain: domain,
-                email: biz.email || null,
-                phone: biz.phone || null,
                 registry_data: {
                     source: biz.source,
                     vat_number: biz.vat_number,
@@ -249,6 +247,10 @@ async function saveCompanies(companies: any[]) {
                     employees: biz.employees,
                     industry_code: biz.industry_code,
                     industry_name: biz.industry_name,
+                    contact_info: {
+                        email: biz.email || null,
+                        phone: biz.phone || null
+                    },
                     registered_address: [biz.address_street, biz.address_postal_code, biz.address_city, biz.country].filter(Boolean).join(', '),
                     established_date: biz.established_date,
                     verified_at: new Date().toISOString()
