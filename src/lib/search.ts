@@ -232,6 +232,8 @@ export async function searchBusinesses(
         // 2. Keep Trust Score Sorting
         let processedBusinesses = rawBusinessData || [];
 
+        /*
+        // Removed per user request to prioritize Trust Score sorting
         if (context?.country) {
             const userCountry = context.country.toUpperCase();
             processedBusinesses.sort((a, b) => {
@@ -247,6 +249,7 @@ export async function searchBusinesses(
                 return (b.trust_score || 0) - (a.trust_score || 0);
             });
         }
+        */
 
         // Log search analytics (fire and forget) - Bot B Pulse
         if (query && query.trim()) {
