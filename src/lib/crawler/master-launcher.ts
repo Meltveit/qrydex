@@ -28,18 +28,19 @@ const BOTS: BotConfig[] = [
     //     instances: 1,
     //     color: '\x1b[36m' // Cyan
     // },
-    // {
-    //     name: 'Website Discovery',
-    //     script: 'src/lib/crawler/website-discovery-cli.ts',
-    //     instances: 2,
-    //     color: '\x1b[34m' // Blue
     // },
+    {
+        name: 'Website Discovery',
+        script: 'src/lib/crawler/website-discovery-cli.ts',
+        instances: 2,
+        color: '\x1b[34m' // Blue
+    },
 
     // --- STEP 2: Enrichment (SCALED UP) ---
     {
         name: 'Deep Scraper',
         script: 'src/lib/crawler/website-scraper-worker.ts',
-        instances: 5, // 5 parallel workers to process the 3000 backlog
+        instances: 9, // 9 parallel workers (Aggressive Mode)
         color: '\x1b[32m' // Green
     },
 

@@ -95,20 +95,39 @@ if (require.main === module) {
                             console.error(`Error scraping ${business.domain}: ${e.message}`);
                         }
 
-                        if (!websiteData) {
-                            // Handle failure
-                            await supabase
-                                .from('businesses')
-                                .update({
-                                    website_status: 'failed',
-                                    scrape_count: (business.scrape_count || 0) + 1,
-                                    last_scraped_at: new Date().toISOString()
-                                })
-                                .eq('id', business.id);
+                        // Prepare update payload structure early
+                        let updates: any = {
+                            website_crawl_count: (business.website_crawl_count || 0) + 1,
+                            last_scraped_at: new Date().toISOString(),
+                            scrape_count: (business.scrape_count || 0) + 1,
+                            next_scrape_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                        };
 
-                            console.log(`❌ Failed to scrape ${business.domain}`);
-                            continue;
+                        if (!websiteData || Object.keys(websiteData).length === 0) {
+                            console.log(`⚠️ Deep crawl failed for ${business.domain}. Using REGISTRY DATA FALLBACK.`);
+
+                            // FALLBACK: Construct simulated "website data" from registry info
+                            websiteData = {
+                                homepage: {
+                                    url: url,
+                                    title: business.legal_name || 'Business Website',
+                                    content: `Official business registry entry. Legal Name: ${business.legal_name}. Organization Number: ${business.org_number}. Address: ${JSON.stringify(business.registry_data?.registered_address || 'Unknown')}. Industry: ${business.registry_data?.industry_name || 'Unknown'}.`,
+                                    links: []
+                                },
+                                subpages: [],
+                                emails: [],
+                                phones: [],
+                                socialMedia: [],
+                                internalLinks: [],
+                                contactInfo: { emails: [], phones: [], addresses: [], social_media: {} },
+                                sitelinks: [],
+                                detectedLanguage: 'en',
+                                description: `Business profile for ${business.legal_name}.`
+                            } as unknown as WebsiteData;
+
+                            updates.website_status = 'registry_fallback';
                         }
+
 
                         // Analyze for Scam indicators
                         const scamAnalysis = await analyzeBusinessCredibility(
@@ -117,22 +136,18 @@ if (require.main === module) {
                             websiteData
                         );
 
-                        // Prepare update payload
                         const enriched = websiteData.enrichedData || {};
 
-                        const updates: any = {
+                        // Merge AI results
+                        updates = {
+                            ...updates,
                             company_description: websiteData.description || enriched.company_description,
                             logo_url: websiteData.logoUrl || enriched.logo_url,
                             social_media: websiteData.socialMedia || enriched.contact_info?.social_media,
                             country_code: business.country_code || (websiteData.potentialBusinessIds?.NO?.length ? 'NO' : 'UNKNOWN'),
-                            website_status: 'active',
+                            website_status: updates.website_status || 'active',
                             website_last_crawled: new Date().toISOString(),
-                            website_crawl_count: (business.website_crawl_count || 0) + 1, // Assuming business might have this field
-                            last_scraped_at: new Date().toISOString(),
-                            scrape_count: (business.scrape_count || 0) + 1,
-                            next_scrape_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
 
-                            // Store quality analysis
                             quality_analysis: {
                                 isScam: scamAnalysis?.isScam,
                                 riskScore: scamAnalysis?.riskLevel,
@@ -143,14 +158,12 @@ if (require.main === module) {
                                 industry_category: enriched.industry_category,
                                 contact_info: websiteData.contactInfo,
                                 sitelinks: websiteData.sitelinks,
-                                business_hours: enriched.business_hours, // Added
-                                search_keywords: scamAnalysis?.search_keywords, // Added for multilingual search
+                                business_hours: enriched.business_hours,
+                                search_keywords: scamAnalysis?.search_keywords,
                                 scraped_at: new Date().toISOString()
                             },
-                            // Top-level fields for easy access/pSEO
-                            sitelinks: websiteData.sitelinks, // JSONB structure
-                            opening_hours: enriched.business_hours, // JSONB structure
-                            // Trust score
+                            sitelinks: websiteData.sitelinks,
+                            opening_hours: enriched.business_hours,
                             trust_score: scamAnalysis?.credibilityScore || 0,
                             trust_score_breakdown: {},
                             translations: scamAnalysis?.generated_descriptions || {},

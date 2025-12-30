@@ -101,9 +101,15 @@ function createAnalysisPrompt(
     1. Compare "websiteContent" with "previousAnalysis". If the website content provides NEW or BETTER information, use it. If the website is thin but previous analysis was good, RETAIN the previous insights in your output.
     2. Search Keywords: Generate/Update 10-15 localized keywords (EN, NO, DE, FR, ES) including broad categories (e.g. "Plumbing Services") + specific services.
     3. Descriptions: Write PROFESSIONAL, SEO-optimized descriptions (100-150 words) in ALL 8 languages (en, no, da, sv, fi, de, fr, es). 
-       - If website failed (403/Error): Return EMPTY strings. Do NOT HALLUCINATE.
-       - If website failed (403/Error): Return EMPTY strings. Do NOT HALLUCINATE.
-       - If website is thin: Be honest ("Limited information available...").
+       - CRITICAL RULE 1 (PARKED DOMAINS): If the website content mentions "Domeneshop", "GoDaddy", "Domain is parked", "Webhuset", "One.com", or "FastName", and seems to be a placeholder page:
+         -> CHECK: Does the Company Name contain "Domeneshop", "GoDaddy", "Webhuset", etc? 
+         -> IF YES: The content is valid (It is the hosting company itself). Write a normal description.
+         -> IF NO: The website is just parked. IGNORE content. Use "Fallback" logic.
+       - CRITICAL RULE 2 (FALLBACK): If website is missing/parked/error, write a generic description based ONLY on Company Name + Industry code.
+         -> Example: "[Company Name] is a specialist in [Industry]. They provide services related to..."
+       - CRITICAL RULE 3 (NO META-TALK): NEVER write "Absence of content limits checking", "Based on the name", "No description available", or "I cannot browse".
+         -> If you really cannot write a description, look at the "Fallback" rule.
+       - CRITICAL RULE 4 (FALSE CONTENT): Do NOT write a description about "Domeneshop" if the company is "Afterburner Coffee". That is the hosting provider, not the business!
     4. Address Detection: If the official registry data is incomplete (e.g. just "DK" or "NO"), try to find the full physical address on the website.
     
     Output JSON:

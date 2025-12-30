@@ -35,8 +35,7 @@ if (require.main === module) {
                     .from('businesses')
                     .select('id, legal_name, org_number, country_code', { count: 'exact' })
                     .is('domain', null)
-                    .neq('website_status', 'not_found')
-                    .neq('website_status', 'discovering')
+                    .is('website_status', null)
                     .order('created_at', { ascending: false })
                     .limit(100); // Fetch larger batch for client-side filtering
 
