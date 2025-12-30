@@ -11,6 +11,7 @@ import { formatTrustScore } from '@/lib/trust-score';
 import { getTranslations } from 'next-intl/server';
 
 import RelatedBusinesses from '@/components/RelatedBusinesses';
+import SocialLinks from '@/components/SocialLinks';
 import { ResolvingMetadata } from 'next';
 
 // ... imports
@@ -208,17 +209,8 @@ export default async function BusinessPage(props: any) {
                                     </p>
                                 </div>
 
-                                {/* Social Media Links */}
-                                {business.social_media && Object.keys(business.social_media as object).length > 0 && (
-                                    <div className="flex gap-3 mt-4">
-                                        {Object.entries(business.social_media as Record<string, string>).map(([platform, url]) => (
-                                            <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
-                                                className="text-gray-400 hover:text-blue-600 transition-colors capitalize text-sm flex items-center gap-1 bg-gray-50 px-3 py-1.5 rounded-full hover:bg-blue-50">
-                                                {platform}
-                                            </a>
-                                        ))}
-                                    </div>
-                                )}
+                                {/* Social Media Links - Enhanced UI */}
+                                <SocialLinks links={business.social_media as Record<string, string>} />
                             </div>
                             <div className="flex md:flex-col items-center justify-center md:justify-start gap-3 md:gap-2 w-full md:w-auto">
                                 <TrustScoreBadge
