@@ -256,6 +256,7 @@ async function saveCompanies(companies: any[]) {
                     verified_at: new Date().toISOString()
                 },
                 verification_status: 'verified',
+                discovery_source: biz.source,
                 last_verified_at: new Date().toISOString()
             });
 
