@@ -14,7 +14,11 @@ export default function SchemaBreadcrumbs({ items }: { items: BreadcrumbItem[] }
             '@type': 'ListItem',
             position: index + 1,
             name: item.name,
-            item: process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}${item.item}` : item.item
+            item: (() => {
+                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://qrydex.com';
+                const path = item.item.startsWith('/') ? item.item : `/${item.item}`;
+                return `${baseUrl.replace(/\/$/, '')}${path}`;
+            })()
         })),
     };
 
