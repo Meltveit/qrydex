@@ -9,6 +9,7 @@ interface BusinessCardProps {
     business: Business;
     distance?: number;
     locale?: string;
+    hideSitelinks?: boolean;
 }
 
 const countryNames: Record<string, Record<string, string>> = {
@@ -44,7 +45,7 @@ const countryNames: Record<string, Record<string, string>> = {
     }
 };
 
-export default function BusinessCard({ business, distance, locale = 'no' }: BusinessCardProps) {
+export default function BusinessCard({ business, distance, locale = 'no', hideSitelinks = false }: BusinessCardProps) {
     const t = useTranslations('BusinessCard');
     const tTrust = useTranslations('TrustScore');
     const trustScore = formatTrustScore(business);
@@ -191,7 +192,7 @@ export default function BusinessCard({ business, distance, locale = 'no' }: Busi
 
             {/* Sitelinks - Google Style Navigation with Descriptions */}
             {
-                Array.isArray(business.sitelinks) && (business.sitelinks as any[]).length > 0 && (
+                !hideSitelinks && Array.isArray(business.sitelinks) && (business.sitelinks as any[]).length > 0 && (
                     <div className="flex flex-wrap gap-2 md:gap-3 mb-4 relative z-20">
                         {(business.sitelinks as Array<{ title: string; url: string; description?: string; type?: string }>).slice(0, 3).map((link, i) => {
                             // Icon mapping based on type

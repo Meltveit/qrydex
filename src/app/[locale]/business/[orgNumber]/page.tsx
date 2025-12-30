@@ -10,6 +10,7 @@ import { generateBusinessSchema } from '@/lib/seo/schema-generator';
 import { formatTrustScore } from '@/lib/trust-score';
 import { getTranslations } from 'next-intl/server';
 
+import RelatedBusinesses from '@/components/RelatedBusinesses';
 import { ResolvingMetadata } from 'next';
 
 // ... imports
@@ -466,6 +467,16 @@ export default async function BusinessPage(props: any) {
                         {t('lastUpdated')}: {new Date(business.updated_at).toLocaleDateString()}
                     </div>
                 </div>
+            </div>
+
+            {/* Related Businesses - Full Width */}
+            <div className="px-4 md:px-0 mt-8">
+                <RelatedBusinesses
+                    orgNumber={orgNumber}
+                    industryCategory={quality?.industry_category}
+                    countryCode={business.country_code}
+                    locale={locale}
+                />
             </div>
 
         </div>

@@ -28,6 +28,7 @@
         "contactText": "¿Preguntas? Contáctenos en privacy@qrydex.com"
     },
     "Business": {
+        "legalName": "Nombre Legal",
         "orgNumber": "Número de organización",
         "visitingAddress": "Dirección de visita",
         "postalAddress": "Dirección postal",
@@ -112,5 +113,8 @@
         "previous": "Anterior",
         "next": "Siguiente",
         "pageIndicator": "Página {page} de {total}"
+    },
+    "RelatedBusinesses": {
+        "title": "Empresas similares de confianza"
     }
 }

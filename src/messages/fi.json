@@ -28,7 +28,8 @@
         "contactText": "Questions? Contact us at privacy@qrydex.com"
     },
     "Business": {
-        "orgNumber": "Organization Number",
+        "legalName": "Virallinen Nimi",
+        "orgNumber": "Y-tunnus",
         "visitingAddress": "Visiting Address",
         "postalAddress": "Postal Address",
         "contact": "Contact",
@@ -112,5 +113,8 @@
         "previous": "Edellinen",
         "next": "Seuraava",
         "pageIndicator": "Sivu {page} / {total}"
+    },
+    "RelatedBusinesses": {
+        "title": "Vastaavat luotettavat yritykset"
     }
 }

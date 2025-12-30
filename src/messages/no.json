@@ -113,5 +113,8 @@
         "previous": "Forrige",
         "next": "Neste",
         "pageIndicator": "Side {page} av {total}"
+    },
+    "RelatedBusinesses": {
+        "title": "Lignende Pålitelige Bedrifter"
     }
 }

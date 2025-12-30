@@ -28,6 +28,7 @@
         "contactText": "Frågor? Kontakta oss på privacy@qrydex.com"
     },
     "Business": {
+        "legalName": "Juridiskt Namn",
         "orgNumber": "Organisationsnummer",
         "visitingAddress": "Besöksadress",
         "postalAddress": "Postadress",
@@ -112,5 +113,8 @@
         "previous": "Föregående",
         "next": "Nästa",
         "pageIndicator": "Sida {page} av {total}"
+    },
+    "RelatedBusinesses": {
+        "title": "Liknande Pålitliga Företag"
     }
 }

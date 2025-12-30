@@ -112,5 +112,8 @@
         "previous": "Forrige",
         "next": "Næste",
         "pageIndicator": "Side {page} af {total}"
+    },
+    "RelatedBusinesses": {
+        "title": "Lignende Troværdige Virksomheder"
     }
 }

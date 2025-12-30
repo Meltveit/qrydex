@@ -113,5 +113,8 @@
         "previous": "Previous",
         "next": "Next",
         "pageIndicator": "Page {page} of {total}"
+    },
+    "RelatedBusinesses": {
+        "title": "Similar Trusted Businesses"
     }
 }
