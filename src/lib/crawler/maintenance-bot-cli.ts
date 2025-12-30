@@ -242,22 +242,26 @@ if (require.main === module) {
                                 }
 
                                 // Update with both quality_analysis AND scraped fields
-                                await supabase
+                                const { error: updateError } = await supabase
                                     .from('businesses')
                                     .update({
                                         quality_analysis: updatedQuality,
                                         trust_score: score,
                                         trust_score_breakdown: breakdown,
                                         industry_category: enrichedData?.industry_category || null,
+                                        updated_at: new Date().toISOString(), // FORCE UPDATE TIMESTAMP
                                         ...updates,
                                         ...registryUpdate
                                     })
                                     .eq('id', business.id);
 
-                                // Track for IndexNow submission
-                                updatedOrgNumbers.push(business.org_number);
-
-                                console.log(`  ✅ Success: ${business.legal_name} (Trust Score: ${score}/100)`);
+                                if (updateError) {
+                                    console.error(`   ❌ Database update failed for ${business.legal_name}:`, updateError.message);
+                                } else {
+                                    // Track for IndexNow submission only on success
+                                    updatedOrgNumbers.push(business.org_number);
+                                    console.log(`  ✅ Success: ${business.legal_name} (Trust Score: ${score}/100)`);
+                                }
                             }
                         }));
 
