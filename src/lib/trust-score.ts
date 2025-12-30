@@ -115,28 +115,31 @@ export function formatTrustScore(business: { trust_score: number; trust_score_br
     let score = business.trust_score || 0;
     let raw = business.trust_score_breakdown || {};
 
-    // FALLBACK Recalculation
-    if (score > 0 && Object.keys(raw).length === 0) {
-        try {
-            const input: TrustScoreInput = {
-                registry_data: business.registry_data,
-                company_description: business.company_description,
-                logo_url: business.logo_url,
-                social_media: business.social_media,
-                sitelinks: business.sitelinks,
-                product_categories: business.product_categories,
-                translations: business.translations,
-                industry_category: business.quality_analysis?.industry_category,
-                quality_analysis: business.quality_analysis,
-                indexed_pages_count: 15
-            };
-            const result = calculateTrustScore(input);
-            raw = result.breakdown;
-            // Update score if recalculated (ignoring stored mismatch)
-            score = result.score;
-        } catch (e) {
-            console.error('Error recalculating trust breakdown fallback', e);
-        }
+    // FORCE Recalculation from live data (Fixes stale scores where data exists but score is 0)
+    // We treat the stored score as a fallback only if recalculation fails or data is missing
+    try {
+        const input: TrustScoreInput = {
+            registry_data: business.registry_data,
+            company_description: business.company_description,
+            logo_url: business.logo_url,
+            social_media: business.social_media,
+            sitelinks: business.sitelinks,
+            product_categories: business.product_categories,
+            translations: business.translations,
+            industry_category: business.quality_analysis?.industry_category || business.industry_category, // Handle both paths
+            quality_analysis: business.quality_analysis,
+            indexed_pages_count: 15 // Assume decent indexing if we have data
+        };
+
+        const result = calculateTrustScore(input);
+
+        // Use the FRESH breakdown and score
+        raw = result.breakdown;
+        score = result.score;
+
+    } catch (e) {
+        console.error('Error recalculating trust breakdown', e);
+        // Fallback to stored values if calculation crashes
     }
 
     // Calculate category scores based on raw components

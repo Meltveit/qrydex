@@ -196,18 +196,16 @@ export async function searchBusinesses(
             businessQueryBuilder = businessQueryBuilder.ilike('quality_analysis->>industry_category', `%${filters.industry}%`);
         }
 
-        // Order by trust score (primary) and relevance
+        // Order by trust score (primary)
+        // Note: We apply this BEFORE range to ensuring fetching the top trusted items
         businessQueryBuilder = businessQueryBuilder
             .order('trust_score', { ascending: false })
             .range((page - 1) * pageSize, page * pageSize - 1);
 
         // Execute queries
-        // If we have a query string, we also search for news
         let newsPromise = Promise.resolve({ data: [], error: null });
 
         if (query && query.trim()) {
-            // Simple ILIKE search for news since we don't have FTS column setup in client types yet
-            // Limiting news to 5 for relevance mix
             newsPromise = supabase
                 .from('news_articles')
                 .select('*')
@@ -221,12 +219,33 @@ export async function searchBusinesses(
             newsPromise
         ]);
 
-        const { data: businessData, error: businessError, count } = businessResult;
+        const { data: rawBusinessData, error: businessError, count } = businessResult;
         const { data: newsData, error: newsError } = newsResult;
 
         if (businessError) {
             console.error('Search error (business):', businessError);
             throw businessError;
+        }
+
+        // --- Post-Processing Ranking ---
+        // 1. Prioritize Location (Country Match)
+        // 2. Keep Trust Score Sorting
+        let processedBusinesses = rawBusinessData || [];
+
+        if (context?.country) {
+            const userCountry = context.country.toUpperCase();
+            processedBusinesses.sort((a, b) => {
+                const aIsLocal = a.country_code === userCountry ? 1 : 0;
+                const bIsLocal = b.country_code === userCountry ? 1 : 0;
+
+                // If one is local and the other isn't, local wins
+                if (aIsLocal !== bIsLocal) {
+                    return bIsLocal - aIsLocal;
+                }
+
+                // Otherwise fallback to Trust Score (already sorted, but good to ensure)
+                return (b.trust_score || 0) - (a.trust_score || 0);
+            });
         }
 
         // Log search analytics (fire and forget) - Bot B Pulse
@@ -236,7 +255,7 @@ export async function searchBusinesses(
                     await supabase.from('search_logs').insert({
                         query: query.trim(),
                         filters: filters,
-                        result_count: count || businessData?.length || 0,
+                        result_count: count || processedBusinesses.length || 0,
                         location_country: context?.country || 'Unknown',
                         location_region: context?.region,
                         anonymized_session_id: context?.sessionId
@@ -248,7 +267,7 @@ export async function searchBusinesses(
         }
 
         return {
-            businesses: JSON.parse(JSON.stringify(businessData || [])),
+            businesses: JSON.parse(JSON.stringify(processedBusinesses)),
             articles: newsData ? JSON.parse(JSON.stringify(newsData)) : [],
             total: count || 0,
             page,
