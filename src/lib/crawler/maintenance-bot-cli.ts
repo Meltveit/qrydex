@@ -248,7 +248,8 @@ if (require.main === module) {
                                         quality_analysis: updatedQuality,
                                         trust_score: score,
                                         trust_score_breakdown: breakdown,
-                                        industry_category: enrichedData?.industry_category || null,
+                                        sitelinks: enrichedData?.sitelinks || null,
+                                        // industry_category: enrichedData?.industry_category || null, // Column missing
                                         updated_at: new Date().toISOString(), // FORCE UPDATE TIMESTAMP
                                         ...updates,
                                         ...registryUpdate
