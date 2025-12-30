@@ -388,20 +388,16 @@ export default async function BusinessPage(props: any) {
                             />
                             <ScoreBar
                                 label={t('qualityScore')}
-                                score={trustScore.breakdown.quality.score}
-                                max={trustScore.breakdown.quality.max}
-                                color="blue"
-                            />
-                            <ScoreBar
-                                label={t('socialScore') || 'Social Presence'}
-                                score={trustScore.breakdown.social.score}
-                                max={trustScore.breakdown.social.max}
-                                color="purple"
-                            />
-                            <ScoreBar
-                                label={t('technicalScore') || 'Technical Quality'}
-                                score={trustScore.breakdown.technical.score}
-                                max={trustScore.breakdown.technical.max}
+                                score={
+                                    trustScore.breakdown.quality.score +
+                                    trustScore.breakdown.social.score +
+                                    trustScore.breakdown.technical.score
+                                }
+                                max={
+                                    trustScore.breakdown.quality.max +
+                                    trustScore.breakdown.social.max +
+                                    trustScore.breakdown.technical.max
+                                }
                                 color="blue"
                             />
                             <ScoreBar
