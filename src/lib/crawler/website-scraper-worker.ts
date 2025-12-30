@@ -145,6 +145,9 @@ if (require.main === module) {
                                 business_hours: enriched.business_hours, // Added
                                 scraped_at: new Date().toISOString()
                             },
+                            // Top-level fields for easy access/pSEO
+                            sitelinks: websiteData.sitelinks, // JSONB structure
+                            opening_hours: enriched.business_hours, // JSONB structure
                             // Trust score
                             trust_score: scamAnalysis?.credibilityScore || 0,
                             trust_score_breakdown: {},
