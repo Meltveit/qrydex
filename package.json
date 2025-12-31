@@ -15,6 +15,7 @@
     "scraper-w3": "npx tsx --env-file=.env.local src/lib/crawler/website-scraper-worker.ts 2 3",
     "translator": "npx tsx --env-file=.env.local src/lib/crawler/translation-bot-cli.ts",
     "maintenance-bot": "npx tsx --env-file=.env.local src/lib/crawler/maintenance-bot-cli.ts",
+    "us-bot": "npx tsx --env-file=.env.local src/lib/crawler/us-importer.ts",
     "analyze": "cross-env ANALYZE=true next build",
     "type-check": "tsc --noEmit"
   },
