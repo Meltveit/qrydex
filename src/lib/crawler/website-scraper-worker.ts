@@ -38,7 +38,7 @@ if (require.main === module) {
                     .from('businesses')
                     .select('id, domain, legal_name, org_number, registry_data, quality_analysis, scrape_count, country_code, website_crawl_count', { count: 'exact' })
                     .not('domain', 'is', null)
-                    .is('company_description', null)
+                    // .is('company_description', null) // REMOVED: Allow re-scraping of existing records to improve quality
                     .neq('website_status', 'dead') // Exclude dead sites
                     .or(`last_scraped_at.is.null,last_scraped_at.lt.${yesterday}`)
                     .order('website_crawl_count', { ascending: true, nullsFirst: true }) // Prioritize never crawled
