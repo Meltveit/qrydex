@@ -236,9 +236,13 @@ export default async function BusinessPage(props: any) {
                             <InfoRow label={t('legalName')} value={registry?.legal_name} />
                             <InfoRow label={t('orgNumber')} value={registry?.org_nr} />
 
-                            {/* Smart VAT Display - Hide if unknown or redundant */}
-                            {registry?.vat_number && (
-                                <InfoRow label={t('vatNumber')} value={registry?.vat_number} />
+                            {/* Smart VAT Display - CHECK BOTH REGISTRY AND SCRAPED DATA */}
+                            {(registry?.vat_number || quality?.contact_info?.vat_number) && (
+                                <InfoRow
+                                    label={t('vatNumber')}
+                                    value={registry?.vat_number || quality?.contact_info?.vat_number}
+                                    badge={!registry?.vat_number ? 'gray' : undefined} // Gray badge if scraped (unofficial)
+                                />
                             )}
 
                             {registry?.vat_status && registry.vat_status !== 'Unknown' && (

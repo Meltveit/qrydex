@@ -205,6 +205,9 @@ if (require.main === module) {
                             console.error(`  ❌ DB Update Error: ${updateError.message}`);
                         } else {
                             console.log(`  ✅ Success: ${business.legal_name} (Trust: ${updates.trust_score})`);
+                            if (updates.quality_analysis?.contact_info?.vat_number) {
+                                console.log(`     💰 VAT/Tax ID Found: ${updates.quality_analysis.contact_info.vat_number}`);
+                            }
                         }
 
                         // Rate limiting

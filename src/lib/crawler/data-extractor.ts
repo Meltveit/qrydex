@@ -35,6 +35,7 @@ export interface EnrichedBusinessData {
     contact_info: {
         emails: string[];
         phones: string[];
+        vat_number?: string;
         social_media: {
             linkedin?: string;
             facebook?: string;
@@ -150,9 +151,31 @@ function extractContactInfo(crawlResult: DeepCrawlResult) {
         .slice(0, 5)
         .map(item => item.email);
 
+    // 3. Extract VAT / Org Numbers
+    const vatPatterns = [
+        /DE\s?([0-9]{9})/i, // Germany
+        /GB\s?([0-9]{9,12})/i, // UK
+        /NO\s?([0-9]{9})\s?MVA/i, // Norway MVA
+        /FR\s?([0-9A-Z]{2})\s?([0-9]{9})/i, // France
+        /SE\s?([0-9]{12})/i // Sweden
+    ];
+
+    let foundVat: string | undefined = undefined;
+    for (const page of crawlResult.pages) {
+        for (const pattern of vatPatterns) {
+            const match = page.content.match(pattern);
+            if (match) {
+                foundVat = match[0].replace(/\s/g, '').toUpperCase();
+                break;
+            }
+        }
+        if (foundVat) break;
+    }
+
     return {
         emails: prioritizedEmails,
         phones: Array.from(phones).slice(0, 5),
+        vat_number: foundVat,
         social_media: {
             linkedin: social.linkedin || undefined,
             facebook: social.facebook || undefined,
@@ -487,7 +510,10 @@ export async function processDeepCrawl(crawlResult: DeepCrawlResult): Promise<En
         all_images: crawlResult.allImages.slice(0, 50), // Max 50 images
         logo_url: logoUrl,
         json_ld_data: jsonLdData.length > 0 ? jsonLdData : undefined,
-        contact_info: contactInfo,
+        contact_info: {
+            ...contactInfo,
+            vat_number: contactInfo.vat_number
+        },
         services: aiData.services || {
             no: [], en: [], de: [], fr: [], es: []
         },
