@@ -56,6 +56,12 @@ const BOTS: BotConfig[] = [
         script: 'src/lib/crawler/maintenance-bot-cli.ts',
         instances: 2, // 2 parallel maintenance workers (Trust Score calculation)
         color: '\x1b[35m' // Magenta
+    },
+    {
+        name: 'Data Janitor',
+        script: 'src/lib/crawler/maintenance-worker.ts',
+        instances: 1, // Runs hourly cleanup/deduplication
+        color: '\x1b[90m' // Grey
     }
 ];
 
