@@ -2,7 +2,7 @@
  * Business Search Service
  */
 
-import { supabase } from '@/lib/supabase';
+import { createServerClient } from '@/lib/supabase';
 import type { Business } from '@/types/database';
 
 export interface SearchFilters {
@@ -30,10 +30,6 @@ export interface SearchResult {
     pageSize: number;
 }
 
-/**
- * Search businesses with filters and ranking
- */
-
 export interface AnalyticsContext {
     country?: string;
     region?: string;
@@ -50,6 +46,8 @@ export async function searchBusinesses(
     pageSize = 20,
     context?: AnalyticsContext
 ): Promise<SearchResult> {
+    const supabase = createServerClient(); // Use fresh server client (Service Role)
+
     try {
         let businessQueryBuilder = supabase
             .from('businesses')
@@ -292,6 +290,7 @@ export async function searchBusinesses(
  * Get a single business by org number
  */
 export async function getBusinessByOrgNumber(orgNumber: string): Promise<Business | null> {
+    const supabase = createServerClient();
     const { data, error } = await supabase
         .from('businesses')
         .select('*')
@@ -310,6 +309,7 @@ export async function getBusinessByOrgNumber(orgNumber: string): Promise<Busines
  * Get business by ID
  */
 export async function getBusinessById(id: string): Promise<Business | null> {
+    const supabase = createServerClient();
     const { data, error } = await supabase
         .from('businesses')
         .select('*')
@@ -328,6 +328,7 @@ export async function getBusinessById(id: string): Promise<Business | null> {
  * Get recently verified businesses
  */
 export async function getRecentlyVerified(limit = 10): Promise<Business[]> {
+    const supabase = createServerClient();
     const { data, error } = await supabase
         .from('businesses')
         .select('*')
@@ -347,6 +348,7 @@ export async function getRecentlyVerified(limit = 10): Promise<Business[]> {
  * Get top trusted businesses
  */
 export async function getTopTrusted(limit = 10): Promise<Business[]> {
+    const supabase = createServerClient();
     const { data, error } = await supabase
         .from('businesses')
         .select('*')
