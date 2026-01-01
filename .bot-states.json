@@ -3,5 +3,8 @@
     "norwegianOffset": 4306,
     "danishOffset": 10280,
     "finnishOffset": 10280
+  },
+  "no-industry-importer": {
+    "offset": 21100
   }
 }

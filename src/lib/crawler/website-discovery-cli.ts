@@ -31,17 +31,19 @@ if (require.main === module) {
 
             try {
                 // 1. Fetch available candidates
+                // 1. Fetch available candidates (Priority: NULL > Oldest 'not_found')
+                // We use 'or' to get both, and order by 'updated_at' ASC (Oldest checked first)
                 const { data: candidates, count } = await supabase
                     .from('businesses')
                     .select('id, legal_name, org_number, country_code', { count: 'exact' })
                     .is('domain', null)
-                    .is('website_status', null)
-                    .order('created_at', { ascending: false })
-                    .limit(100); // Fetch larger batch for client-side filtering
+                    .or('website_status.is.null,website_status.eq.not_found')
+                    .order('updated_at', { ascending: true }) // Process oldest last-touched first (Rotation)
+                    .limit(100);
 
                 if (!candidates || candidates.length === 0) {
-                    console.log('✅ Queue empty! Waiting...');
-                    await new Promise(resolve => setTimeout(resolve, 30 * 1000));
+                    console.log('✅ Global Queue completely empty! Sleeping 60s...');
+                    await new Promise(resolve => setTimeout(resolve, 60 * 1000));
                     continue;
                 }
 

@@ -62,6 +62,12 @@ const BOTS: BotConfig[] = [
         script: 'src/lib/crawler/maintenance-worker.ts',
         instances: 1, // Runs hourly cleanup/deduplication
         color: '\x1b[90m' // Grey
+    },
+    {
+        name: 'NO Industry Bot',
+        script: 'src/lib/crawler/no-industry-importer.ts',
+        instances: 0,
+        color: '\x1b[36m' // Cyan
     }
 ];
 

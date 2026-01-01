@@ -157,7 +157,9 @@ function extractContactInfo(crawlResult: DeepCrawlResult) {
         /GB\s?([0-9]{9,12})/i, // UK
         /NO\s?([0-9]{9})\s?MVA/i, // Norway MVA
         /FR\s?([0-9A-Z]{2})\s?([0-9]{9})/i, // France
-        /SE\s?([0-9]{12})/i // Sweden
+        /SE\s?([0-9]{12})/i, // Sweden
+        /([0-9]{9})\s?RT\s?([0-9]{4})/i, // Canada GST/HST (123456789 RT 0001)
+        /BN\s?([0-9]{9})/i // Canada Business Number label
     ];
 
     let foundVat: string | undefined = undefined;
