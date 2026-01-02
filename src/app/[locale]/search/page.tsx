@@ -1,4 +1,5 @@
 import SearchBar from '@/components/SearchBar';
+import { Metadata } from 'next';
 import BusinessCard from '@/components/BusinessCard';
 import { searchBusinesses } from '@/lib/search';
 import Link from 'next/link';
@@ -12,6 +13,58 @@ interface SearchPageProps {
         q?: string;
         page?: string;
     }>;
+}
+
+export async function generateMetadata({ params, searchParams }: SearchPageProps): Promise<Metadata> {
+    const { locale } = await params;
+    const { q } = await searchParams;
+    const query = q || '';
+
+    // Translation Maps for SEO
+    const titles: Record<string, { prefix: string, suffix: string, default: string }> = {
+        no: { prefix: 'Selskaper i', suffix: '- Qrydex', default: 'Bedriftssøk - Qrydex' },
+        en: { prefix: 'Companies in', suffix: '- Qrydex', default: 'Business Search - Qrydex' },
+        de: { prefix: 'Unternehmen in', suffix: '- Qrydex', default: 'Unternehmenssuche - Qrydex' },
+        fr: { prefix: 'Entreprises à', suffix: '- Qrydex', default: 'Recherche d\'entreprises - Qrydex' },
+        es: { prefix: 'Empresas en', suffix: '- Qrydex', default: 'Búsqueda de empresas - Qrydex' },
+        da: { prefix: 'Virksomheder i', suffix: '- Qrydex', default: 'Virksomhedssøgning - Qrydex' },
+        sv: { prefix: 'Företag i', suffix: '- Qrydex', default: 'Företagssök - Qrydex' },
+        fi: { prefix: 'Yritykset', suffix: '- Qrydex', default: 'Yrityshaku - Qrydex' }
+    };
+
+    const descriptions: Record<string, { prefix: string, suffix: string, default: string }> = {
+        no: { prefix: 'Finn pålitelige bedrifter innen', suffix: 'Sjekk Trust Score og anmeldelser.', default: 'Søk i vår database av verifiserte bedrifter.' },
+        en: { prefix: 'Find trusted companies in', suffix: 'Check Trust Scores and reviews.', default: 'Search our database of verified companies.' },
+        de: { prefix: 'Finden Sie vertrauenswürdige Unternehmen in', suffix: 'Prüfen Sie Trust Scores und Bewertungen.', default: 'Durchsuchen Sie unsere Datenbank verifizierter Unternehmen.' },
+        fr: { prefix: 'Trouvez des entreprises de confiance dans', suffix: 'Vérifiez les scores de confiance et les avis.', default: 'Recherchez dans notre base de données d\'entreprises vérifiées.' },
+        es: { prefix: 'Encuentre empresas confiables en', suffix: 'Verifique Trust Scores y reseñas.', default: 'Busque en nuestra base de datos de empresas verificadas.' },
+        da: { prefix: 'Find betroede virksomheder i', suffix: 'Tjek Trust Scores og anmeldelser.', default: 'Søg i vores database af bekræftede virksomheder.' },
+        sv: { prefix: 'Hitta pålitliga företag inom', suffix: 'Kontrollera Trust Scores och recensioner.', default: 'Sök i vår databas med verifierade företag.' },
+        fi: { prefix: 'Löydä luotettavat yritykset alan', suffix: 'Tarkista Trust Scores ja arvostelut.', default: 'Hae varmennettujen yritysten tietokannastamme.' }
+    };
+
+    const tTitle = titles[locale] || titles.en;
+    const tDesc = descriptions[locale] || descriptions.en;
+
+    const title = query
+        ? `${tTitle.prefix} ${query} ${tTitle.suffix}`
+        : tTitle.default;
+
+    const description = query
+        ? `${tDesc.prefix} ${query}. ${tDesc.suffix}`
+        : tDesc.default;
+
+    return {
+        title,
+        description,
+        alternates: {
+            canonical: `https://qrydex.com/${locale}/search${query ? `?q=${encodeURIComponent(query)}` : ''}`,
+        },
+        robots: {
+            index: !!query, // Only index if there is a query (Category page), avoid indexing empty search
+            follow: true,
+        }
+    };
 }
 
 export default async function SearchPage({ params, searchParams }: SearchPageProps) {

@@ -83,10 +83,24 @@ export async function generateMetadata(
 
     // pSEO: Enriched Titles & Descriptions
     const trustScore = formatTrustScore(business);
-    const countryName = locale === 'no' ? 'Norge' : 'Norway'; // Simplified map, can be expanded
+
+    // Country Names Map
+    const countryNames: Record<string, string> = {
+        no: 'Norge', en: 'Norway', de: 'Deutschland', fr: 'France',
+        es: 'España', da: 'Danmark', sv: 'Sverige', fi: 'Suomi'
+    };
+    const countryName = countryNames[locale] || 'Norway';
+
+    // Industry "in" Preposition Map
+    const inPrepositions: Record<string, string> = {
+        no: 'i', en: 'in', de: 'in', fr: 'en',
+        es: 'en', da: 'i', sv: 'i', fi: 'maassa'
+    };
+    const inPrep = inPrepositions[locale] || 'in';
 
     // "Equinor - Trust Score, Reviews & Key Figures (Norway)"
-    const seoTitle = `${business.legal_name} - ${translations?.[locale]?.industry_text || business.quality_analysis?.industry_category || 'Business'} in ${countryName}`;
+    const baseTitle = translations?.[locale]?.industry_text || business.quality_analysis?.industry_category || 'Business';
+    const seoTitle = `${business.legal_name} - ${baseTitle} ${inPrep} ${countryName}`;
     const seoDescription = `${business.legal_name} has a Trust Score of ${trustScore.score}/100. ${metaDescription}`;
 
     return {
@@ -319,7 +333,14 @@ export default async function BusinessPage(props: any) {
                                 <svg className="w-5 h-5 md:w-6 md:h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
-                                {locale === 'no' ? 'Nøkkelpersoner' : 'Key Personnel'}
+                                {(() => {
+                                    const titles: Record<string, string> = {
+                                        no: 'Nøkkelpersoner', en: 'Key Personnel', de: 'Schlüsselpersonal',
+                                        fr: 'Personnel clé', es: 'Personal clave', da: 'Nøglepersoner',
+                                        sv: 'Nyckelpersoner', fi: 'Avainhenkilöt'
+                                    };
+                                    return titles[locale] || titles.en;
+                                })()}
                             </h2>
                             <div className="grid sm:grid-cols-2 gap-4">
                                 {(business.key_personnel as any[]).map((person: any, i: number) => (
@@ -344,21 +365,44 @@ export default async function BusinessPage(props: any) {
                     {quality?.industry_category && (
                         <div className="p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl md:rounded-2xl border border-gray-100 dark:border-slate-700 shadow-lg">
                             <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">
-                                {locale === 'no' ? 'Utforsk mer' : 'Explore More'}
+                                {(() => {
+                                    const headers: Record<string, string> = {
+                                        no: 'Utforsk mer', en: 'Explore More', de: 'Mehr entdecken',
+                                        fr: 'En savoir plus', es: 'Explorar más', da: 'Udforsk mere',
+                                        sv: 'Utforska mer', fi: 'Lue lisää'
+                                    };
+                                    return headers[locale] || headers.en;
+                                })()}
                             </h2>
                             <div className="flex flex-wrap gap-2">
                                 <Link
                                     href={`/${locale}/search?q=${encodeURIComponent(quality.industry_category)}`}
                                     className="px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                                 >
-                                    {locale === 'no' ? `Alle selskaper innen ${quality.industry_category}` : `All companies in ${quality.industry_category}`}
+                                    {(() => {
+                                        const templates: Record<string, string> = {
+                                            no: 'Alle selskaper innen', en: 'All companies in', de: 'Alle Unternehmen in',
+                                            fr: 'Toutes les entreprises dans', es: 'Todas las empresas en',
+                                            da: 'Alle virksomheder i', sv: 'Alla företag inom', fi: 'Kaikki yritykset alalla'
+                                        };
+                                        const prefix = templates[locale] || templates.en;
+                                        return `${prefix} ${quality.industry_category}`;
+                                    })()}
                                 </Link>
                                 {registry?.registered_address && (
                                     <Link
                                         href={`/${locale}/search?q=${encodeURIComponent(registry.registered_address.split(' ').pop() || '')}`} // Extract City heuristic
                                         className="px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-sm font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
                                     >
-                                        {locale === 'no' ? `Selskaper i ${registry.registered_address.split(' ').pop()}` : `Companies in ${registry.registered_address.split(' ').pop()}`}
+                                        {(() => {
+                                            const templates: Record<string, string> = {
+                                                no: 'Selskaper i', en: 'Companies in', de: 'Unternehmen in',
+                                                fr: 'Entreprises à', es: 'Empresas en', da: 'Virksomheder i',
+                                                sv: 'Företag i', fi: 'Yritykset kaupungissa'
+                                            };
+                                            const prefix = templates[locale] || templates.en;
+                                            return `${prefix} ${registry.registered_address.split(' ').pop()}`;
+                                        })()}
                                     </Link>
                                 )}
                             </div>
