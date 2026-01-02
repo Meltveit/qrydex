@@ -81,16 +81,24 @@ export async function generateMetadata(
         languages[l] = `${baseUrl}/${l}/business/${orgNumber}`;
     });
 
+    // pSEO: Enriched Titles & Descriptions
+    const trustScore = formatTrustScore(business);
+    const countryName = locale === 'no' ? 'Norge' : 'Norway'; // Simplified map, can be expanded
+
+    // "Equinor - Trust Score, Reviews & Key Figures (Norway)"
+    const seoTitle = `${business.legal_name} - ${translations?.[locale]?.industry_text || business.quality_analysis?.industry_category || 'Business'} in ${countryName}`;
+    const seoDescription = `${business.legal_name} has a Trust Score of ${trustScore.score}/100. ${metaDescription}`;
+
     return {
-        title: `${business.legal_name} - Verified Business Profile`,
-        description: metaDescription,
+        title: seoTitle,
+        description: seoDescription,
         alternates: {
             canonical: `${baseUrl}/${locale}/business/${orgNumber}`,
             languages: languages,
         },
         openGraph: {
-            title: `${business.legal_name} | Qrydex`,
-            description: metaDescription,
+            title: seoTitle,
+            description: seoDescription,
             url: `https://qrydex.com/${locale}/business/${orgNumber}`,
             siteName: 'Qrydex',
             images: ogImages,
@@ -99,8 +107,8 @@ export async function generateMetadata(
         },
         twitter: {
             card: 'summary',
-            title: `${business.legal_name} on Qrydex`,
-            description: metaDescription,
+            title: seoTitle,
+            description: seoDescription,
             images: ogImages,
         },
     };
@@ -303,6 +311,59 @@ export default async function BusinessPage(props: any) {
                             </p>
                         )}
                     </div>
+
+                    {/* Key Personnel (NEW) - "Haiene" 🦈 */}
+                    {business.key_personnel && (business.key_personnel as any[]).length > 0 && (
+                        <div className="p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl md:rounded-2xl border border-gray-100 dark:border-slate-700 shadow-lg">
+                            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4 flex items-center gap-2">
+                                <svg className="w-5 h-5 md:w-6 md:h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                {locale === 'no' ? 'Nøkkelpersoner' : 'Key Personnel'}
+                            </h2>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                {(business.key_personnel as any[]).map((person: any, i: number) => (
+                                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-slate-700/30">
+                                        <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold">
+                                            {person.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900 dark:text-white">{person.name}</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{person.role}</p>
+                                            {person.email && (
+                                                <p className="text-xs text-blue-600 mt-1 truncate max-w-[200px]">{person.email}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* pSEO Internal Linking - "Topic Clusters" 🔗 */}
+                    {quality?.industry_category && (
+                        <div className="p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl md:rounded-2xl border border-gray-100 dark:border-slate-700 shadow-lg">
+                            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">
+                                {locale === 'no' ? 'Utforsk mer' : 'Explore More'}
+                            </h2>
+                            <div className="flex flex-wrap gap-2">
+                                <Link
+                                    href={`/${locale}/search?q=${encodeURIComponent(quality.industry_category)}`}
+                                    className="px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                                >
+                                    {locale === 'no' ? `Alle selskaper innen ${quality.industry_category}` : `All companies in ${quality.industry_category}`}
+                                </Link>
+                                {registry?.registered_address && (
+                                    <Link
+                                        href={`/${locale}/search?q=${encodeURIComponent(registry.registered_address.split(' ').pop() || '')}`} // Extract City heuristic
+                                        className="px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-sm font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                                    >
+                                        {locale === 'no' ? `Selskaper i ${registry.registered_address.split(' ').pop()}` : `Companies in ${registry.registered_address.split(' ').pop()}`}
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Quality Analysis */}
                     {quality && (
