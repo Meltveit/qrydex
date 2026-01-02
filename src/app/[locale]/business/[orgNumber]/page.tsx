@@ -260,7 +260,21 @@ export default async function BusinessPage(props: any) {
                             />
                             <InfoRow label={t('registrationDate')} value={registry?.registration_date} />
                             <InfoRow label={t('employees')} value={registry?.employee_count?.toString()} />
-                            <InfoRow label={t('address')} value={registry?.registered_address} />
+                            {(() => {
+                                let address = registry?.registered_address || '';
+                                if (locale === 'en' && address) {
+                                    // Simple Country Mapping for Address String
+                                    address = address
+                                        .replace(/\bNorge\b/g, 'Norway')
+                                        .replace(/\bDeutschland\b/g, 'Germany')
+                                        .replace(/\bSverige\b/g, 'Sweden')
+                                        .replace(/\bDanmark\b/g, 'Denmark')
+                                        .replace(/\bSuomi\b/g, 'Finland')
+                                        .replace(/\bSpania\b/g, 'Spain')
+                                        .replace(/\bFrankrike\b/g, 'France');
+                                }
+                                return <InfoRow label={t('address')} value={address} />;
+                            })()}
 
                             {/* Industry Codes with Smart Translation */}
                             {(() => {

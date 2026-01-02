@@ -44,6 +44,13 @@ export interface EnrichedBusinessData {
         };
     };
 
+    // Decision Makers
+    key_personnel: Array<{
+        name: string;
+        role: string;
+        email?: string;
+    }>;
+
     // Services & Products (Multilingual)
     services: {
         no: string[];
@@ -127,27 +134,50 @@ function extractContactInfo(crawlResult: DeepCrawlResult) {
         }
     }
 
-    // Prioritize emails by importance
+    // Prioritize emails by importance AND domain match
+    const baseDomain = new URL(crawlResult.baseUrl).hostname.replace('www.', '').toLowerCase();
+
+    // Helper to check if email matches the website domain
+    const isDomainMatch = (email: string) => {
+        const emailDomain = email.split('@')[1]?.toLowerCase();
+        return emailDomain && (baseDomain.includes(emailDomain) || emailDomain.includes(baseDomain));
+    };
+
     const prioritizedEmails = Array.from(emails).map(email => {
         const localPart = email.split('@')[0].toLowerCase();
-        let priority = 3;
+        const domainMatches = isDomainMatch(email);
+        let priority = 5; // Default low priority
 
-        // Tier 1: Executives
-        const execKeywords = ['ceo', 'cfo', 'cto', 'president', 'founder', 'dagligleder', 'post', 'kontakt', 'info', 'hello', 'hei'];
-        if (execKeywords.some(kw => localPart.includes(kw))) {
+        // Tier 1: Domain Match + Executive Keyword
+        const execKeywords = ['ceo', 'cfo', 'cto', 'president', 'founder', 'dagligleder', 'post', 'kontakt', 'info', 'hello', 'hei', 'contact', 'media', 'press'];
+        if (domainMatches && execKeywords.some(kw => localPart.includes(kw))) {
             priority = 1;
         }
-        // Tier 2: Departments
-        else if (['sales', 'marketing', 'hr', 'support', 'business', 'salg', 'faktura'].some(kw => localPart.includes(kw))) {
+        // Tier 2: Domain Match + Department
+        else if (domainMatches && ['sales', 'marketing', 'hr', 'support', 'business', 'salg', 'faktura', 'careers', 'jobs'].some(kw => localPart.includes(kw))) {
             priority = 2;
         }
+        // Tier 3: Domain Match + Any Name (e.g. harry.osborn@equinor.com)
+        else if (domainMatches) {
+            priority = 3;
+        }
+        // Tier 4: Non-Matching Domain (External/Junk?)
+        else {
+            priority = 10; // High penalty for non-matching domains
+        }
 
-        if (['noreply', 'no-reply', 'donotreply', 'sentry', 'bug'].some(kw => localPart.includes(kw))) return null;
+        // Filter out absolute junk
+        if (['noreply', 'no-reply', 'donotreply', 'sentry', 'bug', 'hostmaster', 'webmaster'].some(kw => localPart.includes(kw))) return null;
 
         return { email, priority };
     })
         .filter((item): item is { email: string; priority: number } => item !== null)
-        .sort((a, b) => a.priority - b.priority)
+        .sort((a, b) => a.priority - b.priority); // Lower number = Higher priority
+
+    // Filter Logic: If we have ANY domain-matching emails (Priority <= 3), discard all priority 10 emails
+    const hasDomainMatch = prioritizedEmails.some(e => e.priority <= 3);
+    const finalEmails = prioritizedEmails
+        .filter(e => hasDomainMatch ? e.priority <= 3 : true) // Throw away junk if we have good data
         .slice(0, 5)
         .map(item => item.email);
 
@@ -175,7 +205,7 @@ function extractContactInfo(crawlResult: DeepCrawlResult) {
     }
 
     return {
-        emails: prioritizedEmails,
+        emails: finalEmails,
         phones: Array.from(phones).slice(0, 5),
         vat_number: foundVat,
         social_media: {
@@ -350,21 +380,25 @@ async function analyzeWithAI(crawlResult: DeepCrawlResult): Promise<Partial<Enri
         let contentContext = "";
 
         if (aboutPage) {
-            // If we have an About page, use it heavily
             contentContext = `
-            --- ABOUT PAGE CONTENT ---
-            ${aboutPage.content.slice(0, 3000)}
+            --- ABOUT/TEAM PAGE CONTENT ---
+            ${aboutPage.content.slice(0, 4000)}
             
             --- HOMEPAGE CONTENT ---
             ${crawlResult.pages[0]?.content.slice(0, 2000) || ""}
             `;
         } else {
-            // Fallback: Mix of Home + Other pages
-            contentContext = crawlResult.pages
-                .slice(0, 3)
-                .map(p => `--- PAGE: ${p.title} ---\n${p.content.slice(0, 1500)}`)
-                .join('\n\n')
-                .slice(0, 5000);
+            // Priority: Team > About > Contact > Home
+            const teamPages = crawlResult.pages.filter(p => p.type === 'team' || p.type === 'about').slice(0, 2);
+            if (teamPages.length > 0) {
+                contentContext = teamPages.map(p => `--- PAGE (${p.type}): ${p.title} ---\n${p.content.slice(0, 2500)}`).join('\n\n');
+            } else {
+                contentContext = crawlResult.pages
+                    .slice(0, 3)
+                    .map(p => `--- PAGE: ${p.title} ---\n${p.content.slice(0, 1500)}`)
+                    .join('\n\n')
+                    .slice(0, 5000);
+            }
         }
 
         const prompt = `Analyze this business website content and extract structured data. Return ONLY valid JSON:
@@ -386,7 +420,10 @@ async function analyzeWithAI(crawlResult: DeepCrawlResult): Promise<Partial<Enri
   "products_de": ["Product 1 (German)"],
   "products_fr": ["Product 1 (French)"],
   "products_es": ["Product 1 (Spanish)"],
-  "search_keywords": ["Keyword1", "Keyword2", "Keyword3"]
+  "search_keywords": ["Keyword1", "Keyword2", "Keyword3"],
+  "key_personnel": [
+    { "name": "Full Name", "role": "CEO / Managing Director / CTO / Sales Director", "email": "extracted_if_present_in_text" }
+  ]
 }
 
 Website Content:
@@ -443,7 +480,13 @@ ${contentContext}`;
                     products: data.products_es,
                     services: data.services_es
                 }
-            }
+                es: {
+                    description: data.company_description_es,
+                    products: data.products_es,
+                    services: data.services_es
+                }
+            },
+            key_personnel: data.key_personnel || []
         };
 
     } catch (error) {
@@ -529,6 +572,7 @@ export async function processDeepCrawl(crawlResult: DeepCrawlResult): Promise<En
         response_time_ms: crawlResult.crawlStats.duration,
         crawl_timestamp: new Date().toISOString(),
         crawl_duration_ms: crawlResult.crawlStats.duration,
-        business_hours: crawlResult.businessHours || undefined
+        business_hours: crawlResult.businessHours || undefined,
+        key_personnel: aiData.key_personnel || []
     };
 }

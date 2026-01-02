@@ -55,8 +55,10 @@ export interface WebsiteData {
     };
     responseTime?: number;
     detectedLanguage?: string;
+
     enrichedData?: any;
     translations?: any;
+    key_personnel?: Array<{ name: string; role: string; email?: string; }>;
 }
 
 /**
@@ -409,9 +411,11 @@ export async function scrapeWebsite(websiteUrl: string, maxPages: number = 50): 
             hasSSL: enrichedData.has_ssl,
             securityHeaders: undefined,
             responseTime: enrichedData.response_time_ms,
+
             // NEW: Store ALL enriched data
             enrichedData: enrichedData,
-            translations: enrichedData.translations
+            translations: enrichedData.translations,
+            key_personnel: enrichedData.key_personnel
         } as any;
 
     } catch (error) {
@@ -460,7 +464,9 @@ export async function batchScrapeBusinesses(limit: number = 10) {
                         company_description: websiteData.description || 'Ingen beskrivelse funnet',
                         social_media: websiteData.socialMedia,
                         sitelinks: websiteData.sitelinks, // Save Sitelinks
+
                         translations: websiteData.translations, // Save Polyglot Data
+                        key_personnel: websiteData.key_personnel, // Save Decision Makers
                         // Update existing JSONB fields
                         quality_analysis: {
                             website_scraped: true,

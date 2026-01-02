@@ -88,3 +88,51 @@ export async function searchUSCompany(
         return { success: false };
     }
 }
+/**
+ * Bulk search for companies (for importing new companies)
+ * @param query - Search term (e.g. "Technology")
+ * @param jurisdiction - Jurisdiction code (e.g. "us_de")
+ * @param page - Page number (default 1)
+ */
+export async function searchCompaniesBulk(
+    query: string,
+    jurisdiction: string = 'us',
+    page: number = 1
+): Promise<{ success: boolean; companies: OpenCorporatesCompany[]; total_pages: number }> {
+    try {
+        const params = new URLSearchParams({
+            q: query,
+            jurisdiction_code: jurisdiction,
+            per_page: '30', // Max per page often 30-50 for free
+            page: page.toString()
+        });
+
+        // Add API Key if available
+        const apiKey = process.env.OPENCORPORATES_API_KEY;
+        if (apiKey) {
+            params.append('api_token', apiKey);
+        }
+
+        console.log(`🔍 Bulk Search OpenCorporates: "${query}" in ${jurisdiction} (Page ${page})...`);
+        const response = await fetch(
+            `https://api.opencorporates.com/v0.4/companies/search?${params}`
+        );
+
+        if (!response.ok) {
+            console.error(`❌ OpenCorporates API error: ${response.status} ${response.statusText}`);
+            return { success: false, companies: [], total_pages: 0 };
+        }
+
+        const data = await response.json();
+        const companies = (data.results.companies || []).map((c: any) => c.company);
+
+        return {
+            success: true,
+            companies: companies,
+            total_pages: data.results.total_pages || 0
+        };
+    } catch (error: any) {
+        console.error(`❌ OpenCorporates network error:`, error.message);
+        return { success: false, companies: [], total_pages: 0 };
+    }
+}

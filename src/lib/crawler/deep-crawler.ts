@@ -18,6 +18,7 @@ export interface PageResult {
         language?: string;
     };
     structuredData?: any[]; // JSON-LD
+    type?: 'home' | 'success_case' | 'contact' | 'about' | 'team' | 'products' | 'services' | 'careers' | 'legal' | 'news' | 'other';
 }
 
 export interface DeepCrawlResult {
@@ -273,10 +274,26 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
                 }
             });
 
+            // Determine Page Type (Heuristic)
+            let pageType: 'home' | 'success_case' | 'contact' | 'about' | 'team' | 'products' | 'services' | 'careers' | 'legal' | 'news' | 'other' = 'other';
+            const urlPath = new URL(currentUrl).pathname.toLowerCase();
+            const titleLower = title.toLowerCase();
+
+            if (urlPath === '/' || urlPath === '') pageType = 'home';
+            else if (/(contact|kontakt|support|kundeservice)/i.test(urlPath)) pageType = 'contact';
+            else if (/(about|om-oss|company|hvem-er-vi)/i.test(urlPath)) pageType = 'about';
+            else if (/(team|people|ledelse|ansatte|styret|board|management|vorstand|styrelse|johto)/i.test(urlPath)) pageType = 'team';
+            else if (/(career|jobb|vacancies|karriere)/i.test(urlPath)) pageType = 'careers';
+            else if (/(product|shop|store|nettbutikk|produkter)/i.test(urlPath)) pageType = 'products';
+            else if (/(service|tjenester)/i.test(urlPath)) pageType = 'services';
+            else if (/(news|blog|press|aktuelt|nyheter)/i.test(urlPath)) pageType = 'news';
+            else if (/(privacy|terms|personvern|vilkar)/i.test(urlPath)) pageType = 'legal';
+            else if (/(case|referanser|portfolio|projects)/i.test(urlPath)) pageType = 'success_case';
+
             pages.push({
                 url: currentUrl,
                 title,
-                content: content, // Keep original content
+                content: content,
                 html,
                 links,
                 headings: { h1, h2, h3 },
@@ -284,7 +301,8 @@ export async function deepCrawlWebsite(baseUrl: string, maxPages: number = 20): 
                     description,
                     language: lang
                 },
-                structuredData
+                structuredData,
+                type: pageType // Add type to result
             });
 
         } catch (error) {
