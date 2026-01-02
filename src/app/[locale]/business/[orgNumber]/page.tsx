@@ -84,12 +84,28 @@ export async function generateMetadata(
     // pSEO: Enriched Titles & Descriptions
     const trustScore = formatTrustScore(business);
 
-    // Country Names Map
-    const countryNames: Record<string, string> = {
-        no: 'Norge', en: 'Norway', de: 'Deutschland', fr: 'France',
-        es: 'España', da: 'Danmark', sv: 'Sverige', fi: 'Suomi'
+    // Country Names Map - Dynamic based on business.country_code
+    const getLocalizedCountryName = (code: string | null, locale: string) => {
+        const cCode = (code || 'NO').toUpperCase();
+
+        const maps: Record<string, Record<string, string>> = {
+            'NO': { no: 'Norge', en: 'Norway', de: 'Norwegen', fr: 'Norvège', es: 'Noruega' },
+            'SE': { no: 'Sverige', en: 'Sweden', de: 'Schweden', fr: 'Suède', es: 'Suecia', sv: 'Sverige' },
+            'DK': { no: 'Danmark', en: 'Denmark', de: 'Dänemark', fr: 'Danemark', es: 'Dinamarca', da: 'Danmark' },
+            'FI': { no: 'Finland', en: 'Finland', de: 'Finnland', fr: 'Finlande', es: 'Finlandia', fi: 'Suomi' },
+            'DE': { no: 'Tyskland', en: 'Germany', de: 'Deutschland', fr: 'Allemagne', es: 'Alemania' },
+            'FR': { no: 'Frankrike', en: 'France', de: 'Frankreich', fr: 'France', es: 'Francia' },
+            'US': { no: 'USA', en: 'USA', de: 'USA', fr: 'États-Unis', es: 'EE. UU.' },
+            'GB': { no: 'Storbritannia', en: 'UK', de: 'Großbritannien', fr: 'Royaume-Uni', es: 'Reino Unido' },
+            'ES': { no: 'Spania', en: 'Spain', de: 'Spanien', fr: 'Espagne', es: 'España' }
+        };
+
+        const map = maps[cCode];
+        if (!map) return cCode; // Fallback to code if unknown
+        return map[locale] || map['en'] || cCode;
     };
-    const countryName = countryNames[locale] || 'Norway';
+
+    const countryName = getLocalizedCountryName(business.country_code, locale);
 
     // Industry "in" Preposition Map
     const inPrepositions: Record<string, string> = {
