@@ -116,12 +116,17 @@ async function run() {
                 // Check if ANY key data is missing (Smart Enrichment)
                 const regData = existing.registry_data || {};
                 const isMissingAddress = !regData.registered_address || regData.registered_address === 'Unknown';
-                const isMissingEIN = !regData.vat_number;
+                // Enhanced EIN Check: Missing, or placeholder '000000000'
+                const currentEIN = regData.vat_number;
+                const isBadEIN = !currentEIN || currentEIN === '000000000' || currentEIN === '0' || (typeof currentEIN === 'string' && !currentEIN.includes('-') && currentEIN.length === 9); // Real EINs often have dashes or are 9 digits
+
                 const isMissingIndustry = !regData.industry_codes || regData.industry_codes.length === 0;
                 const isMissingWebsite = !existing.domain && (!existing.website_status || existing.website_status === 'not_found');
 
-                if (isMissingAddress || isMissingEIN || isMissingIndustry || isMissingWebsite) {
+                // Conflict resolution: Force update if EIN is bad
+                if (isMissingAddress || isBadEIN || isMissingIndustry || isMissingWebsite) {
                     needsUpdate = true;
+                    if (isBadEIN) console.log(`  🔧 Fixing bad EIN for ${legalName} (${currentEIN})...`);
                 } else {
                     continue;
                 }

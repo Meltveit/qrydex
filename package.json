@@ -16,6 +16,7 @@
     "translator": "npx tsx --env-file=.env.local src/lib/crawler/translation-bot-cli.ts",
     "maintenance-bot": "npx tsx --env-file=.env.local src/lib/crawler/maintenance-bot-cli.ts",
     "us-bot": "npx tsx --env-file=.env.local src/lib/crawler/us-importer.ts",
+    "rescue-bot": "npx tsx --env-file=.env.local src/lib/crawler/rescue-scraper.ts",
     "no-bot": "npx tsx --env-file=.env.local src/lib/crawler/no-industry-importer.ts",
     "analyze": "cross-env ANALYZE=true next build",
     "type-check": "tsc --noEmit"
@@ -35,6 +36,7 @@
     "openai": "^4.76.1",
     "p-limit": "^7.2.0",
     "pg": "^8.14.0",
+    "puppeteer": "^24.34.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "rss-parser": "^3.13.0",

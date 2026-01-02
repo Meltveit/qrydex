@@ -68,6 +68,12 @@ const BOTS: BotConfig[] = [
         script: 'src/lib/crawler/no-industry-importer.ts',
         instances: 0,
         color: '\x1b[36m' // Cyan
+    },
+    {
+        name: 'Rescue Bot', // Puppeteer-based 403 solver
+        script: 'src/lib/crawler/rescue-scraper.ts',
+        instances: 1, // Single instance to save memory
+        color: '\x1b[31m' // Red
     }
 ];
 

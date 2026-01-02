@@ -78,6 +78,11 @@ if (require.main === module) {
                                     last_scraped_at: new Date().toISOString()
                                 })
                                 .eq('id', business.id);
+                        }
+
+                        // Protect Rescued Sites: If Puppeteer fixed it, don't break it with the dumb scanner
+                        if (business.quality_analysis?.rescue_method === 'puppeteer') {
+                            console.log(`🛡️ Skipping ${business.domain} - Protected (Rescued by Puppeteer).`);
                             continue;
                         }
 
@@ -104,28 +109,19 @@ if (require.main === module) {
                         };
 
                         if (!websiteData || Object.keys(websiteData).length === 0) {
-                            console.log(`⚠️ Deep crawl failed for ${business.domain}. Using REGISTRY DATA FALLBACK.`);
+                            console.log(`⚠️ Deep crawl failed for ${business.domain}. Marking for RESCUE BOT.`);
 
-                            // FALLBACK: Construct simulated "website data" from registry info
-                            websiteData = {
-                                homepage: {
-                                    url: url,
-                                    title: business.legal_name || 'Business Website',
-                                    content: `Official business registry entry. Legal Name: ${business.legal_name}. Organization Number: ${business.org_number}. Address: ${JSON.stringify(business.registry_data?.registered_address || 'Unknown')}. Industry: ${business.registry_data?.industry_name || 'Unknown'}.`,
-                                    links: []
-                                },
-                                subpages: [],
-                                emails: [],
-                                phones: [],
-                                socialMedia: [],
-                                internalLinks: [],
-                                contactInfo: { emails: [], phones: [], addresses: [], social_media: {} },
-                                sitelinks: [],
-                                detectedLanguage: 'en',
-                                description: `Business profile for ${business.legal_name}.`
-                            } as unknown as WebsiteData;
+                            // Mark for rescue and skip further processing
+                            await supabase
+                                .from('businesses')
+                                .update({
+                                    website_status: 'needs_rescue',
+                                    last_scraped_at: new Date().toISOString(),
+                                    scrape_count: (business.scrape_count || 0) + 1
+                                })
+                                .eq('id', business.id);
 
-                            updates.website_status = 'registry_fallback';
+                            continue; // Skip the rest, let Rescue Bot handle it
                         }
 
 
