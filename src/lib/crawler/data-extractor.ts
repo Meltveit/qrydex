@@ -480,11 +480,7 @@ ${contentContext}`;
                     products: data.products_es,
                     services: data.services_es
                 }
-                es: {
-                    description: data.company_description_es,
-                    products: data.products_es,
-                    services: data.services_es
-                }
+
             },
             key_personnel: data.key_personnel || []
         };
