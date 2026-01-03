@@ -120,8 +120,8 @@
     "Tools": {
         "title": "Outils",
         "relatedTools": "Outils associés",
-        "checkIpCalc": "Vérifier le calculateur IP",
-        "checkBandwidthCalc": "Vérifier le calculateur de bande passante",
+        "checkIpCalc": "Calculateur de sous-réseau",
+        "checkBandwidthCalc": "Calculateur de bande passante",
         "relatedBusinessesTitle": "Entreprises informatiques et FAI les mieux notés",
         "relatedBusinessesTitleLocal": "Entreprises informatiques et FAI les mieux notés à {city}",
         "relatedBusinessesSubtitle": "Fournisseurs vérifiés avec un score de confiance élevé",
@@ -164,6 +164,13 @@
         "seoText2": "Le CIDR permet une allocation plus flexible des adresses IP.",
         "seoTitle3": "Pourquoi utiliser des sous-réseaux ?",
         "seoText3": "Cela améliore la sécurité et les performances du réseau.",
-        "seoKeywordsLong": "calculateur ip, masque reseau, cidr calcul"
+        "seoKeywordsLong": "calculateur ip, masque reseau, cidr calcul",
+        "bwSeoTitle1": "Convertisseur d'unités & Temps de transfert",
+        "bwSeoText1": "Convertissez facilement entre Bits, Octets, Kilo-octets, Méga-octets, Giga-octets et Téra-octets. Calculez précisément le temps de téléchargement de fichiers en fonction de votre connexion Internet.",
+        "bwSeoTitle2": "Combien de temps prendra mon téléchargement ?",
+        "bwSeoText2": "Notre calculateur de temps de transfert vous aide à estimer la durée de transfert de données sur différentes vitesses de réseau (ex. Fibre, 5G, 4G, DSL).",
+        "bwSeoTitle3": "Estimateur Site Web & Hébergement",
+        "bwSeoText3": "Vous planifiez un nouveau site Web ? Utilisez notre estimateur d'hébergement pour déterminer la bande passante mensuelle nécessaire en fonction des vues quotidiennes et de la taille moyenne des pages.",
+        "bwSeoKeywordsLong": "calculateur temps transfert, durée téléchargement, vitesse upload, convertisseur gb mb, bande passante hébergement"
     }
 }

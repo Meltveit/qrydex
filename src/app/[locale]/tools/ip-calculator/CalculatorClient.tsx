@@ -228,48 +228,50 @@ export default function CalculatorClient() {
 
                     {/* Right Col: Reference Table */}
                     <div className="lg:col-span-1">
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden sticky top-24">
-                            <div className="p-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
-                                <h3 className="font-bold text-gray-900 dark:text-white">{t('referenceTableTitle')}</h3>
-                            </div>
-                            <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
-                                <table className="w-full text-xs text-left">
-                                    <thead className="bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-400 sticky top-0">
-                                        <tr>
-                                            <th className="px-3 py-2 font-medium">CIDR</th>
-                                            <th className="px-3 py-2 font-medium">{t('decimalMask')}</th>
-                                            <th className="px-3 py-2 font-medium">{t('hostsPerSubnet')}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-                                        {referenceTable.map((row) => (
-                                            <tr
-                                                key={row.cidr}
-                                                className="hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-colors"
-                                                onClick={() => setMaskInput(row.cidr.replace('/', ''))}
-                                            >
-                                                <td className="px-3 py-2 font-mono font-medium text-blue-600 dark:text-blue-400">{row.cidr}</td>
-                                                <td className="px-3 py-2 font-mono text-gray-600 dark:text-gray-400">{row.mask}</td>
-                                                <td className="px-3 py-2 text-gray-900 dark:text-gray-200 text-right">{row.hosts}</td>
+                        <div className="sticky top-24 space-y-8">
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+                                <div className="p-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
+                                    <h3 className="font-bold text-gray-900 dark:text-white">{t('referenceTableTitle')}</h3>
+                                </div>
+                                <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
+                                    <table className="w-full text-xs text-left">
+                                        <thead className="bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-400 sticky top-0">
+                                            <tr>
+                                                <th className="px-3 py-2 font-medium">CIDR</th>
+                                                <th className="px-3 py-2 font-medium">{t('decimalMask')}</th>
+                                                <th className="px-3 py-2 font-medium">{t('hostsPerSubnet')}</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                                            {referenceTable.map((row) => (
+                                                <tr
+                                                    key={row.cidr}
+                                                    className="hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-colors"
+                                                    onClick={() => setMaskInput(row.cidr.replace('/', ''))}
+                                                >
+                                                    <td className="px-3 py-2 font-mono font-medium text-blue-600 dark:text-blue-400">{row.cidr}</td>
+                                                    <td className="px-3 py-2 font-mono text-gray-600 dark:text-gray-400">{row.mask}</td>
+                                                    <td className="px-3 py-2 text-gray-900 dark:text-gray-200 text-right">{row.hosts}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Cross Link */}
-                        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-xl mt-8">
-                            <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                {t('relatedTools')}
-                            </h3>
-                            <p className="text-indigo-100 text-sm mb-4">
-                                {t('relatedBandwidthDesc')}
-                            </p>
-                            <Link href="/tools/bandwidth-calculator" className="block w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur rounded-lg text-center font-medium transition-colors border border-white/20">
-                                {t('checkBandwidthCalc')}
-                            </Link>
+                            {/* Cross Link */}
+                            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-xl">
+                                <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    {t('relatedTools')}
+                                </h3>
+                                <p className="text-indigo-100 text-sm mb-4">
+                                    {t('relatedBandwidthDesc')}
+                                </p>
+                                <Link href="/tools/bandwidth-calculator" className="block w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur rounded-lg text-center font-medium transition-colors border border-white/20">
+                                    {t('checkBandwidthCalc')}
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

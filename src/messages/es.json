@@ -119,8 +119,8 @@
     },
     "Tools": {
         "relatedTools": "Herramientas relacionadas",
-        "checkIpCalc": "Ver calculadora de IP",
-        "checkBandwidthCalc": "Ver calculadora de ancho de banda",
+        "checkIpCalc": "Calculadora de Subred IP",
+        "checkBandwidthCalc": "Calculadora de Ancho de Banda",
         "relatedBusinessesTitle": "Empresas de TI y proveedores de Internet mejor valorados",
         "relatedBusinessesTitleLocal": "Empresas de TI y ISP mejor valorados en {city}",
         "relatedBusinessesSubtitle": "Proveedores verificados con alta puntuación de confianza",
@@ -164,6 +164,13 @@
         "seoText2": "CIDR permite una asignación de direcciones IP más flexible que el antiguo sistema de clases.",
         "seoTitle3": "¿Por qué la subred?",
         "seoText3": "Mejora el rendimiento y la seguridad al dividir la red en segmentos más pequeños.",
-        "seoKeywordsLong": "calculadora ip, mascara de red, subnetting online"
+        "seoKeywordsLong": "calculadora ip, mascara de red, subnetting online",
+        "bwSeoTitle1": "Convertidor de Unidades y Tiempo de Transferencia",
+        "bwSeoText1": "Convierta fácilmente entre Bits, Bytes, Kilobytes, Megabytes, Gigabytes y Terabytes. Calcule con precisión cuánto tiempo llevará cargar o descargar archivos según su conexión a Internet.",
+        "bwSeoTitle2": "¿Cuánto tardará mi descarga?",
+        "bwSeoText2": "nuestra calculadora de tiempo de transferencia le ayuda a estimar cuánto tiempo llevará transferir datos a través de diferentes velocidades de red (ej. Fibra, 5G, 4G, DSL).",
+        "bwSeoTitle3": "Estimador de Sitio Web y Hosting",
+        "bwSeoText3": "¿Planeando un nuevo sitio web? Utilice nuestro estimador de hosting para determinar cuánta banda ancha mensual necesita según las visitas diarias y el tamaño promedio de la página.",
+        "bwSeoKeywordsLong": "calculadora tiempo transferencia, tiempo descarga, velocidad subida, convertidor gb mb, ancho de banda hosting"
     }
 }

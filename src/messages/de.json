@@ -34,8 +34,8 @@
         "postalAddress": "Postanschrift",
         "contact": "Kontakt",
         "relatedTools": "Verwandte Tools",
-        "checkIpCalc": "IP-Rechner prüfen",
-        "checkBandwidthCalc": "Bandbreiten-Rechner prüfen",
+        "checkIpCalc": "IP-Subnetz-Rechner",
+        "checkBandwidthCalc": "Bandbreiten-Rechner",
         "relatedBusinessesTitle": "Bestbewertete IT-Unternehmen & ISPs",
         "relatedBusinessesTitleLocal": "Bestbewertete IT-Unternehmen & ISPs in {city}",
         "relatedBusinessesSubtitle": "Verifizierte Anbieter mit hohem Vertrauenswert",
@@ -164,6 +164,13 @@
         "seoText2": "CIDR ersetzt das alte klassenbasierte Netzdesign und ermöglicht eine flexible Adressvergabe.",
         "seoTitle3": "Warum Subnetting?",
         "seoText3": "Subnetting verbessert die Netzwerkleistung und Sicherheit durch Segmentierung.",
-        "seoKeywordsLong": "subnetz rechner, ip rechner, netzwerk tool"
+        "seoKeywordsLong": "subnetz rechner, ip rechner, netzwerk tool",
+        "bwSeoTitle1": "Dateneinheiten-Rechner & Übertragungszeit",
+        "bwSeoText1": "Rechnen Sie einfach zwischen Bits, Bytes, Kilobytes, Megabytes, Gigabytes und Terabytes um. Berechnen Sie genau, wie lange das Hoch- oder Herunterladen von Dateien basierend auf Ihrer Internetverbindung dauert.",
+        "bwSeoTitle2": "Wie lange dauert mein Download?",
+        "bwSeoText2": "Unser Dateiübertragungszeit-Rechner hilft Ihnen abzuschätzen, wie lange die Datenübertragung über verschiedene Netzwerkgeschwindigkeiten (z.B. Glasfaser, 5G, 4G, DSL) dauert.",
+        "bwSeoTitle3": "Website & Hosting Schätzer",
+        "bwSeoText3": "Planen Sie eine neue Website? Nutzen Sie unseren Hosting-Schätzer, um zu bestimmen, wie viel monatliche Bandbreite Sie basierend auf täglichen Seitenaufrufen und durchschnittlicher Seitengröße benötigen.",
+        "bwSeoKeywordsLong": "datei übertragungszeit rechner, download dauer, upload geschwindigkeit, gb in mb umrechner, hosting bandbreite"
     }
 }
