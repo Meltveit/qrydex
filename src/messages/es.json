@@ -118,6 +118,15 @@
         "title": "Empresas similares de confianza"
     },
     "Tools": {
+        "relatedTools": "Herramientas relacionadas",
+        "checkIpCalc": "Ver calculadora de IP",
+        "checkBandwidthCalc": "Ver calculadora de ancho de banda",
+        "relatedBusinessesTitle": "Empresas de TI y proveedores de Internet mejor valorados",
+        "relatedBusinessesTitleLocal": "Empresas de TI y ISP mejor valorados en {city}",
+        "relatedBusinessesSubtitle": "Proveedores verificados con alta puntuación de confianza",
+        "relatedBusinessesSubtitleLocal": "Proveedores verificados cerca de ti",
+        "relatedBandwidthDesc": "¿Necesita estimar la descarga o el ancho de banda? Utilice nuestra calculadora gratuita.",
+        "relatedIpCalcDesc": "¿Está planificando una red o necesita una máscara de subred? Utilice nuestra calculadora precisa.",
         "title": "Herramientas",
         "ipCalculator": "Calculadora de IP",
         "myIpTitle": "Mi dirección IP pública",

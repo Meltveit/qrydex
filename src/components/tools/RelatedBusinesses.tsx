@@ -19,20 +19,53 @@ export default function RelatedBusinesses() {
     const t = useTranslations('Tools');
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [loading, setLoading] = useState(true);
+    const [locationName, setLocationName] = useState<string>('');
     // const supabase = createClientComponentClient();
 
     useEffect(() => {
         const fetchBusinesses = async () => {
             try {
-                // Fetch Verified IT companies
-                // Note: 'industry_code_desc' might vary, checking for 'Data', 'IT', 'Tele' usually.
-                // Simple query on trust_score for now.
-                const { data, error } = await supabase
-                    .from('businesses')
-                    .select('org_number, legal_name, industry_code_desc, business_address_city, trust_score')
-                    .gt('trust_score', 70)
-                    .ilike('industry_code_desc', '%data%') // Simple IT filter
-                    .limit(6);
+                // 1. Get User Location (Simple IP-based)
+                let userCity = '';
+                try {
+                    const ipRes = await fetch('https://ipapi.co/json/');
+                    const ipData = await ipRes.json();
+                    if (ipData && ipData.city) {
+                        userCity = ipData.city;
+                    }
+                } catch (err) {
+                    console.warn('Failed to fetch location', err);
+                }
+
+                // 2. Try to fetch businesses in that city (IT/Data/Web)
+                let data: Business[] = [];
+
+                if (userCity) {
+                    const { data: localData } = await supabase
+                        .from('businesses')
+                        .select('org_number, legal_name, industry_code_desc, business_address_city, trust_score')
+                        .gt('trust_score', 60) // Slightly lower threshold for local relevance
+                        .ilike('business_address_city', userCity)
+                        .ilike('industry_code_desc', '%data%') // Broad IT filter
+                        .limit(6);
+
+                    if (localData && localData.length > 0) {
+                        data = localData;
+                        setLocationName(userCity);
+                    }
+                }
+
+                // 3. Fallback to National/Top Rated if no local companies found
+                if (!data || data.length === 0) {
+                    const { data: topData } = await supabase
+                        .from('businesses')
+                        .select('org_number, legal_name, industry_code_desc, business_address_city, trust_score')
+                        .gt('trust_score', 70)
+                        .ilike('industry_code_desc', '%data%')
+                        .limit(6);
+
+                    if (topData) data = topData;
+                }
 
                 if (data) {
                     setBusinesses(data);
@@ -53,10 +86,10 @@ export default function RelatedBusinesses() {
         <div className="mt-16 pt-12 border-t border-gray-100 dark:border-slate-800">
             <div className="text-center mb-10">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                    {t('relatedBusinessesTitle')}
+                    {locationName ? t('relatedBusinessesTitleLocal', { city: locationName }) : t('relatedBusinessesTitle')}
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400">
-                    {t('relatedBusinessesSubtitle')}
+                    {locationName ? t('relatedBusinessesSubtitleLocal') : t('relatedBusinessesSubtitle')}
                 </p>
             </div>
 

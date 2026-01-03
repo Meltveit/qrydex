@@ -173,8 +173,8 @@ export default function BandwidthClient() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-gray-100 dark:border-slate-800">
                                             <div className="space-y-4">
                                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">{t('fromUnit')}</label>
-                                                <input type="number" value={convValue} onChange={e => setConvValue(e.target.value)} className="w-full px-4 py-3 rounded-xl border dark:bg-slate-800 border-gray-300 dark:border-slate-700 dark:text-white font-mono text-lg mb-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="1" />
-                                                <select value={convFrom} onChange={e => setConvFrom(e.target.value as Unit)} className="w-full px-4 py-3 rounded-xl border dark:bg-slate-800 border-gray-300 dark:border-slate-700 dark:text-white cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition">
+                                                <input type="number" value={convValue} onChange={e => setConvValue(e.target.value)} className="w-full h-14 px-4 rounded-xl border dark:bg-slate-800 border-gray-300 dark:border-slate-700 dark:text-white font-mono text-lg mb-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="1" />
+                                                <select value={convFrom} onChange={e => setConvFrom(e.target.value as Unit)} className="w-full h-14 px-4 rounded-xl border dark:bg-slate-800 border-gray-300 dark:border-slate-700 dark:text-white cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition appearance-none">
                                                     {Object.entries(UNIT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                                                 </select>
                                             </div>
@@ -185,10 +185,10 @@ export default function BandwidthClient() {
 
                                             <div className="space-y-4">
                                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">{t('toUnit')}</label>
-                                                <div className="h-[54px] w-full bg-transparent flex items-end pb-2 hidden md:flex">
-                                                    {/* Spacer to align with input on left */}
+                                                <div className="h-[56px] w-full bg-transparent flex items-end pb-2 hidden md:flex">
+                                                    {/* Spacer to align with input on left - adjusted height to match input+margin */}
                                                 </div>
-                                                <select value={convTo} onChange={e => setConvTo(e.target.value as Unit)} className="w-full px-4 py-3 rounded-xl border dark:bg-slate-800 border-gray-300 dark:border-slate-700 dark:text-white cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition">
+                                                <select value={convTo} onChange={e => setConvTo(e.target.value as Unit)} className="w-full h-14 px-4 rounded-xl border dark:bg-slate-800 border-gray-300 dark:border-slate-700 dark:text-white cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition appearance-none">
                                                     {Object.entries(UNIT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                                                 </select>
                                             </div>
@@ -331,7 +331,7 @@ export default function BandwidthClient() {
                                 {t('relatedTools')}
                             </h3>
                             <p className="text-blue-100 text-sm mb-4">
-                                Planning a network? Check your subnets!
+                                {t('relatedIpCalcDesc')}
                             </p>
                             <Link href="/tools/ip-calculator" className="block w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur rounded-lg text-center font-medium transition-colors border border-white/20">
                                 {t('checkIpCalc')}
