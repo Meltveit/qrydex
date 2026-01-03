@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 import { routing } from '@/i18n/routing';
 
-const BUSINESSES_PER_SITEMAP = 500; // ~4MB per file with 8 locales + alternates
+const BUSINESSES_PER_SITEMAP = 5000; // ~4MB per file with 8 locales + alternates
 
 export async function generateSitemaps() {
     // Fetch total count of businesses to determine number of sitemaps
@@ -16,7 +16,7 @@ export async function generateSitemaps() {
         return [{ id: 0 }]; // Fallback to just one
     }
 
-    const numberOfSitemaps = Math.ceil(count / BUSINESSES_PER_SITEMAP);
+    const numberOfSitemaps = Math.max(1, Math.ceil(count / BUSINESSES_PER_SITEMAP));
     return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i }));
 }
 
