@@ -94,6 +94,17 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
         console.error(`Error generating sitemap ${id}:`, error);
     }
 
+
+
+    // INJECT DEBUG URL (Temporary)
+    // allowing us to see what happened even if XML is otherwise empty
+    sitemapEntries.push({
+        url: `${baseUrl}/debug-sitemap-info/${debugMessage}`,
+        lastModified: new Date(),
+        changeFrequency: 'always',
+        priority: 0.0
+    });
+
     return sitemapEntries;
 }
 
