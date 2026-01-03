@@ -74,7 +74,7 @@ export default function BandwidthClient() {
         if (isNaN(val)) return;
         const bits = val * UNITS[convFrom];
         const result = bits / UNITS[convTo];
-        setConvResult(`${result.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${convTo}`);
+        setConvResult(`${result.toLocaleString(undefined, { maximumFractionDigits: 6 })}`);
     };
 
     const calculateTime = () => {
@@ -163,50 +163,82 @@ export default function BandwidthClient() {
                                 {/* 1. Converter */}
                                 {activeTab === 'converter' && (
                                     <div className="space-y-8">
-                                        <div className="flex items-center justify-between">
-                                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('unitConverter')}</h2>
-                                            <span className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
-                                            </span>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-gray-100 dark:border-slate-800">
-                                            <div className="space-y-4">
-                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">{t('fromUnit')}</label>
-                                                <input type="number" value={convValue} onChange={e => setConvValue(e.target.value)} className="w-full h-14 px-4 rounded-xl border dark:bg-slate-800 border-gray-300 dark:border-slate-700 dark:text-white font-mono text-lg mb-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="1" />
-                                                <select value={convFrom} onChange={e => setConvFrom(e.target.value as Unit)} className="w-full h-14 px-4 rounded-xl border dark:bg-slate-800 border-gray-300 dark:border-slate-700 dark:text-white cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition appearance-none">
-                                                    {Object.entries(UNIT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                                                </select>
-                                            </div>
-
-                                            <div className="flex flex-col justify-center items-center md:hidden py-2 text-gray-400">
-                                                <svg className="w-6 h-6 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">{t('toUnit')}</label>
-                                                <div className="h-[56px] w-full bg-transparent flex items-end pb-2 hidden md:flex">
-                                                    {/* Spacer to align with input on left - adjusted height to match input+margin */}
-                                                </div>
-                                                <select value={convTo} onChange={e => setConvTo(e.target.value as Unit)} className="w-full h-14 px-4 rounded-xl border dark:bg-slate-800 border-gray-300 dark:border-slate-700 dark:text-white cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition appearance-none">
-                                                    {Object.entries(UNIT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="pt-4">
-                                            <button onClick={calculateConverter} className="w-full md:w-auto px-8 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
-                                                <span>{t('calc')}</span>
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                        <div className="flex justify-between items-center bg-gray-50 dark:bg-slate-900/50 p-4 rounded-xl border border-gray-100 dark:border-slate-700">
+                                            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                                                {t('unitConverter')}
+                                            </h2>
+                                            <button
+                                                onClick={() => {
+                                                    const temp = convFrom;
+                                                    setConvFrom(convTo);
+                                                    setConvTo(temp);
+                                                }}
+                                                className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                            >
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" /></svg>
                                             </button>
                                         </div>
 
-                                        {convResult && (
-                                            <div className="mt-6 p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white shadow-lg animate-in fade-in slide-in-from-bottom-2">
-                                                <p className="text-blue-100 text-sm mb-1 uppercase tracking-widest font-semibold">{t('bandwidthResult')}</p>
-                                                <p className="text-3xl md:text-4xl font-mono font-bold tracking-tight">{convResult}</p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-4">
+                                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pl-1">{t('from')}</label>
+                                                <input
+                                                    type="number"
+                                                    value={convValue}
+                                                    onChange={(e) => setConvValue(e.target.value)}
+                                                    className="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 h-14 font-mono text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-white"
+                                                    placeholder="0"
+                                                />
+                                                <div className="relative">
+                                                    <select
+                                                        value={convFrom}
+                                                        onChange={(e) => setConvFrom(e.target.value as Unit)}
+                                                        className="w-full appearance-none bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 h-14 pr-10 font-medium cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-gray-900 dark:text-white"
+                                                    >
+                                                        {Object.keys(UNITS).map((u) => (
+                                                            <option key={u} value={u}>{UNIT_LABELS[u as Unit] || u}</option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        )}
+
+                                            <div className="space-y-4">
+                                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pl-1">{t('to')}</label>
+                                                <input
+                                                    type="text"
+                                                    readOnly
+                                                    value={convResult}
+                                                    placeholder="0"
+                                                    className="w-full bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl px-4 h-14 font-mono text-lg font-bold text-blue-600 dark:text-blue-400 focus:outline-none cursor-default"
+                                                />
+                                                <div className="relative">
+                                                    <select
+                                                        value={convTo}
+                                                        onChange={(e) => setConvTo(e.target.value as Unit)}
+                                                        className="w-full appearance-none bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 h-14 pr-10 font-medium cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-gray-900 dark:text-white"
+                                                    >
+                                                        {Object.keys(UNITS).map((u) => (
+                                                            <option key={u} value={u}>{UNIT_LABELS[u as Unit] || u}</option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={calculateConverter}
+                                            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                            {t('calculate')}
+                                        </button>
                                     </div>
                                 )}
 
