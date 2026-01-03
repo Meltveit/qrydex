@@ -73,10 +73,16 @@ export default function BusinessCard({ business, distance, locale = 'no', hideSi
                 {/* Header: Company Name + Logo + Verification + Trust Score */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                     {/* Company Name */}
-                    <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-gray-100 truncate 
-                                 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 flex-1 min-w-0">
-                        {business.legal_name}
-                    </h3>
+                    {/* Company Name - Wrapped in Link for SEO Anchor Text */}
+                    <div className="flex-1 min-w-0 pointer-events-auto z-20">
+                        <Link
+                            href={`/business/${business.org_number}`}
+                            className="font-semibold text-base md:text-lg text-gray-900 dark:text-gray-100 truncate 
+                                     hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 block"
+                        >
+                            {business.legal_name}
+                        </Link>
+                    </div>
 
                     {/* Right side: Logo + Verified Badge + Trust Score */}
                     <div className="flex items-center gap-2 flex-shrink-0">
