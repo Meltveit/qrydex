@@ -144,6 +144,45 @@ export async function generateMetadata(
     };
 }
 
+// Helper: Extract City from Address String
+function extractCity(address: string): string {
+    if (!address) return '';
+
+    // Normalize
+    const cleanAddr = address.trim();
+
+    // Strategy 1: US Style "City, State Zip" (Comma separated)
+    // E.g. "16 MADISON SQUARE WEST, NEW YORK, NY 10010"
+    if (cleanAddr.includes(',')) {
+        const parts = cleanAddr.split(',').map(p => p.trim());
+        const lastPart = parts[parts.length - 1]; // "NY 10010"
+
+        // If last part looks like "State Zip" (2 letters + numbers) or just "Zip"
+        if (/^[A-Z]{2}\s+\d+/.test(lastPart) || /^\d+$/.test(lastPart)) {
+            // Take the part BEFORE the state/zip
+            // "NEW YORK", "NY 10010"
+            if (parts.length >= 2) {
+                return parts[parts.length - 2].replace(/\d+/g, '').trim(); // "NEW YORK"
+            }
+        }
+
+        // Fallback for European comma style: "Street, 1234 City"
+        // Try to grab the last text part
+        return parts[parts.length - 1].replace(/\d+/g, '').trim(); // Remove zip if present
+    }
+
+    // Strategy 2: European Style "Zip City" or "City Zip" (No commas)
+    // E.g. "75015 PARIS" or "Oslo 0150"
+
+    // Remove all numbers
+    const noNumbers = cleanAddr.replace(/[\d-]/g, '').trim();
+    // "PARIS" or "Oslo" or "RUE DE ..."
+
+    // If we are left with a long string, taking the last word is usually safe for "Street City"
+    const words = noNumbers.split(/\s+/);
+    return words[words.length - 1];
+}
+
 export default async function BusinessPage(props: any) {
     const params = await props.params;
     const { orgNumber, locale } = params;
@@ -405,9 +444,10 @@ export default async function BusinessPage(props: any) {
                                         return `${prefix} ${quality.industry_category}`;
                                     })()}
                                 </Link>
+
                                 {registry?.registered_address && (
                                     <Link
-                                        href={`/${locale}/search?q=${encodeURIComponent(registry.registered_address.split(' ').pop() || '')}`} // Extract City heuristic
+                                        href={`/${locale}/search?q=${encodeURIComponent(extractCity(registry.registered_address))}`}
                                         className="px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-sm font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
                                     >
                                         {(() => {
@@ -417,7 +457,39 @@ export default async function BusinessPage(props: any) {
                                                 sv: 'Företag i', fi: 'Yritykset kaupungissa'
                                             };
                                             const prefix = templates[locale] || templates.en;
-                                            return `${prefix} ${registry.registered_address.split(' ').pop()}`;
+                                            return `${prefix} ${extractCity(registry.registered_address)}`;
+                                        })()}
+                                    </Link>
+                                )}
+
+                                {/* Industry in Country Link */}
+                                {quality?.industry_category && business.country_code && (
+                                    <Link
+                                        href={`/${locale}/search?q=${encodeURIComponent(quality.industry_category)}&country=${business.country_code}`}
+                                        className="px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
+                                    >
+                                        {(() => {
+                                            const templates: Record<string, string> = {
+                                                no: 'i', en: 'in', de: 'in',
+                                                fr: 'en', es: 'en', da: 'i',
+                                                sv: 'i', fi: 'maassa'
+                                            };
+                                            const prep = templates[locale] || templates.en;
+
+                                            const cMaps: Record<string, Record<string, string>> = {
+                                                'NO': { no: 'Norge', en: 'Norway', de: 'Norwegen', fr: 'Norvège', es: 'Noruega', da: 'Norge', sv: 'Norge', fi: 'Norja' },
+                                                'SE': { no: 'Sverige', en: 'Sweden', de: 'Schweden', fr: 'Suède', es: 'Suecia', da: 'Sverige', sv: 'Sverige', fi: 'Ruotsi' },
+                                                'DK': { no: 'Danmark', en: 'Denmark', de: 'Dänemark', fr: 'Danemark', es: 'Dinamarca', da: 'Danmark', sv: 'Danmark', fi: 'Tanska' },
+                                                'FI': { no: 'Finland', en: 'Finland', de: 'Finnland', fr: 'Finlande', es: 'Finlandia', da: 'Suomi', sv: 'Finland', fi: 'Suomi' },
+                                                'US': { no: 'USA', en: 'USA', de: 'USA', fr: 'États-Unis', es: 'EE. UU.', da: 'USA', sv: 'USA', fi: 'Yhdysvallat' },
+                                                'GB': { no: 'Storbritannia', en: 'UK', de: 'Vereinigtes Königreich', fr: 'Royaume-Uni', es: 'Reino Unido', da: 'Storbritannien', sv: 'Storbritannien', fi: 'Iso-Britannia' },
+                                                'DE': { no: 'Tyskland', en: 'Germany', de: 'Deutschland', fr: 'Allemagne', es: 'Alemania', da: 'Tyskland', sv: 'Tyskland', fi: 'Saksa' },
+                                                'FR': { no: 'Frankrike', en: 'France', de: 'Frankreich', fr: 'France', es: 'Francia', da: 'Frankrig', sv: 'Frankrike', fi: 'Ranska' }
+                                            };
+                                            const map = cMaps[business.country_code] || {};
+                                            const cName = map[locale] || map['en'] || business.country_code;
+
+                                            return `${quality.industry_category} ${prep} ${cName}`;
                                         })()}
                                     </Link>
                                 )}

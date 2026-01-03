@@ -11,13 +11,14 @@ interface SearchPageProps {
     params: Promise<{ locale: string }>;
     searchParams: Promise<{
         q?: string;
+        country?: string;
         page?: string;
     }>;
 }
 
 export async function generateMetadata({ params, searchParams }: SearchPageProps): Promise<Metadata> {
     const { locale } = await params;
-    const { q } = await searchParams;
+    const { q, country } = await searchParams;
     const query = q || '';
 
     // Translation Maps for SEO
@@ -46,19 +47,40 @@ export async function generateMetadata({ params, searchParams }: SearchPageProps
     const tTitle = titles[locale] || titles.en;
     const tDesc = descriptions[locale] || descriptions.en;
 
+    // Helper to get localized country name (Simple map for common ones)
+    const getCountryName = (code: string) => {
+        if (!code) return '';
+        const cMaps: Record<string, Record<string, string>> = {
+            'NO': { no: 'Norge', en: 'Norway' },
+            'SE': { no: 'Sverige', en: 'Sweden' },
+            'DK': { no: 'Danmark', en: 'Denmark' },
+            'FI': { no: 'Finland', en: 'Finland' },
+            'DE': { no: 'Tyskland', en: 'Germany' },
+            'FR': { no: 'Frankrike', en: 'France' },
+            'US': { no: 'USA', en: 'USA' },
+            'GB': { no: 'Storbritannia', en: 'UK' },
+        };
+        const map = cMaps[code.toUpperCase()];
+        if (!map) return code;
+        return map[locale] || map['en'] || code;
+    };
+
+    const locationSuffix = country ? ` ${locale === 'no' ? 'i' : 'in'} ${getCountryName(country)}` : '';
+
     const title = query
-        ? `${tTitle.prefix} ${query} ${tTitle.suffix}`
+        ? `${tTitle.prefix} ${query}${locationSuffix} ${tTitle.suffix}`
         : tTitle.default;
 
     const description = query
-        ? `${tDesc.prefix} ${query}. ${tDesc.suffix}`
+        ? `${tDesc.prefix} ${query}${locationSuffix}. ${tDesc.suffix}`
         : tDesc.default;
 
     return {
         title,
         description,
         alternates: {
-            canonical: `https://qrydex.com/${locale}/search${query ? `?q=${encodeURIComponent(query)}` : ''}`,
+            // Include country param in canonical if present
+            canonical: `https://qrydex.com/${locale}/search${query ? `?q=${encodeURIComponent(query)}` : ''}${country ? `&country=${country}` : ''}`,
         },
         robots: {
             index: !!query, // Only index if there is a query (Category page), avoid indexing empty search
@@ -71,6 +93,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
     const { locale } = await params;
     const searchParamsValues = await searchParams;
     const query = searchParamsValues.q || '';
+    const countryFilter = searchParamsValues.country as string | undefined;
     const page = searchParamsValues.page ? parseInt(searchParamsValues.page, 10) : 1;
     const t = await getTranslations({ locale, namespace: 'SearchPage' });
 
@@ -83,7 +106,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
     const date = new Date().toISOString().split('T')[0];
     const sessionId = crypto.createHash('sha256').update(`${ip}${ua}${date}`).digest('hex').substring(0, 16);
 
-    const results = await searchBusinesses(query, {}, page, 20, {
+    const results = await searchBusinesses(query, { country: countryFilter }, page, 20, {
         country,
         region,
         sessionId
