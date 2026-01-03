@@ -368,6 +368,9 @@ export default function BandwidthClient() {
                             <Link href="/tools/ip-calculator" className="block w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur rounded-lg text-center font-medium transition-colors border border-white/20">
                                 {t('checkIpCalc')}
                             </Link>
+                            <Link href="/tools/dns-lookup" className="block w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur rounded-lg text-center font-medium transition-colors border border-white/20 mt-2">
+                                DNS Lookup Tool
+                            </Link>
                         </div>
                     </div>
                 </div>

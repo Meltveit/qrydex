@@ -271,6 +271,9 @@ export default function CalculatorClient() {
                                 <Link href="/tools/bandwidth-calculator" className="block w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur rounded-lg text-center font-medium transition-colors border border-white/20">
                                     {t('checkBandwidthCalc')}
                                 </Link>
+                                <Link href="/tools/dns-lookup" className="block w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur rounded-lg text-center font-medium transition-colors border border-white/20 mt-2">
+                                    DNS Lookup Tool
+                                </Link>
                             </div>
                         </div>
                     </div>
