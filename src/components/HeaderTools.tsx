@@ -12,7 +12,7 @@ export default function HeaderTools() {
     return (
         <>
             <div className={`fixed top-4 right-4 md:top-6 md:right-6 z-[100] ${usePathname().includes('/business/') ? 'hidden' : ''}`}>
-                <div className="relative">
+                <div className="relative z-[95]">
                     {/* Trigger Button - Bento / Grid Icon */}
                     <button
                         onClick={() => setIsOpen(!isOpen)}
