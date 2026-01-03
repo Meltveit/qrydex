@@ -17,12 +17,14 @@ export async function generateSitemaps() {
 
     console.log(`Sitemap generation: Found ${count} businesses. Chunk size: ${BUSINESSES_PER_SITEMAP}.`);
     const numberOfSitemaps = Math.max(1, Math.ceil(count / BUSINESSES_PER_SITEMAP));
-    // RETURN STRING IDs
     return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i.toString() }));
 }
 
-export default async function sitemap({ id }: { id: string }): Promise<MetadataRoute.Sitemap> {
-    const rawId = id;
+// Next.js 15: id might be a Promise
+export default async function sitemap(props: { id: string | Promise<string> }): Promise<MetadataRoute.Sitemap> {
+    const { id } = props;
+    const rawId = id instanceof Promise ? await id : id;
+
     const safeId = parseInt(rawId, 10);
     // check if safeId is actually a number, otherwise default to 0 for safety but allow debug to show error
     const effectiveId = isNaN(safeId) ? 0 : safeId;
