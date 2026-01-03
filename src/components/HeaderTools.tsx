@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
 import IPCalculatorModal from './tools/IPCalculatorModal';
 
 export default function HeaderTools() {
@@ -11,7 +12,7 @@ export default function HeaderTools() {
 
     return (
         <>
-            <div className="absolute top-4 right-4 md:top-6 md:right-6 z-40">
+            <div className={`absolute top-4 right-4 md:top-6 md:right-6 z-40 ${usePathname().includes('/business/') ? 'hidden' : ''}`}>
                 <div className="relative">
                     {/* Trigger Button - Bento / Grid Icon */}
                     <button

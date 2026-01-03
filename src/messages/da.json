@@ -115,5 +115,20 @@
     },
     "RelatedBusinesses": {
         "title": "Lignende Troværdige Virksomheder"
+    },
+    "Tools": {
+        "title": "Værktøjer",
+        "ipCalculator": "IP-beregner",
+        "myIpTitle": "Min offentlige IP-adresse",
+        "ip": "IP-adresse",
+        "city": "By",
+        "country": "Land",
+        "isp": "Internetudbyder (ISP)",
+        "whatIsIpTitle": "Hvad er en IP-adresse?",
+        "whatIsIpText": "En IP-adresse (Internet Protocol address) er en unik numerisk etiket tildelt hver enhed, der er tilsluttet et computernetværk, der bruger Internet Protocol til kommunikation. Den har to hovedfunktioner: værts- eller netværksinterfaceidentifikation og lokationsadressering.",
+        "whyCheckIpTitle": "Hvorfor tjekke din IP?",
+        "whyCheckIpText": "At tjekke din offentlige IP-adresse hjælper dig med at bekræfte din netværkskonfiguration, sikre at din VPN fungerer korrekt, eller fejlfinding af forbindelsesproblemer. Qrydex tilbyder dette gratis værktøj for at hjælpe virksomheder med at opretholde sikre og pålidelige forbindelser.",
+        "seoKeywords": "IP opslag, tjek min IP, hvad er min IP, IP placering, tjek ISP, offentlig IP adresse, geo IP",
+        "close": "Luk"
     }
 }

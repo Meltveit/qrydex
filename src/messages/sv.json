@@ -116,5 +116,20 @@
     },
     "RelatedBusinesses": {
         "title": "Liknande Pålitliga Företag"
+    },
+    "Tools": {
+        "title": "Verktyg",
+        "ipCalculator": "IP-kalkylator",
+        "myIpTitle": "Min offentliga IP-adress",
+        "ip": "IP-adress",
+        "city": "Stad",
+        "country": "Land",
+        "isp": "Internetleverantör (ISP)",
+        "whatIsIpTitle": "Vad är en IP-adress?",
+        "whatIsIpText": "En IP-adress (Internet Protocol address) är en unik numerisk etikett som tilldelas varje enhet som är ansluten till ett datornätverk som använder Internet Protocol för kommunikation. Den har två huvudfunktioner: värd- eller nätverksgränssnittsidentifiering och platsadressering.",
+        "whyCheckIpTitle": "Varför kontrollera din IP?",
+        "whyCheckIpText": "Att kontrollera din offentliga IP-adress hjälper dig att verifiera din nätverkskonfiguration, säkerställa att din VPN fungerar korrekt eller felsöka anslutningsproblem. Qrydex erbjuder detta gratisverktyg för att hjälpe företag att bibehålla säkra och pålitliga anslutningar.",
+        "seoKeywords": "IP-sökning, kolla min IP, vad är min IP, IP-plats, kontrollera ISP, offentlig IP-adress, geo IP",
+        "close": "Stäng"
     }
 }

@@ -116,5 +116,20 @@
     },
     "RelatedBusinesses": {
         "title": "Ähnliche vertrauenswürdige Unternehmen"
+    },
+    "Tools": {
+        "title": "Werkzeuge",
+        "ipCalculator": "IP-Rechner",
+        "myIpTitle": "Meine öffentliche IP-Adresse",
+        "ip": "IP-Adresse",
+        "city": "Stadt",
+        "country": "Land",
+        "isp": "Internetanbieter (ISP)",
+        "whatIsIpTitle": "Was ist eine IP-Adresse?",
+        "whatIsIpText": "Eine IP-Adresse (Internet Protocol address) ist eine eindeutige numerische Kennzeichnung, die jedem Gerät zugewiesen wird, das mit einem Computernetzwerk verbunden ist, das das Internetprotokoll zur Kommunikation verwendet. Sie hat zwei Hauptfunktionen: Identifizierung der Host- oder Netzwerkschnittstelle und Standortadressierung.",
+        "whyCheckIpTitle": "Warum Ihre IP überprüfen?",
+        "whyCheckIpText": "Die Überprüfung Ihrer öffentlichen IP-Adresse hilft Ihnen, Ihre Netzwerkkonfiguration zu verifizieren, sicherzustellen, dass Ihr VPN ordnungsgemäß funktioniert, oder Verbindungsprobleme zu beheben. Qrydex bietet dieses kostenlose Tool an, um Unternehmen bei der Aufrechterhaltung sicherer und zuverlässiger Verbindungen zu unterstützen.",
+        "seoKeywords": "IP-Suche, meine IP überprüfen, was ist meine IP, IP-Standort, ISP prüfen, öffentliche IP-Adresse, Geo-IP",
+        "close": "Schließen"
     }
 }

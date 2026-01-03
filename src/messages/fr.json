@@ -116,5 +116,20 @@
     },
     "RelatedBusinesses": {
         "title": "Entreprises similaires de confiance"
+    },
+    "Tools": {
+        "title": "Outils",
+        "ipCalculator": "Calculateur IP",
+        "myIpTitle": "Mon adresse IP publique",
+        "ip": "Adresse IP",
+        "city": "Ville",
+        "country": "Pays",
+        "isp": "Fournisseur d'accès (FAI)",
+        "whatIsIpTitle": "Qu'est-ce qu'une adresse IP ?",
+        "whatIsIpText": "Une adresse IP (Internet Protocol address) est une étiquette numérique unique attribuée à chaque appareil connecté à un réseau informatique utilisant le protocole Internet pour la communication. Elle a deux fonctions principales : l'identification de l'hôte ou de l'interface réseau et l'adressage de localisation.",
+        "whyCheckIpTitle": "Pourquoi vérifier votre IP ?",
+        "whyCheckIpText": "Vérifier votre adresse IP publique vous aide à vérifier la configuration de votre réseau, à vous assurer que votre VPN fonctionne correctement ou à résoudre les problèmes de connectivité. Qrydex propose cet outil gratuit pour aider les entreprises à maintenir des connexions sécurisées et fiables.",
+        "seoKeywords": "recherche IP, vérifier mon IP, quelle est mon IP, localisation IP, vérifier FAI, adresse IP publique, géo IP",
+        "close": "Fermer"
     }
 }

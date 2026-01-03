@@ -116,5 +116,20 @@
     },
     "RelatedBusinesses": {
         "title": "Vastaavat luotettavat yritykset"
+    },
+    "Tools": {
+        "title": "Työkalut",
+        "ipCalculator": "IP-laskin",
+        "myIpTitle": "Minun julkinen IP-osoite",
+        "ip": "IP-osoite",
+        "city": "Kaupunki",
+        "country": "Maa",
+        "isp": "Internet-palveluntarjoaja (ISP)",
+        "whatIsIpTitle": "Mikä on IP-osoite?",
+        "whatIsIpText": "IP-osoite (Internet Protocol address) on yksilöllinen numeerinen tunniste, joka on määritetty jokaiselle tietokoneverkkoon kytketylle laitteelle, joka käyttää Internet-protokollaa viestintään. Sillä on kaksi päätoimintoa: isäntä- tai verkkoliitännän tunnistaminen ja sijainnin osoittaminen.",
+        "whyCheckIpTitle": "Miksi tarkistaa IP-osoitteesi?",
+        "whyCheckIpText": "Julkisen IP-osoitteesi tarkistaminen auttaa sinua vahvistamaan verkkokokoonpanosi, varmistamaan VPN:n toiminnan tai vianmäärittämään yhteysongelmia. Qrydex tarjoaa tämän ilmaisen työkalun auttaakseen yrityksiä ylläpitämään turvallisia ja luotettavia yhteyksiä.",
+        "seoKeywords": "IP haku, tarkista minun IP, mikä on minun IP, IP sijainti, tarkista ISP, julkinen IP osoite, geo IP",
+        "close": "Sulje"
     }
 }

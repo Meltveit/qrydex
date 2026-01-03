@@ -116,5 +116,20 @@
     },
     "RelatedBusinesses": {
         "title": "Empresas similares de confianza"
+    },
+    "Tools": {
+        "title": "Herramientas",
+        "ipCalculator": "Calculadora de IP",
+        "myIpTitle": "Mi dirección IP pública",
+        "ip": "Dirección IP",
+        "city": "Ciudad",
+        "country": "País",
+        "isp": "Proveedor de Internet (ISP)",
+        "whatIsIpTitle": "¿Qué es una dirección IP?",
+        "whatIsIpText": "Una dirección IP (dirección de Protocolo de Internet) es una etiqueta numérica única asignada a cada dispositivo conectado a una red informática que utiliza el Protocolo de Internet para la comunicación. Cumple dos funciones principales: identificación de la interfaz de host o red y direccionamiento de ubicación.",
+        "whyCheckIpTitle": "¿Por qué comprobar tu IP?",
+        "whyCheckIpText": "Comprobar tu dirección IP pública te ayuda a verificar la configuración de tu red, asegurarte de que tu VPN funciona correctamente o solucionar problemas de conectividad. Qrydex ofrece esta herramienta gratuita para ayudar a las empresas a mantener conexiones seguras y fiables.",
+        "seoKeywords": "búsqueda de IP, comprobar mi IP, cuál es mi IP, ubicación de IP, comprobar ISP, dirección IP pública, geo IP",
+        "close": "Cerrar"
     }
 }
