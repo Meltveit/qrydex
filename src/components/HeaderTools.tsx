@@ -12,7 +12,7 @@ export default function HeaderTools() {
 
     return (
         <>
-            <div className={`absolute top-4 right-4 md:top-6 md:right-6 z-40 ${usePathname().includes('/business/') ? 'hidden' : ''}`}>
+            <div className={`fixed top-4 right-4 md:top-6 md:right-6 z-[100] ${usePathname().includes('/business/') ? 'hidden' : ''}`}>
                 <div className="relative">
                     {/* Trigger Button - Bento / Grid Icon */}
                     <button
@@ -58,7 +58,7 @@ export default function HeaderTools() {
                 {/* Overlay for clicking outside */}
                 {isOpen && (
                     <div
-                        className="fixed inset-0 z-30 bg-transparent"
+                        className="fixed inset-0 z-[90] bg-transparent"
                         onClick={() => setIsOpen(false)}
                     />
                 )}
