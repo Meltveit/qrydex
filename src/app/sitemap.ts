@@ -79,7 +79,7 @@ export default async function sitemap({
                     priority: route.priority,
                     alternates: {
                         languages: Object.fromEntries(
-                            locales.map(l => [l, `${baseUrl}/${l}${route.path}`])
+                            locales.map((l: string) => [l, `${baseUrl}/${l}${route.path}`])
                         )
                     }
                 });
@@ -145,7 +145,7 @@ export default async function sitemap({
                         priority: priority,
                         alternates: {
                             languages: Object.fromEntries(
-                                validLocalesArray.map(l => [l, `${baseUrl}/${l}${path}`])
+                                validLocalesArray.map((l: string) => [l, `${baseUrl}/${l}${path}`])
                             )
                         }
                     });
