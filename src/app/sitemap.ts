@@ -12,17 +12,21 @@ export async function generateSitemaps() {
 
     if (error || count === null) {
         console.error('Error fetching business count for sitemap:', error);
-        return [{ id: 0 }]; // Fallback to just one
+        return [{ id: '0' }]; // Fallback to just one
     }
 
     console.log(`Sitemap generation: Found ${count} businesses. Chunk size: ${BUSINESSES_PER_SITEMAP}.`);
     const numberOfSitemaps = Math.max(1, Math.ceil(count / BUSINESSES_PER_SITEMAP));
-    return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i }));
+    // RETURN STRING IDs
+    return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i.toString() }));
 }
 
-export default async function sitemap(props: { id: number | string }): Promise<MetadataRoute.Sitemap> {
-    const rawId = props?.id;
-    const safeId = Number(rawId);
+export default async function sitemap({ id }: { id: string }): Promise<MetadataRoute.Sitemap> {
+    const rawId = id;
+    const safeId = parseInt(rawId, 10);
+    // check if safeId is actually a number, otherwise default to 0 for safety but allow debug to show error
+    const effectiveId = isNaN(safeId) ? 0 : safeId;
+
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
     const locales = routing.locales;
 
@@ -38,16 +42,13 @@ export default async function sitemap(props: { id: number | string }): Promise<M
     const sitemapEntries: MetadataRoute.Sitemap = [];
 
     // Calculate range for this id
-    // check if safeId is actually a number, otherwise default to 0 for safety but allow debug to show error
-    const effectiveId = isNaN(safeId) ? 0 : safeId;
-
     const start = effectiveId * BUSINESSES_PER_SITEMAP;
-    const end = rawId !== undefined ? (start + BUSINESSES_PER_SITEMAP - 1) : 0;
+    const end = start + BUSINESSES_PER_SITEMAP - 1;
 
-
+    let debugMessage = `id-${rawId}-safeId-${safeId}-start-${start}`;
 
     // 1. Static Pages - Only include in the first sitemap (id 0)
-    if (safeId === 0) {
+    if (effectiveId === 0) {
         const routes = ['', '/search', '/verify'];
         routes.forEach(route => {
             locales.forEach(locale => {
@@ -63,7 +64,6 @@ export default async function sitemap(props: { id: number | string }): Promise<M
     }
 
     // 2. Dynamic Business Pages for this chunk
-    let debugMessage = `id-${safeId}-props-${JSON.stringify(props)}-start-${start}`;
 
     try {
         const { data: businesses, error } = await supabase
@@ -74,7 +74,7 @@ export default async function sitemap(props: { id: number | string }): Promise<M
             .range(start, end);
 
         if (error) {
-            console.error(`Error fetching sitemap batch ${safeId}:`, error);
+            console.error(`Error fetching sitemap batch ${effectiveId}:`, error);
             debugMessage += `-error-${error.code}`;
         } else if (businesses) {
             debugMessage += `-found-${businesses.length}`;
@@ -99,7 +99,7 @@ export default async function sitemap(props: { id: number | string }): Promise<M
             }
         }
     } catch (error) {
-        console.error(`Error generating sitemap ${safeId}:`, error);
+        console.error(`Error generating sitemap ${id}:`, error);
         debugMessage += `-exception`;
     }
 
