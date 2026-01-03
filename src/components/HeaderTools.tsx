@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import { Link, usePathname } from '@/i18n/routing';
 import IPCalculatorModal from './tools/IPCalculatorModal';
 
 export default function HeaderTools() {
     const t = useTranslations('Tools');
     const [isOpen, setIsOpen] = useState(false);
-    const [showIpModal, setShowIpModal] = useState(false);
 
     return (
         <>
@@ -63,10 +61,7 @@ export default function HeaderTools() {
                 )}
             </div>
 
-            {/* Modals */}
-            {showIpModal && (
-                <IPCalculatorModal onClose={() => setShowIpModal(false)} />
-            )}
+            {/* Modals - Removed as we now link to dedicated pages */}
         </>
     );
 }
