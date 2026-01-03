@@ -1,9 +1,8 @@
-
 import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 import { routing } from '@/i18n/routing';
 
-const BUSINESSES_PER_SITEMAP = 5000; // ~4MB per file with 8 locales + alternates
+const BUSINESSES_PER_SITEMAP = 500; // Safe size to avoid API limits (1000) and timeouts
 
 export async function generateSitemaps() {
     // Fetch total count of businesses to determine number of sitemaps
@@ -16,6 +15,7 @@ export async function generateSitemaps() {
         return [{ id: 0 }]; // Fallback to just one
     }
 
+    console.log(`Sitemap generation: Found ${count} businesses. Chunk size: ${BUSINESSES_PER_SITEMAP}.`);
     const numberOfSitemaps = Math.max(1, Math.ceil(count / BUSINESSES_PER_SITEMAP));
     return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i }));
 }
@@ -56,6 +56,8 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     const start = id * BUSINESSES_PER_SITEMAP;
     const end = start + BUSINESSES_PER_SITEMAP - 1;
 
+    console.log(`Generating sitemap/${id}: Fetching range ${start}-${end}`);
+
     try {
         const { data: businesses, error } = await supabase
             .from('businesses')
@@ -67,6 +69,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
         if (error) {
             console.error(`Error fetching sitemap batch ${id}:`, error);
         } else if (businesses) {
+            console.log(`Sitemap/${id}: Fetched ${businesses.length} rows.`);
             for (const business of businesses) {
                 const path = `/business/${business.org_number}`;
                 const alts = getAlternates(path);
