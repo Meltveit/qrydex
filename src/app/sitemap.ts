@@ -63,6 +63,8 @@ export default async function sitemap(props: { id: number | string }): Promise<M
     }
 
     // 2. Dynamic Business Pages for this chunk
+    let debugMessage = `id-${safeId}-props-${JSON.stringify(props)}-start-${start}`;
+
     try {
         const { data: businesses, error } = await supabase
             .from('businesses')
@@ -73,7 +75,14 @@ export default async function sitemap(props: { id: number | string }): Promise<M
 
         if (error) {
             console.error(`Error fetching sitemap batch ${safeId}:`, error);
+            debugMessage += `-error-${error.code}`;
         } else if (businesses) {
+            debugMessage += `-found-${businesses.length}`;
+            // Grab the first org number to verify sort stability in debug
+            if (businesses.length > 0) {
+                debugMessage += `-firstOrg-${businesses[0].org_number}`;
+            }
+
             for (const business of businesses) {
                 const path = `/business/${business.org_number}`;
                 const alts = getAlternates(path);
@@ -91,7 +100,16 @@ export default async function sitemap(props: { id: number | string }): Promise<M
         }
     } catch (error) {
         console.error(`Error generating sitemap ${safeId}:`, error);
+        debugMessage += `-exception`;
     }
+
+    // INJECT DEBUG URL
+    sitemapEntries.push({
+        url: `${baseUrl}/debug-info/${debugMessage}`,
+        lastModified: new Date(),
+        changeFrequency: 'always',
+        priority: 0.0
+    });
 
     return sitemapEntries;
 }
