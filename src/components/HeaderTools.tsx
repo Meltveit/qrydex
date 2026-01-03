@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import IPCalculatorModal from './tools/IPCalculatorModal';
 
 export default function HeaderTools() {
@@ -35,11 +36,9 @@ export default function HeaderTools() {
                                 <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 px-3 py-2 block uppercase tracking-wider">
                                     {t('title')}
                                 </span>
-                                <button
-                                    onClick={() => {
-                                        setIsOpen(false);
-                                        setShowIpModal(true);
-                                    }}
+                                <Link
+                                    href="/tools/ip-calculator"
+                                    onClick={() => setIsOpen(false)}
                                     className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors text-left"
                                 >
                                     <div className="p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-md text-blue-600 dark:text-blue-400">
@@ -48,7 +47,7 @@ export default function HeaderTools() {
                                         </svg>
                                     </div>
                                     {t('ipCalculator')}
-                                </button>
+                                </Link>
                                 {/* Future tools can go here */}
                             </div>
                         </div>
