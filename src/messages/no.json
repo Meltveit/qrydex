@@ -130,6 +130,19 @@
         "whyCheckIpTitle": "Hvorfor sjekke din IP?",
         "whyCheckIpText": "Å sjekke din offentlige IP-adresse hjelper deg med å verifisere nettverkskonfigurasjonen din, sikre at VPN-et ditt fungerer riktig, eller feilsøke tilkoblingsproblemer. Qrydex tilbyr dette gratis verktøyet for å hjelpe bedrifter med å opprettholde sikre og pålitelige tilkoblinger.",
         "seoKeywords": "IP sjekk, min IP, hva er min IP, IP lokasjon, sjekk ISP, offentlig IP adresse, geo IP",
-        "close": "Lukk"
+        "close": "Lukk",
+        "subnetCalc": "Subnett Kalkulator",
+        "calculate": "Beregn",
+        "inputLabel": "IP-adresse (f.eks. 192.168.1.1/24)",
+        "addr": "Adresse",
+        "netmask": "Nettmaske",
+        "wildcard": "Wildcard",
+        "network": "Nettverk",
+        "broadcast": "Kringkasting (Broadcast)",
+        "hostMin": "Første vert (HostMin)",
+        "hostMax": "Siste vert (HostMax)",
+        "hosts": "Verter/Nettverk",
+        "class": "Klasse",
+        "binary": "Binær"
     }
 }

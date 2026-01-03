@@ -130,6 +130,19 @@
         "whyCheckIpTitle": "Why check your IP?",
         "whyCheckIpText": "Checking your public IP address helps you verify your network configuration, ensure your VPN is working correctly, or troubleshoot connectivity issues. Qrydex provides this free tool to help businesses maintain secure and reliable connections.",
         "seoKeywords": "IP lookup, check my IP, what is my IP, IP location, ISP check, public IP address, geo IP",
-        "close": "Close"
+        "close": "Close",
+        "subnetCalc": "Subnet Calculator",
+        "calculate": "Calculate",
+        "inputLabel": "IP Address (e.g. 192.168.1.1/24)",
+        "addr": "Address",
+        "netmask": "Netmask",
+        "wildcard": "Wildcard",
+        "network": "Network",
+        "broadcast": "Broadcast",
+        "hostMin": "HostMin",
+        "hostMax": "HostMax",
+        "hosts": "Hosts/Net",
+        "class": "Class",
+        "binary": "Binary"
     }
 }
