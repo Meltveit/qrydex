@@ -2,37 +2,31 @@ import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 import { routing } from '@/i18n/routing';
 
-const BUSINESSES_PER_SITEMAP = 1000; // Safe size to avoid API limits (1000) and timeouts
+const BUSINESSES_PER_SITEMAP = 1000;
 
 export async function generateSitemaps() {
-    // Fetch total count of businesses to determine number of sitemaps
     const { count, error } = await supabase
         .from('businesses')
-        .select('*', { count: 'exact', head: true });
+        .select('org_number', { count: 'exact', head: true });
 
     if (error || count === null) {
         console.error('Error fetching business count for sitemap:', error);
-        return [{ id: '0' }]; // Fallback to just one
+        return [{ id: 0 }];
     }
 
     console.log(`Sitemap generation: Found ${count} businesses. Chunk size: ${BUSINESSES_PER_SITEMAP}.`);
     const numberOfSitemaps = Math.max(1, Math.ceil(count / BUSINESSES_PER_SITEMAP));
-    return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i.toString() }));
+    return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i }));
 }
 
-// Next.js 15: id might be a Promise
-export default async function sitemap(props: { id: string | Promise<string> }): Promise<MetadataRoute.Sitemap> {
-    const { id } = props;
-    const rawId = id instanceof Promise ? await id : id;
-
-    const safeId = parseInt(rawId, 10);
-    // check if safeId is actually a number, otherwise default to 0 for safety but allow debug to show error
-    const effectiveId = isNaN(safeId) ? 0 : safeId;
+export default async function sitemap(props: { id: number | Promise<number> }): Promise<MetadataRoute.Sitemap> {
+    const id = props.id instanceof Promise ? await props.id : props.id;
+    const effectiveId = typeof id === 'number' && !isNaN(id) ? id : 0;
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
     const locales = routing.locales;
 
-    // Helper to generate alternates for a given path
+    // Helper to generate hreflang alternates
     const getAlternates = (path: string) => {
         const languages: Record<string, string> = {};
         locales.forEach(locale => {
@@ -43,51 +37,51 @@ export default async function sitemap(props: { id: string | Promise<string> }): 
 
     const sitemapEntries: MetadataRoute.Sitemap = [];
 
-    // Calculate range for this id
+    // Calculate range for this sitemap chunk
     const start = effectiveId * BUSINESSES_PER_SITEMAP;
     const end = start + BUSINESSES_PER_SITEMAP - 1;
 
-    let debugMessage = `id-${rawId}-safeId-${safeId}-start-${start}`;
-
-    // 1. Static Pages - Only include in the first sitemap (id 0)
+    // 1. Static Pages - Only in first sitemap (id 0)
     if (effectiveId === 0) {
-        const routes = ['', '/search', '/verify', '/tools/dns-lookup', '/tools/ip-calculator', '/tools/bandwidth-calculator'];
-        routes.forEach(route => {
+        const staticRoutes = [
+            { path: '', changeFreq: 'daily' as const, priority: 1.0 },
+            { path: '/search', changeFreq: 'always' as const, priority: 0.9 },
+            { path: '/verify', changeFreq: 'monthly' as const, priority: 0.7 },
+            { path: '/tools/dns-lookup', changeFreq: 'monthly' as const, priority: 0.7 },
+            { path: '/tools/ip-calculator', changeFreq: 'monthly' as const, priority: 0.7 },
+            { path: '/tools/bandwidth-calculator', changeFreq: 'monthly' as const, priority: 0.7 }
+        ];
+
+        staticRoutes.forEach(route => {
             locales.forEach(locale => {
                 sitemapEntries.push({
-                    url: `${baseUrl}/${locale}${route}`,
+                    url: `${baseUrl}/${locale}${route.path}`,
                     lastModified: new Date(),
-                    changeFrequency: route === '' ? 'daily' : (route === '/search' ? 'always' : 'monthly'),
-                    priority: route === '' ? 1 : (route === '/search' ? 0.9 : 0.7),
-                    alternates: getAlternates(route)
+                    changeFrequency: route.changeFreq,
+                    priority: route.priority,
+                    alternates: getAlternates(route.path)
                 });
             });
         });
     }
 
     // 2. Dynamic Business Pages for this chunk
-
     try {
         const { data: businesses, error } = await supabase
             .from('businesses')
             .select('org_number, updated_at, trust_score')
             .order('trust_score', { ascending: false })
-            .order('org_number', { ascending: true }) // Deterministic sort
+            .order('org_number', { ascending: true })
             .range(start, end);
 
         if (error) {
             console.error(`Error fetching sitemap batch ${effectiveId}:`, error);
-            debugMessage += `-error-${error.code}`;
-        } else if (businesses) {
-            debugMessage += `-found-${businesses.length}`;
-            // Grab the first org number to verify sort stability in debug
-            if (businesses.length > 0) {
-                debugMessage += `-firstOrg-${businesses[0].org_number}`;
-            }
+        } else if (businesses && businesses.length > 0) {
+            console.log(`Sitemap ${effectiveId}: Processing ${businesses.length} businesses (${start}-${end})`);
 
             for (const business of businesses) {
                 const path = `/business/${business.org_number}`;
-                const alts = getAlternates(path);
+                const alternates = getAlternates(path);
 
                 locales.forEach(locale => {
                     sitemapEntries.push({
@@ -95,23 +89,16 @@ export default async function sitemap(props: { id: string | Promise<string> }): 
                         lastModified: new Date(business.updated_at),
                         changeFrequency: 'weekly',
                         priority: business.trust_score > 70 ? 0.8 : 0.6,
-                        alternates: alts
+                        alternates: alternates
                     });
                 });
             }
+        } else {
+            console.log(`Sitemap ${effectiveId}: No businesses found in range ${start}-${end}`);
         }
     } catch (error) {
-        console.error(`Error generating sitemap ${id}:`, error);
-        debugMessage += `-exception`;
+        console.error(`Error generating sitemap ${effectiveId}:`, error);
     }
-
-    // INJECT DEBUG URL
-    sitemapEntries.push({
-        url: `${baseUrl}/debug-info/${debugMessage}`,
-        lastModified: new Date(),
-        changeFrequency: 'always',
-        priority: 0.0
-    });
 
     return sitemapEntries;
 }
