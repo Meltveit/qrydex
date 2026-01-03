@@ -51,7 +51,7 @@ export default async function sitemap(props: { id: string | Promise<string> }): 
 
     // 1. Static Pages - Only include in the first sitemap (id 0)
     if (effectiveId === 0) {
-        const routes = ['', '/search', '/verify'];
+        const routes = ['', '/search', '/verify', '/tools/dns-lookup', '/tools/ip-calculator', '/tools/bandwidth-calculator'];
         routes.forEach(route => {
             locales.forEach(locale => {
                 sitemapEntries.push({
