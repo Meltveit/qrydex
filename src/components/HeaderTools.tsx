@@ -46,6 +46,18 @@ export default function HeaderTools() {
                                     </div>
                                     {t('ipCalculator')}
                                 </Link>
+                                <Link
+                                    href="/tools/bandwidth-calculator"
+                                    onClick={() => setIsOpen(false)}
+                                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg transition-colors text-left"
+                                >
+                                    <div className="p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-md text-blue-600 dark:text-blue-400">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                    </div>
+                                    {t('bandwidthCalc')}
+                                </Link>
                                 {/* Future tools can go here */}
                             </div>
                         </div>
