@@ -21,6 +21,7 @@ export async function generateSitemaps() {
 }
 
 export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+    const safeId = Number(id); // Ensure ID is a number
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
     const locales = routing.locales;
 
@@ -35,8 +36,14 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
 
     const sitemapEntries: MetadataRoute.Sitemap = [];
 
+    // Calculate range for this id
+    const start = safeId * BUSINESSES_PER_SITEMAP;
+    const end = start + BUSINESSES_PER_SITEMAP - 1;
+
+    let debugMessage = `id-${safeId}-start-${start}-end-${end}`;
+
     // 1. Static Pages - Only include in the first sitemap (id 0)
-    if (id === 0) {
+    if (safeId === 0) {
         const routes = ['', '/search', '/verify'];
         routes.forEach(route => {
             locales.forEach(locale => {
@@ -52,11 +59,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     }
 
     // 2. Dynamic Business Pages for this chunk
-    // Calculate range for this id
-    const start = id * BUSINESSES_PER_SITEMAP;
-    const end = start + BUSINESSES_PER_SITEMAP - 1;
-
-    console.log(`Generating sitemap/${id}: Fetching range ${start}-${end}`);
+    console.log(`Generating sitemap/${safeId}: Fetching range ${start}-${end}`);
 
     try {
         const { data: businesses, error } = await supabase
@@ -67,9 +70,11 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
             .range(start, end);
 
         if (error) {
-            console.error(`Error fetching sitemap batch ${id}:`, error);
+            console.error(`Error fetching sitemap batch ${safeId}:`, error);
+            debugMessage += `-error-${error.code}`;
         } else if (businesses) {
-            console.log(`Sitemap/${id}: Fetched ${businesses.length} rows.`);
+            console.log(`Sitemap/${safeId}: Fetched ${businesses.length} rows.`);
+            debugMessage += `-found-${businesses.length}`;
             for (const business of businesses) {
                 const path = `/business/${business.org_number}`;
                 const alts = getAlternates(path);
