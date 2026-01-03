@@ -37,6 +37,22 @@ export default async function sitemap({
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
     const locales = routing.locales;
 
+    // Map country codes to native locales
+    const countryToLocale: Record<string, string> = {
+        'NO': 'no',
+        'SE': 'sv',
+        'DK': 'da',
+        'FI': 'fi',
+        'DE': 'de',
+        'FR': 'fr',
+        'ES': 'es',
+        'US': 'en',
+        'GB': 'en',
+        // Default fallbacks
+        'AU': 'en',
+        'CA': 'en',
+    };
+
     const start = parsedId * BUSINESSES_PER_SITEMAP;
     const end = start + BUSINESSES_PER_SITEMAP - 1;
 
@@ -54,7 +70,7 @@ export default async function sitemap({
         ];
 
         for (const route of staticRoutes) {
-            // Add the main URL for each locale
+            // Static pages exist in ALL locales
             for (const locale of locales) {
                 sitemapEntries.push({
                     url: `${baseUrl}/${locale}${route.path}`,
@@ -75,7 +91,7 @@ export default async function sitemap({
     try {
         const { data: businesses, error } = await supabase
             .from('businesses')
-            .select('org_number, updated_at, trust_score')
+            .select('org_number, updated_at, trust_score, country_code, translations')
             .order('trust_score', { ascending: false })
             .order('org_number', { ascending: true })
             .range(start, end);
@@ -88,9 +104,40 @@ export default async function sitemap({
             for (const business of businesses) {
                 const path = `/business/${business.org_number}`;
                 const priority = business.trust_score > 70 ? 0.8 : 0.6;
+                const countryCode = business.country_code?.toUpperCase() || 'NO'; // Default to NO if missing
 
-                // For each business, we generate entries for each locale
-                for (const locale of locales) {
+                // Determine Valid Locales
+                const nativeLocale = countryToLocale[countryCode] || 'en';
+                const validLocales = new Set<string>();
+
+                // 1. Always include Native Locale if supported
+                if (locales.includes(nativeLocale as any)) {
+                    validLocales.add(nativeLocale);
+                } else {
+                    // Fallback to English if native locale not supported
+                    validLocales.add('en');
+                }
+
+                // 2. Include English (Global) if it's not the native one, 
+                //    BUT ideally only if we have content? For now we assume English is always a good fallback/global 
+                //    or check if 'en' key exists in translations.
+                //    Let's check translations for strictly valid secondary languages.
+                if (business.translations && typeof business.translations === 'object') {
+                    const translatedCodes = Object.keys(business.translations);
+                    for (const code of translatedCodes) {
+                        if (locales.includes(code as any)) {
+                            validLocales.add(code);
+                        }
+                    }
+                }
+
+                // If set is empty (rare), fallback to 'en'
+                if (validLocales.size === 0) validLocales.add('en');
+
+                const validLocalesArray = Array.from(validLocales);
+
+                // Generate entries for VALID locales only
+                for (const locale of validLocalesArray) {
                     sitemapEntries.push({
                         url: `${baseUrl}/${locale}${path}`,
                         lastModified: new Date(business.updated_at),
@@ -98,7 +145,7 @@ export default async function sitemap({
                         priority: priority,
                         alternates: {
                             languages: Object.fromEntries(
-                                locales.map(l => [l, `${baseUrl}/${l}${path}`])
+                                validLocalesArray.map(l => [l, `${baseUrl}/${l}${path}`])
                             )
                         }
                     });
