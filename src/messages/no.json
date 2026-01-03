@@ -116,5 +116,20 @@
     },
     "RelatedBusinesses": {
         "title": "Lignende Pålitelige Bedrifter"
+    },
+    "Tools": {
+        "title": "Verktøy",
+        "ipCalculator": "IP Kalkulator",
+        "myIpTitle": "Min Offentlige IP-adresse",
+        "ip": "IP-adresse",
+        "city": "By",
+        "country": "Land",
+        "isp": "Nettleverandør (ISP)",
+        "whatIsIpTitle": "Hva er en IP-adresse?",
+        "whatIsIpText": "En IP-adresse (Internet Protocol address) er en unik numerisk etikett tildelt hver enhet som er koblet til et datanettverk som bruker Internett-protokollen for kommunikasjon. Den har to hovedfunksjoner: vert- eller nettverksgrensesnittidentifikasjon og lokasjonsadressering.",
+        "whyCheckIpTitle": "Hvorfor sjekke din IP?",
+        "whyCheckIpText": "Å sjekke din offentlige IP-adresse hjelper deg med å verifisere nettverkskonfigurasjonen din, sikre at VPN-et ditt fungerer riktig, eller feilsøke tilkoblingsproblemer. Qrydex tilbyr dette gratis verktøyet for å hjelpe bedrifter med å opprettholde sikre og pålitelige tilkoblinger.",
+        "seoKeywords": "IP sjekk, min IP, hva er min IP, IP lokasjon, sjekk ISP, offentlig IP adresse, geo IP",
+        "close": "Lukk"
     }
 }

@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import HeaderTools from '@/components/HeaderTools';
 
 import { Inter } from 'next/font/google';
 
@@ -67,6 +68,7 @@ export default async function RootLayout({
       <body className={`${inter.className} antialiased min-h-screen flex flex-col bg-[var(--color-background)] text-[var(--color-text)]`}>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <HeaderTools />
             <SchemaOrganization />
             <main className="flex-1 w-full">
               {children}

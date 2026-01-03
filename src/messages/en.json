@@ -116,5 +116,20 @@
     },
     "RelatedBusinesses": {
         "title": "Similar Trusted Businesses"
+    },
+    "Tools": {
+        "title": "Tools",
+        "ipCalculator": "IP Calculator",
+        "myIpTitle": "My Public IP Address",
+        "ip": "IP Address",
+        "city": "City",
+        "country": "Country",
+        "isp": "ISP",
+        "whatIsIpTitle": "What is an IP Address?",
+        "whatIsIpText": "An IP address (Internet Protocol address) is a unique numerical label assigned to each device connected to a computer network that uses the Internet Protocol for communication. It serves two main functions: host or network interface identification and location addressing.",
+        "whyCheckIpTitle": "Why check your IP?",
+        "whyCheckIpText": "Checking your public IP address helps you verify your network configuration, ensure your VPN is working correctly, or troubleshoot connectivity issues. Qrydex provides this free tool to help businesses maintain secure and reliable connections.",
+        "seoKeywords": "IP lookup, check my IP, what is my IP, IP location, ISP check, public IP address, geo IP",
+        "close": "Close"
     }
 }
