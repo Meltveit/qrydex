@@ -44,7 +44,7 @@ export default async function sitemap(props: { id: number | string }): Promise<M
     const start = effectiveId * BUSINESSES_PER_SITEMAP;
     const end = rawId !== undefined ? (start + BUSINESSES_PER_SITEMAP - 1) : 0;
 
-    let debugMessage = `props-${JSON.stringify(props)}-parsed-${safeId}`;
+
 
     // 1. Static Pages - Only include in the first sitemap (id 0)
     if (safeId === 0) {
@@ -63,8 +63,6 @@ export default async function sitemap(props: { id: number | string }): Promise<M
     }
 
     // 2. Dynamic Business Pages for this chunk
-    console.log(`Generating sitemap/${safeId}: Fetching range ${start}-${end}`);
-
     try {
         const { data: businesses, error } = await supabase
             .from('businesses')
@@ -75,10 +73,7 @@ export default async function sitemap(props: { id: number | string }): Promise<M
 
         if (error) {
             console.error(`Error fetching sitemap batch ${safeId}:`, error);
-            debugMessage += `-error-${error.code}`;
         } else if (businesses) {
-            console.log(`Sitemap/${safeId}: Fetched ${businesses.length} rows.`);
-            debugMessage += `-found-${businesses.length}`;
             for (const business of businesses) {
                 const path = `/business/${business.org_number}`;
                 const alts = getAlternates(path);
@@ -98,17 +93,5 @@ export default async function sitemap(props: { id: number | string }): Promise<M
         console.error(`Error generating sitemap ${safeId}:`, error);
     }
 
-
-
-    // INJECT DEBUG URL (Temporary)
-    // allowing us to see what happened even if XML is otherwise empty
-    sitemapEntries.push({
-        url: `${baseUrl}/debug-sitemap-info/${debugMessage}`,
-        lastModified: new Date(),
-        changeFrequency: 'always',
-        priority: 0.0
-    });
-
     return sitemapEntries;
 }
-
