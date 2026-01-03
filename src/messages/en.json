@@ -143,6 +143,19 @@
         "hostMax": "HostMax",
         "hosts": "Hosts/Net",
         "class": "Class",
-        "binary": "Binary"
+        "class": "Class",
+        "binary": "Binary",
+        "referenceTableTitle": "IPv4 Subnet Mask Reference Table",
+        "prefix": "Prefix / CIDR",
+        "decimalMask": "Decimal Mask",
+        "hostsPerSubnet": "Usable Hosts",
+        "allHosts": "Total Hosts",
+        "seoTitle1": "What is an IP Subnet Calculator?",
+        "seoText1": "An IP Subnet Calculator is an essential tool for network engineers, IT professionals, and students to plan and manage IP networks. It allows you to calculate the range of IP addresses, subnet masks, network addresses, and broadcast addresses for a given IP network segment. By dividing a large network into smaller, manageable sub-networks (subnets), you can improve performance and security.",
+        "seoTitle2": "Understanding CIDR and Subnet Masks",
+        "seoText2": "CIDR (Classless Inter-Domain Routing) is a method for allocating IP addresses and IP routing. It replaces the older classful network design (Class A, B, C). A CIDR notation looks like '192.168.1.0/24', where '/24' represents the number of bits in the network prefix. The subnet calculator converts this into a dotted-decimal mask (e.g., 255.255.255.0) and determines the number of usable hosts.",
+        "seoTitle3": "Why is Subnetting Important?",
+        "seoText3": "Subnetting reduces network traffic by breaking down the broadcast domain. It enhances security by allowing administrators to isolate network segments. Furthermore, it helps in the efficient utilization of IP address space, which is critical given the scarcity of IPv4 addresses. Our tool simplifies these complex calculations, making network planning instantaneous.",
+        "seoKeywordsLong": "online subnet calculator, ipv4 network calculator, cidr to netmask, calculate usable ip addresses, network masking tool, free ip calc, subnetting tutorial"
     }
 }

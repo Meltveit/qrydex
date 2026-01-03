@@ -143,6 +143,19 @@
         "hostMax": "Siste vert (HostMax)",
         "hosts": "Verter/Nettverk",
         "class": "Klasse",
-        "binary": "Binær"
+        "class": "Klasse",
+        "binary": "Binær",
+        "referenceTableTitle": "Referansetabell for IPv4 Nettmasker",
+        "prefix": "Prefiks / CIDR",
+        "decimalMask": "Desimalmaske",
+        "hostsPerSubnet": "Brukbare Verter",
+        "allHosts": "Totale Verter",
+        "seoTitle1": "Hva er en IP Subnett Kalkulator?",
+        "seoText1": "En IP Subnett Kalkulator er et viktig verktøy for nettverksingeniører, IT-profesjonelle og studenter for å planlegge og administrere IP-nettverk. Den lar deg beregne rekkevidden av IP-adresser, nettmasker, nettverksadresser og kringkastingsadresser for et gitt nettverkssegment. Ved å dele et stort nettverk inn i mindre, håndterbare delnett (subnett), kan du forbedre ytelse og sikkerhet.",
+        "seoTitle2": "Forstå CIDR og Nettmasker",
+        "seoText2": "CIDR (Classless Inter-Domain Routing) er en metode for tildeling av IP-adresser og IP-ruting. Den erstatter det eldre klassebaserte nettverksdesignet (Klasse A, B, C). En CIDR-notasjon ser ut som '192.168.1.0/24', der '/24' representerer antall biter i nettverksprefikset. Kalkulatoren konverterer dette til en punktum-separert desimalmaske (f.eks. 255.255.255.0) og bestemmer antall brukbare verter.",
+        "seoTitle3": "Hvorfor er Subnetting viktig?",
+        "seoText3": "Subnetting reduserer nettverkstrafikk ved å bryte ned kringkastingsdomenet. Det forbedrer sikkerheten ved å la administratorer isolere nettverkssegmenter. Videre hjelper det med effektiv utnyttelse av IP-adresseområdet, noe som er kritisk gitt mangelen på IPv4-adresser. Vårt verktøy forenkler disse komplekse beregningene og gjør nettverksplanlegging øyeblikkelig.",
+        "seoKeywordsLong": "online subnett kalkulator, ipv4 nettverkskalkulator, cidr til nettmaske, beregn IP adresser, nettverksmaske verktøy, gratis ip calc, subnetting opplæring"
     }
 }

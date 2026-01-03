@@ -143,6 +143,19 @@
         "hostMax": "Sista värd (HostMax)",
         "hosts": "Värdar/Nät",
         "class": "Klass",
-        "binary": "Binär"
+        "class": "Klass",
+        "binary": "Binär",
+        "referenceTableTitle": "Referenstabell för IPv4 Nätmasker",
+        "prefix": "Prefix / CIDR",
+        "decimalMask": "Decimalmask",
+        "hostsPerSubnet": "Användbara Värdar",
+        "allHosts": "Totala Värdar",
+        "seoTitle1": "Vad är en IP Subnät Kalkylator?",
+        "seoText1": "En IP Subnät Kalkylator är ett viktigt verktyg för nätverksingenjörer och IT-proffs för att planera IP-nätverk. Det låter dig beräkna intervallet av IP-adresser, nätmasker, nätverksadresser och broadcast-adresser. Genom att dela upp ett stort nätverk i mindre, hanterbara delnät (subnät), kan du förbättra prestanda och säkerhet.",
+        "seoTitle2": "Förstå CIDR och Nätmasker",
+        "seoText2": "CIDR (Classless Inter-Domain Routing) är en metod för tilldelning av IP-adresser. En CIDR-notation ser ut som '192.168.1.0/24', där '/24' representerar antalet bitar i nätverksprefixet. Kalkylatorn omvandlar detta till en decimalmask (t.ex. 255.255.255.0) för enkel planering.",
+        "seoTitle3": "Varför är Subnetting viktigt?",
+        "seoText3": "Subnetting minskar nätverkstrafik och förbättrar säkerheten genom att isolera nätverkssegment. Vårt verktyg förenklar dessa komplexa beräkningar.",
+        "seoKeywordsLong": "online subnät kalkylator, ipv4 nätverksräknare, cidr till nätmask"
     }
 }
