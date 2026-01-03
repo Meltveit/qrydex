@@ -17,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const sitemapEntries: MetadataRoute.Sitemap = Array.from(
             { length: numberOfSitemaps },
             (_, i) => ({
-                url: `${baseUrl}/sitemap/${i}.xml`,
+                url: `${baseUrl}/sitemap/${i}`,
                 lastModified: new Date()
             })
         );
