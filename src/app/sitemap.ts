@@ -1,9 +1,13 @@
-// app/sitemap.ts
 import type { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 import { routing } from '@/i18n/routing';
+import fs from 'fs';
+import path from 'path';
 
 const BUSINESSES_PER_SITEMAP = 1000;
+export const dynamic = 'force-static';
+export const revalidate = 86400; // 1 day
+
 
 // Generate sitemaps for all business pages
 export async function generateSitemaps() {
@@ -28,67 +32,75 @@ export default async function sitemap({
 }: {
     id: string
 }): Promise<MetadataRoute.Sitemap> {
-    // In sitemap.ts with generateSitemaps, id is passed directly as a string, not a Promise (unlike page params)
-    // However, depending on Next.js version, it might be safe to handle both, but standard docs show { id }: { id: string }
 
-    const effectiveId = parseInt(id, 10);
-    const parsedId = isNaN(effectiveId) ? 0 : effectiveId;
-
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
-    const locales = routing.locales;
-
-    // Map country codes to native locales
-    const countryToLocale: Record<string, string> = {
-        'NO': 'no',
-        'SE': 'sv',
-        'DK': 'da',
-        'FI': 'fi',
-        'DE': 'de',
-        'FR': 'fr',
-        'ES': 'es',
-        'US': 'en',
-        'GB': 'en',
-        // Default fallbacks
-        'AU': 'en',
-        'CA': 'en',
+    // Debug logging function
+    const logError = (msg: string) => {
+        try {
+            const logPath = path.join(process.cwd(), 'sitemap-debug.log');
+            fs.appendFileSync(logPath, new Date().toISOString() + ': ' + msg + '\n');
+        } catch (e) {
+            console.error('Failed to write to log file', e);
+        }
     };
 
-    const start = parsedId * BUSINESSES_PER_SITEMAP;
-    const end = start + BUSINESSES_PER_SITEMAP - 1;
+    try {
+        const effectiveId = parseInt(id, 10);
+        const parsedId = isNaN(effectiveId) ? 0 : effectiveId;
 
-    let sitemapEntries: MetadataRoute.Sitemap = [];
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
+        const locales = routing.locales;
 
-    // 1. Static Pages - Only in first sitemap (id 0)
-    if (parsedId === 0) {
-        const staticRoutes = [
-            { path: '', changeFrequency: 'daily' as const, priority: 1.0 },
-            { path: '/search', changeFrequency: 'always' as const, priority: 0.9 },
-            { path: '/verify', changeFrequency: 'monthly' as const, priority: 0.7 },
-            { path: '/tools/dns-lookup', changeFrequency: 'monthly' as const, priority: 0.7 },
-            { path: '/tools/ip-calculator', changeFrequency: 'monthly' as const, priority: 0.7 },
-            { path: '/tools/bandwidth-calculator', changeFrequency: 'monthly' as const, priority: 0.7 }
-        ];
+        // Map country codes to native locales
+        const countryToLocale: Record<string, string> = {
+            'NO': 'no',
+            'SE': 'sv',
+            'DK': 'da',
+            'FI': 'fi',
+            'DE': 'de',
+            'FR': 'fr',
+            'ES': 'es',
+            'US': 'en',
+            'GB': 'en',
+            // Default fallbacks
+            'AU': 'en',
+            'CA': 'en',
+        };
 
-        for (const route of staticRoutes) {
-            // Static pages exist in ALL locales
-            for (const locale of locales) {
-                sitemapEntries.push({
-                    url: `${baseUrl}/${locale}${route.path}`,
-                    lastModified: new Date(),
-                    changeFrequency: route.changeFrequency,
-                    priority: route.priority,
-                    alternates: {
-                        languages: Object.fromEntries(
-                            locales.map(l => [l, `${baseUrl}/${l}${route.path}`])
-                        )
-                    }
-                });
+        const start = parsedId * BUSINESSES_PER_SITEMAP;
+        const end = start + BUSINESSES_PER_SITEMAP - 1;
+
+        let sitemapEntries: MetadataRoute.Sitemap = [];
+
+        // 1. Static Pages - Only in first sitemap (id 0)
+        if (parsedId === 0) {
+            const staticRoutes = [
+                { path: '', changeFrequency: 'daily' as const, priority: 1.0 },
+                { path: '/search', changeFrequency: 'always' as const, priority: 0.9 },
+                { path: '/verify', changeFrequency: 'monthly' as const, priority: 0.7 },
+                { path: '/tools/dns-lookup', changeFrequency: 'monthly' as const, priority: 0.7 },
+                { path: '/tools/ip-calculator', changeFrequency: 'monthly' as const, priority: 0.7 },
+                { path: '/tools/bandwidth-calculator', changeFrequency: 'monthly' as const, priority: 0.7 }
+            ];
+
+            for (const route of staticRoutes) {
+                // Static pages exist in ALL locales
+                for (const locale of locales) {
+                    sitemapEntries.push({
+                        url: `${baseUrl}/${locale}${route.path}`,
+                        lastModified: new Date(),
+                        changeFrequency: route.changeFrequency,
+                        priority: route.priority,
+                        alternates: {
+                            languages: Object.fromEntries(
+                                locales.map(l => [l, `${baseUrl}/${l}${route.path}`])
+                            )
+                        }
+                    });
+                }
             }
         }
-    }
 
-    // 2. Dynamic Business Pages
-    try {
+        // 2. Dynamic Business Pages
         const { data: businesses, error } = await supabase
             .from('businesses')
             .select('org_number, updated_at, trust_score, country_code, translations')
@@ -97,9 +109,10 @@ export default async function sitemap({
             .range(start, end);
 
         if (error) {
+            logError(`Error fetching sitemap batch ${parsedId}: ` + JSON.stringify(error));
             console.error(`Error fetching sitemap batch ${parsedId}:`, error);
         } else if (businesses && businesses.length > 0) {
-            console.log(`Sitemap ${parsedId}: Processing ${businesses.length} businesses`);
+            // console.log(`Sitemap ${parsedId}: Processing ${businesses.length} businesses`);
 
             for (const business of businesses) {
                 const path = `/business/${business.org_number}`;
@@ -152,9 +165,14 @@ export default async function sitemap({
                 }
             }
         }
-    } catch (error) {
-        console.error(`Error generating sitemap ${parsedId}:`, error);
-    }
 
-    return sitemapEntries;
+        return sitemapEntries;
+
+    } catch (error) {
+        logError('CRITICAL SITEMAP ERROR: ' + error);
+        console.error(`Error generating sitemap:`, error);
+        // Return empty array to avoid 500 crash if possible, or rethrow?
+        // Next.js might still crash if we return nothing if it expects mismatch? No, empty array is valid Sitemap.
+        return [];
+    }
 }
