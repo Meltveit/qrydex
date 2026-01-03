@@ -20,8 +20,9 @@ export async function generateSitemaps() {
     return Array.from({ length: numberOfSitemaps }, (_, i) => ({ id: i }));
 }
 
-export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
-    const safeId = Number(id); // Ensure ID is a number
+export default async function sitemap(props: { id: number | string }): Promise<MetadataRoute.Sitemap> {
+    const rawId = props?.id;
+    const safeId = Number(rawId);
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
     const locales = routing.locales;
 
@@ -37,10 +38,13 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     const sitemapEntries: MetadataRoute.Sitemap = [];
 
     // Calculate range for this id
-    const start = safeId * BUSINESSES_PER_SITEMAP;
-    const end = start + BUSINESSES_PER_SITEMAP - 1;
+    // check if safeId is actually a number, otherwise default to 0 for safety but allow debug to show error
+    const effectiveId = isNaN(safeId) ? 0 : safeId;
 
-    let debugMessage = `id-${safeId}-start-${start}-end-${end}`;
+    const start = effectiveId * BUSINESSES_PER_SITEMAP;
+    const end = rawId !== undefined ? (start + BUSINESSES_PER_SITEMAP - 1) : 0;
+
+    let debugMessage = `props-${JSON.stringify(props)}-parsed-${safeId}`;
 
     // 1. Static Pages - Only include in the first sitemap (id 0)
     if (safeId === 0) {
@@ -91,7 +95,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
             }
         }
     } catch (error) {
-        console.error(`Error generating sitemap ${id}:`, error);
+        console.error(`Error generating sitemap ${safeId}:`, error);
     }
 
 
