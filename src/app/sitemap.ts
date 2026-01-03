@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 import { routing } from '@/i18n/routing';
 
-const BUSINESSES_PER_SITEMAP = 2000; // Safe size to avoid API limits (1000) and timeouts
+const BUSINESSES_PER_SITEMAP = 1000; // Safe size to avoid API limits (1000) and timeouts
 
 export async function generateSitemaps() {
     // Fetch total count of businesses to determine number of sitemaps
