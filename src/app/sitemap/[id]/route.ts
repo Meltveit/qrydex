@@ -5,14 +5,14 @@ import { routing } from '@/i18n/routing';
 export const dynamic = 'force-static';
 export const revalidate = 86400; // 1 day
 
-const BUSINESSES_PER_CHUNK = 5000;
+const BUSINESSES_PER_CHUNK = 1000;
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-    const chunkId = parseInt(id, 10);
+    const chunkId = parseInt(id.replace('.xml', ''), 10);
 
     if (isNaN(chunkId) || chunkId < 0) {
         return new Response('Invalid chunk ID', { status: 400 });
