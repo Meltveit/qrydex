@@ -7,20 +7,7 @@ import { useTranslations } from 'next-intl';
 import { lookupDns, type DnsRecordType, type DnsResult } from '@/app/actions/dns-lookup';
 
 export default function DnsClient() {
-    // const t = useTranslations('Tools.DnsLookup'); // TODO: Add translations
-    // Fallback translations until we add them to generic locale files
-    const t = (key: string) => {
-        const dictionary: Record<string, string> = {
-            title: 'DNS Lookup Tool',
-            subtitle: 'Check DNS records instantly for any domain',
-            placeholder: 'Enter domain (e.g. qrydex.com)',
-            button: 'Lookup DNS',
-            all: 'All',
-            error: 'Could not resolve domain',
-            noRecords: 'No records found',
-        };
-        return dictionary[key] || key;
-    };
+    const t = useTranslations('Tools.DnsLookup');
 
     const [domain, setDomain] = useState('');
     const [selectedType, setSelectedType] = useState<DnsRecordType>('ALL');
@@ -115,8 +102,8 @@ export default function DnsClient() {
                                 type="button"
                                 onClick={() => setSelectedType(type.id)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${selectedType === type.id
-                                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20'
-                                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20'
+                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                                     }`}
                             >
                                 <type.icon className="w-4 h-4" />

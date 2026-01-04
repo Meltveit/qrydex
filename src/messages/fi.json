@@ -169,6 +169,22 @@
         "prefix": "Prefiksi / CIDR",
         "decimalMask": "Desimaalipeite",
         "hostsPerSubnet": "Käytettävät Koneet",
-        "allHosts": "Yhteensä Koneet"
+        "allHosts": "Yhteensä Koneet",
+        "DnsLookup": {
+            "title": "DNS-haku",
+            "subtitle": "Tarkista DNS-tietueet välittömästi mille tahansa verkkotunnukselle",
+            "placeholder": "Syötä verkkotunnus (esim. qrydex.com)",
+            "button": "Hae DNS",
+            "error": "Verkkotunnusta ei löytynyt",
+            "noRecords": "Tietueita ei löytynyt",
+            "whatIsDnsTitle": "Mikä on DNS-haku?",
+            "whatIsDnsText": "Ominaisuudet kuten A, MX ja CNAME-tietueet ovat olennainen osa Domain Name System (DNS) -järjestelmää. Tämä työkalu tekee kyselyjä valtuutetuille nimipalvelimille hakeakseen reaaliaikaisen kokoonpanon.",
+            "recordA": "Yhdistää verkkotunnuksen IPv4-osoitteeseen.",
+            "recordMX": "Määrittää sähköpostipalvelimet.",
+            "recordTXT": "Käytetään vahvistukseen (SPF, DKIM, Google).",
+            "recordNS": "Näyttää verkkotunnuksen valtuutetut nimipalvelimet.",
+            "seoTitle": "Ilmainen DNS-haku | Tarkista A, MX, TXT Tietueet - Qrydex",
+            "seoDescription": "Välitön DNS-hakutyökalu. Tarkista ja vahvista A, AAAA, MX, TXT, NS, CNAME ja SOA-tietueet mille tahansa verkkotunnukselle. Ilmainen ja nopea."
+        }
     }
 }

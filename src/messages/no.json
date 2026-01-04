@@ -192,6 +192,22 @@
         "seoText2": "CIDR (Classless Inter-Domain Routing) er en metode for tildeling av IP-adresser og IP-ruting. Den erstatter det eldre klassebaserte nettverksdesignet (Klasse A, B, C). En CIDR-notasjon ser ut som '192.168.1.0/24', der '/24' representerer antall biter i nettverksprefikset. Kalkulatoren konverterer dette til en punktum-separert desimalmaske (f.eks. 255.255.255.0) og bestemmer antall brukbare verter.",
         "seoTitle3": "Hvorfor er Subnetting viktig?",
         "seoText3": "Subnetting reduserer nettverkstrafikk ved å bryte ned kringkastingsdomenet. Det forbedrer sikkerheten ved å la administratorer isolere nettverkssegmenter. Videre hjelper det med effektiv utnyttelse av IP-adresseområdet, noe som er kritisk gitt mangelen på IPv4-adresser. Vårt verktøy forenkler disse komplekse beregningene og gjør nettverksplanlegging øyeblikkelig.",
-        "seoKeywordsLong": "online subnett kalkulator, ipv4 nettverkskalkulator, cidr til nettmaske, beregn IP adresser, nettverksmaske verktøy, gratis ip calc, subnetting opplæring"
+        "seoKeywordsLong": "online subnett kalkulator, ipv4 nettverkskalkulator, cidr til nettmaske, beregn IP adresser, nettverksmaske verktøy, gratis ip calc, subnetting opplæring",
+        "DnsLookup": {
+            "title": "DNS Oppslag",
+            "subtitle": "Sjekk DNS-records øyeblikkelig for ethvert domene",
+            "placeholder": "Skriv inn domene (f.eks. qrydex.com)",
+            "button": "Søk DNS",
+            "error": "Kunne ikke finne domenet",
+            "noRecords": "Ingen records funnet",
+            "whatIsDnsTitle": "Hva er et DNS-oppslag?",
+            "whatIsDnsText": "Attributter som A, MX og CNAME-postene er essensielle deler av Domain Name System (DNS). Dette verktøyet utfører spørringer mot autoritative navnetjenere for å hente sanntidskonfigurasjonen av ethvert domene.",
+            "recordA": "Kobler et domene til en IPv4-adresse.",
+            "recordMX": "Spesifiserer e-postservere for levering av e-post.",
+            "recordTXT": "Brukes til verifisering (SPF, DKIM, Google).",
+            "recordNS": "Viser de autoritative navnetjenerne for domenet.",
+            "seoTitle": "Gratis DNS Oppslag | Sjekk A, MX, TXT Records - Qrydex",
+            "seoDescription": "Raskt DNS-oppslagsverktøy. Sjekk og verifiser A, AAAA, MX, TXT, NS, CNAME og SOA-postene for ethvert domenenavn. Gratis og raskt."
+        }
     }
 }

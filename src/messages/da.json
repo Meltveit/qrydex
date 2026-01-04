@@ -191,6 +191,22 @@
         "bwSeoText2": "Vores filoverførselstidsberegner hjælper dig med at estimere, hvor lang tid det tager at overføre data over forskellige netværkshastigheder (f.eks. Fiber, 5G, 4G, DSL).",
         "bwSeoTitle3": "Hjemmeside & Hosting Estimator",
         "bwSeoText3": "Planlægger du en ny hjemmeside? Brug vores hosting-estimator til at bestemme, hvor meget månedlig båndbredde du har brug for baseret på daglige sidevisninger og gennemsnitlig sidestørrelse.",
-        "bwSeoKeywordsLong": "fil overførselstid beregner, download tid, upload hastighed, gb til mb omregner, hosting båndbredde"
+        "bwSeoKeywordsLong": "fil overførselstid beregner, download tid, upload hastighed, gb til mb omregner, hosting båndbredde",
+        "DnsLookup": {
+            "title": "DNS Opslag",
+            "subtitle": "Tjek DNS-records øjeblikkeligt for ethvert domæne",
+            "placeholder": "Indtast domæne (f.eks. qrydex.com)",
+            "button": "Søg DNS",
+            "error": "Kunne ikke finde domænet",
+            "noRecords": "Ingen records fundet",
+            "whatIsDnsTitle": "Hvad er et DNS-opslag?",
+            "whatIsDnsText": "Attributter som A, MX og CNAME-poster er vigtige dele af Domain Name System (DNS). Dette værktøj udfører forespørgsler mod autoritative navneservere for at hente realtidskonfigurationen for ethvert domæne.",
+            "recordA": "Mapper et domæne til en IPv4-adresse.",
+            "recordMX": "Specificerer mailservere til e-mail levering.",
+            "recordTXT": "Bruges til verifikation (SPF, DKIM, Google).",
+            "recordNS": "Viser de autoritative navneservere for domænet.",
+            "seoTitle": "Gratis DNS Opslag | Tjek A, MX, TXT Records - Qrydex",
+            "seoDescription": "Øjeblikkeligt DNS-opslagsværktøj. Tjek og verificer A, AAAA, MX, TXT, NS, CNAME og SOA-poster for ethvert domænenavn. Gratis og hurtigt."
+        }
     }
 }

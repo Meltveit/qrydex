@@ -192,6 +192,22 @@
         "prefix": "Prefix / CIDR",
         "decimalMask": "Decimalmask",
         "hostsPerSubnet": "Användbara Värdar",
-        "allHosts": "Totala Värdar"
+        "allHosts": "Totala Värdar",
+        "DnsLookup": {
+            "title": "DNS-uppslagning",
+            "subtitle": "Kontrollera DNS-poster omedelbart för vilken domän som helst",
+            "placeholder": "Ange domän (t.ex. qrydex.com)",
+            "button": "Sök DNS",
+            "error": "Kunde inte hitta domänen",
+            "noRecords": "Inga poster hittades",
+            "whatIsDnsTitle": "Vad är en DNS-uppslagning?",
+            "whatIsDnsText": "Attribut som A, MX och CNAME-poster är väsentliga delar av domännamnssystemet (DNS). Detta verktyg utför frågor mot auktoritativa namnservrar för att hämta realtidskonfigurationen för vilken domän som helst.",
+            "recordA": "Mappar en domän till en IPv4-adress.",
+            "recordMX": "Anger e-postservrar för leverans av e-post.",
+            "recordTXT": "Används för verifiering (SPF, DKIM, Google).",
+            "recordNS": "Visar de auktoritativa namnservrarna för domänen.",
+            "seoTitle": "Gratis DNS-uppslagning | Kontrollera A, MX, TXT-poster - Qrydex",
+            "seoDescription": "Omedelbart DNS-uppslagsverktyg. Kontrollera och verifiera A, AAAA, MX, TXT, NS, CNAME och SOA-poster för vilket domännamn som helst. Gratis och snabbt."
+        }
     }
 }

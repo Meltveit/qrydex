@@ -171,6 +171,22 @@
         "bwSeoText2": "Notre calculateur de temps de transfert vous aide à estimer la durée de transfert de données sur différentes vitesses de réseau (ex. Fibre, 5G, 4G, DSL).",
         "bwSeoTitle3": "Estimateur Site Web & Hébergement",
         "bwSeoText3": "Vous planifiez un nouveau site Web ? Utilisez notre estimateur d'hébergement pour déterminer la bande passante mensuelle nécessaire en fonction des vues quotidiennes et de la taille moyenne des pages.",
-        "bwSeoKeywordsLong": "calculateur temps transfert, durée téléchargement, vitesse upload, convertisseur gb mb, bande passante hébergement"
+        "bwSeoKeywordsLong": "calculateur temps transfert, durée téléchargement, vitesse upload, convertisseur gb mb, bande passante hébergement",
+        "DnsLookup": {
+            "title": "Recherche DNS",
+            "subtitle": "Vérifiez les enregistrements DNS instantanément pour n'importe quel domaine",
+            "placeholder": "Entrez le domaine (ex. qrydex.com)",
+            "button": "Rechercher DNS",
+            "error": "Impossible de résoudre le domaine",
+            "noRecords": "Aucun enregistrement trouvé",
+            "whatIsDnsTitle": "Qu'est-ce qu'une recherche DNS ?",
+            "whatIsDnsText": "Les attributs comme les enregistrements A, MX et CNAME sont des éléments essentiels du système de noms de domaine (DNS). Cet outil effectue des requêtes auprès des serveurs de noms faisant autorité pour récupérer la configuration en temps réel de n'importe quel domaine.",
+            "recordA": "Mappe un domaine à une adresse IPv4.",
+            "recordMX": "Spécifie les serveurs de messagerie pour la livraison des e-mails.",
+            "recordTXT": "Utilisé pour la vérification (SPF, DKIM, Google).",
+            "recordNS": "Affiche les serveurs de noms faisant autorité pour le domaine.",
+            "seoTitle": "Recherche DNS Gratuite | Vérifier A, MX, TXT - Qrydex",
+            "seoDescription": "Outil de recherche DNS instantané. Vérifiez et validez les enregistrements A, AAAA, MX, TXT, NS, CNAME et SOA pour n'importe quel nom de domaine. Gratuit et rapide."
+        }
     }
 }

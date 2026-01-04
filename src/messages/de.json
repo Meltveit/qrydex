@@ -171,6 +171,22 @@
         "bwSeoText2": "Unser Dateiübertragungszeit-Rechner hilft Ihnen abzuschätzen, wie lange die Datenübertragung über verschiedene Netzwerkgeschwindigkeiten (z.B. Glasfaser, 5G, 4G, DSL) dauert.",
         "bwSeoTitle3": "Website & Hosting Schätzer",
         "bwSeoText3": "Planen Sie eine neue Website? Nutzen Sie unseren Hosting-Schätzer, um zu bestimmen, wie viel monatliche Bandbreite Sie basierend auf täglichen Seitenaufrufen und durchschnittlicher Seitengröße benötigen.",
-        "bwSeoKeywordsLong": "datei übertragungszeit rechner, download dauer, upload geschwindigkeit, gb in mb umrechner, hosting bandbreite"
+        "bwSeoKeywordsLong": "datei übertragungszeit rechner, download dauer, upload geschwindigkeit, gb in mb umrechner, hosting bandbreite",
+        "DnsLookup": {
+            "title": "DNS-Lookup",
+            "subtitle": "Überprüfen Sie DNS-Einträge sofort für jede Domain",
+            "placeholder": "Domain eingeben (z.B. qrydex.com)",
+            "button": "DNS suchen",
+            "error": "Domain konnte nicht gefunden werden",
+            "noRecords": "Keine Einträge gefunden",
+            "whatIsDnsTitle": "Was ist ein DNS-Lookup?",
+            "whatIsDnsText": "Attribute wie A, MX und CNAME-Einträge sind wesentliche Bestandteile des Domain Name Systems (DNS). Dieses Tool führt Abfragen bei autoritativen Nameservern durch, um die Echtzeitkonfiguration jeder Domain abzurufen.",
+            "recordA": "Ordnet einer Domain eine IPv4-Adresse zu.",
+            "recordMX": "Gibt Mailserver für die E-Mail-Zustellung an.",
+            "recordTXT": "Wird zur Verifizierung verwendet (SPF, DKIM, Google).",
+            "recordNS": "Zeigt die autoritativen Nameserver für die Domain an.",
+            "seoTitle": "Kostenloser DNS-Lookup | A, MX, TXT Einträge prüfen - Qrydex",
+            "seoDescription": "Sofortiges DNS-Lookup-Tool. Prüfen und verifizieren Sie A, AAAA, MX, TXT, NS, CNAME und SOA-Einträge für jeden Domainnamen. Kostenlos und schnell."
+        }
     }
 }

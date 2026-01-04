@@ -171,6 +171,22 @@
         "bwSeoText2": "nuestra calculadora de tiempo de transferencia le ayuda a estimar cuánto tiempo llevará transferir datos a través de diferentes velocidades de red (ej. Fibra, 5G, 4G, DSL).",
         "bwSeoTitle3": "Estimador de Sitio Web y Hosting",
         "bwSeoText3": "¿Planeando un nuevo sitio web? Utilice nuestro estimador de hosting para determinar cuánta banda ancha mensual necesita según las visitas diarias y el tamaño promedio de la página.",
-        "bwSeoKeywordsLong": "calculadora tiempo transferencia, tiempo descarga, velocidad subida, convertidor gb mb, ancho de banda hosting"
+        "bwSeoKeywordsLong": "calculadora tiempo transferencia, tiempo descarga, velocidad subida, convertidor gb mb, ancho de banda hosting",
+        "DnsLookup": {
+            "title": "Búsqueda de DNS",
+            "subtitle": "Verifique los registros DNS al instante para cualquier dominio",
+            "placeholder": "Ingrese dominio (ej. qrydex.com)",
+            "button": "Buscar DNS",
+            "error": "No se pudo resolver el dominio",
+            "noRecords": "No se encontraron registros",
+            "whatIsDnsTitle": "¿Qué es una búsqueda de DNS?",
+            "whatIsDnsText": "Atributos como los registros A, MX y CNAME son partes esenciales del Sistema de Nombres de Dominio (DNS). Esta herramienta realiza consultas a servidores de nombres autorizados para obtener la configuración en tiempo real de cualquier dominio.",
+            "recordA": "Asigna un dominio a una dirección IPv4.",
+            "recordMX": "Especifica los servidores de correo para la entrega de correo electrónico.",
+            "recordTXT": "Utilizado para verificación (SPF, DKIM, Google).",
+            "recordNS": "Muestra los servidores de nombres autorizados para el dominio.",
+            "seoTitle": "Búsqueda de DNS Gratuita | Verificar A, MX, TXT - Qrydex",
+            "seoDescription": "Herramienta de búsqueda de DNS instantánea. Verifique y valide los registros A, AAAA, MX, TXT, NS, CNAME y SOA para cualquier nombre de dominio. Gratis y rápido."
+        }
     }
 }

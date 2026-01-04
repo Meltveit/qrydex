@@ -192,6 +192,22 @@
         "seoText2": "CIDR (Classless Inter-Domain Routing) is a method for allocating IP addresses and IP routing. It replaces the older classful network design (Class A, B, C). A CIDR notation looks like '192.168.1.0/24', where '/24' represents the number of bits in the network prefix. The subnet calculator converts this into a dotted-decimal mask (e.g., 255.255.255.0) and determines the number of usable hosts.",
         "seoTitle3": "Why is Subnetting Important?",
         "seoText3": "Subnetting reduces network traffic by breaking down the broadcast domain. It enhances security by allowing administrators to isolate network segments. Furthermore, it helps in the efficient utilization of IP address space, which is critical given the scarcity of IPv4 addresses. Our tool simplifies these complex calculations, making network planning instantaneous.",
-        "seoKeywordsLong": "online subnet calculator, ipv4 network calculator, cidr to netmask, calculate usable ip addresses, network masking tool, free ip calc, subnetting tutorial"
+        "seoKeywordsLong": "online subnet calculator, ipv4 network calculator, cidr to netmask, calculate usable ip addresses, network masking tool, free ip calc, subnetting tutorial",
+        "DnsLookup": {
+            "title": "DNS Lookup Tool",
+            "subtitle": "Check DNS records instantly for any domain",
+            "placeholder": "Enter domain (e.g. qrydex.com)",
+            "button": "Lookup DNS",
+            "error": "Could not resolve domain",
+            "noRecords": "No records found",
+            "whatIsDnsTitle": "What is a DNS Lookup?",
+            "whatIsDnsText": "Attributes like A, MX, and CNAME records are essential parts of the Domain Name System (DNS). This tool performs queries against authoritative nameservers to fetch the real-time configuration of any domain.",
+            "recordA": "Maps a domain to an IPv4 address.",
+            "recordMX": "Specifies mail servers for email delivery.",
+            "recordTXT": "Used for verification (SPF, DKIM, Google).",
+            "recordNS": "Shows the Authoritative Nameservers for the domain.",
+            "seoTitle": "Free DNS Lookup Tool | Check A, MX, TXT Records - Qrydex",
+            "seoDescription": "Instant DNS lookup tool. Check and verify A, AAAA, MX, TXT, NS, CNAME and SOA records for any domain name. Free and fast."
+        }
     }
 }
