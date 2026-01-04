@@ -207,7 +207,11 @@
             "recordTXT": "Used for verification (SPF, DKIM, Google).",
             "recordNS": "Shows the Authoritative Nameservers for the domain.",
             "seoTitle": "Free DNS Lookup Tool | Check A, MX, TXT Records - Qrydex",
-            "seoDescription": "Instant DNS lookup tool. Check and verify A, AAAA, MX, TXT, NS, CNAME and SOA records for any domain name. Free and fast."
+            "seoDescription": "Instant DNS lookup tool. Check and verify A, AAAA, MX, TXT, NS, CNAME and SOA records for any domain name. Free and fast.",
+            "privacyTitle": "Safe & Private Domain Check",
+            "privacyText": "Unlike many domain registrars, Qrydex does NOT track your searches. You can safely check if a domain is active without worrying about front-running or your data being sold. If no records are found, the domain might be available.",
+            "whyTitle": "Why use this tool?",
+            "whyText": "Use this tool to verify if a domain is pointing to the correct server (A record), if email is set up correctly (MX records), or simply to see if a domain name you want is already taken (Active/Inactive check)."
         }
     }
 }

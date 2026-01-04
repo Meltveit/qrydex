@@ -207,7 +207,11 @@
             "recordTXT": "Används för verifiering (SPF, DKIM, Google).",
             "recordNS": "Visar de auktoritativa namnservrarna för domänen.",
             "seoTitle": "Gratis DNS-uppslagning | Kontrollera A, MX, TXT-poster - Qrydex",
-            "seoDescription": "Omedelbart DNS-uppslagsverktyg. Kontrollera och verifiera A, AAAA, MX, TXT, NS, CNAME och SOA-poster för vilket domännamn som helst. Gratis och snabbt."
+            "seoDescription": "Omedelbart DNS-uppslagsverktyg. Kontrollera och verifiera A, AAAA, MX, TXT, NS, CNAME och SOA-poster för vilket domännamn som helst. Gratis och snabbt.",
+            "privacyTitle": "Säker & Privat Domänkontroll",
+            "privacyText": "Till skillnad från många domänregistratorer spårar Qrydex INTE dina sökningar. Du kan säkert kontrollera om en domän är aktiv utan att oroa dig för front-running eller att dina data säljs. Om inga poster hittas kan domänen vara ledig.",
+            "whyTitle": "Varför använda detta verktyg?",
+            "whyText": "Använd detta verktyg för att verifiera om en domän pekar till rätt server (A-post), om e-post är korrekt inställd (MX-poster), eller helt enkelt för att se om ett domännamn du vill ha redan är upptaget (Aktiv/Inaktiv kontroll)."
         }
     }
 }

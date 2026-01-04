@@ -184,7 +184,11 @@
             "recordTXT": "Käytetään vahvistukseen (SPF, DKIM, Google).",
             "recordNS": "Näyttää verkkotunnuksen valtuutetut nimipalvelimet.",
             "seoTitle": "Ilmainen DNS-haku | Tarkista A, MX, TXT Tietueet - Qrydex",
-            "seoDescription": "Välitön DNS-hakutyökalu. Tarkista ja vahvista A, AAAA, MX, TXT, NS, CNAME ja SOA-tietueet mille tahansa verkkotunnukselle. Ilmainen ja nopea."
+            "seoDescription": "Välitön DNS-hakutyökalu. Tarkista ja vahvista A, AAAA, MX, TXT, NS, CNAME ja SOA-tietueet mille tahansa verkkotunnukselle. Ilmainen ja nopea.",
+            "privacyTitle": "Turvallinen & Yksityinen Verkkotunnuksen Tarkistus",
+            "privacyText": "Toisin kuin monet verkkotunnusrekisteröijät, Qrydex EI seuraa hakujasi. Voit turvallisesti tarkistaa, onko verkkotunnus aktiivinen ilman huolta front-runningista tai tietojesi myymisestä. Jos tietueita ei löydy, verkkotunnus saattaa olla vapaa.",
+            "whyTitle": "Miksi käyttää tätä työkalua?",
+            "whyText": "Käytä tätä työkalua varmistaaksesi, että verkkotunnus osoittaa oikeaan palvelimeen (A-tietue), sähköposti on määritetty oikein (MX-tietueet), tai yksinkertaisesti nähdäksesi, onko haluamasi verkkotunnus jo varattu (Aktiivinen/Ei-aktiivinen tarkistus)."
         }
     }
 }

@@ -186,7 +186,11 @@
             "recordTXT": "Utilizado para verificación (SPF, DKIM, Google).",
             "recordNS": "Muestra los servidores de nombres autorizados para el dominio.",
             "seoTitle": "Búsqueda de DNS Gratuita | Verificar A, MX, TXT - Qrydex",
-            "seoDescription": "Herramienta de búsqueda de DNS instantánea. Verifique y valide los registros A, AAAA, MX, TXT, NS, CNAME y SOA para cualquier nombre de dominio. Gratis y rápido."
+            "seoDescription": "Herramienta de búsqueda de DNS instantánea. Verifique y valide los registros A, AAAA, MX, TXT, NS, CNAME y SOA para cualquier nombre de dominio. Gratis y rápido.",
+            "privacyTitle": "Verificación de Dominio Segura y Privada",
+            "privacyText": "A diferencia de muchos registradores de dominios, Qrydex NO rastrea sus búsquedas. Puede verificar de forma segura si un dominio está activo sin preocuparse por el front-running o la venta de sus datos. Si no se encuentran registros, el dominio podría estar disponible.",
+            "whyTitle": "¿Por qué usar esta herramienta?",
+            "whyText": "Utilice esta herramienta para verificar si un dominio apunta al servidor correcto (registro A), si el correo electrónico está configurado correctamente (registros MX), o simplemente para ver si un nombre de dominio que desea ya está ocupado (Verificación Activo/Inactivo)."
         }
     }
 }

@@ -206,7 +206,11 @@
             "recordTXT": "Bruges til verifikation (SPF, DKIM, Google).",
             "recordNS": "Viser de autoritative navneservere for domænet.",
             "seoTitle": "Gratis DNS Opslag | Tjek A, MX, TXT Records - Qrydex",
-            "seoDescription": "Øjeblikkeligt DNS-opslagsværktøj. Tjek og verificer A, AAAA, MX, TXT, NS, CNAME og SOA-poster for ethvert domænenavn. Gratis og hurtigt."
+            "seoDescription": "Øjeblikkeligt DNS-opslagsværktøj. Tjek og verificer A, AAAA, MX, TXT, NS, CNAME og SOA-poster for ethvert domænenavn. Gratis og hurtigt.",
+            "privacyTitle": "Sikker & Privat Domænetjek",
+            "privacyText": "I modsætning til mange domæneregistratorer sporer Qrydex IKKE dine søgninger. Du kan sikkert tjekke, om et domæne er aktivt, uden at bekymre dig om front-running eller at dine data bliver solgt. Hvis der ikke findes nogen poster, kan domænet være ledigt.",
+            "whyTitle": "Hvorfor bruge dette værktøj?",
+            "whyText": "Brug dette værktøj til at bekræfte, om et domæne peger til den rigtige server (A-record), om e-mail er sat korrekt op (MX-records), eller blot for at se, om et domænenavn, du ønsker, allerede er taget (Aktiv/Inaktiv tjek)."
         }
     }
 }

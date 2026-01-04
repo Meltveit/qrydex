@@ -186,7 +186,11 @@
             "recordTXT": "Wird zur Verifizierung verwendet (SPF, DKIM, Google).",
             "recordNS": "Zeigt die autoritativen Nameserver für die Domain an.",
             "seoTitle": "Kostenloser DNS-Lookup | A, MX, TXT Einträge prüfen - Qrydex",
-            "seoDescription": "Sofortiges DNS-Lookup-Tool. Prüfen und verifizieren Sie A, AAAA, MX, TXT, NS, CNAME und SOA-Einträge für jeden Domainnamen. Kostenlos und schnell."
+            "seoDescription": "Sofortiges DNS-Lookup-Tool. Prüfen und verifizieren Sie A, AAAA, MX, TXT, NS, CNAME und SOA-Einträge für jeden Domainnamen. Kostenlos und schnell.",
+            "privacyTitle": "Sicherer & Privater Domain-Check",
+            "privacyText": "Im Gegensatz zu vielen Domain-Registraren verfolgt Qrydex Ihre Suchanfragen NICHT. Sie können sicher überprüfen, ob eine Domain aktiv ist, ohne sich Sorgen um Front-Running oder den Verkauf Ihrer Daten machen zu müssen. Wenn keine Einträge gefunden werden, ist die Domain möglicherweise verfügbar.",
+            "whyTitle": "Warum dieses Tool verwenden?",
+            "whyText": "Verwenden Sie dieses Tool, um zu überprüfen, ob eine Domain auf den richtigen Server verweist (A-Record), ob E-Mail korrekt eingerichtet ist (MX-Records) oder einfach um zu sehen, ob ein gewünschter Domainname bereits vergeben ist (Aktiv/Inaktiv-Check)."
         }
     }
 }
