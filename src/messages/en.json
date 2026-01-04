@@ -12,6 +12,11 @@
         "privacy": "Privacy",
         "about": "About us"
     },
+    "AboutPage": {
+        "title": "About Qrydex",
+        "intro": "The future of B2B search.",
+        "content": "Building the world's most trusted business index. Content coming soon."
+    },
     "Footer": {
         "copyright": "© {year} Qrydex. All rights reserved.",
         "privacyLink": "Privacy Policy"

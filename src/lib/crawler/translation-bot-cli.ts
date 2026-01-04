@@ -245,7 +245,7 @@ if (require.main === module) {
                         const hash = parseInt(b.id.replace(/-/g, '').substring(0, 8), 16);
                         return (hash % TOTAL_WORKERS) === WORKER_ID;
                     })
-                    .slice(0, 3); // Take top 3 valid ones per cycle
+                    .slice(0, 5); // Take top 5 valid ones per cycle
 
                 if (!rawBusinesses || rawBusinesses.length === 0) {
                     console.log('✅ End of list reached (or empty). Resetting to top...');

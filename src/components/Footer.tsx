@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 export default function Footer() {
     const t = useTranslations('Common');
     const tFooter = useTranslations('Footer');
+    const tNav = useTranslations('Navigation');
 
     return (
         <footer className="mt-auto py-8 md:py-10 px-4 md:px-6 border-t border-[var(--color-border)] dark:border-slate-800 bg-[var(--color-surface)] dark:bg-slate-900">
@@ -29,7 +30,12 @@ export default function Footer() {
                     >
                         {t('privacyCookies')}
                     </Link>
-                    {/* Add more links here later like 'Om oss' */}
+                    <Link
+                        href="/about"
+                        className="hover:text-[var(--color-primary)] dark:hover:text-blue-400 transition-colors p-2 -m-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800"
+                    >
+                        {tNav('about')}
+                    </Link>
                 </nav>
 
                 {/* Right: Actions */}

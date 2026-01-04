@@ -12,6 +12,11 @@
         "privacy": "Personvern",
         "about": "Om oss"
     },
+    "AboutPage": {
+        "title": "Om Qrydex",
+        "intro": "Fremtiden for B2B-søk.",
+        "content": "Vi bygger verdens mest pålitelige bedriftsindeks. Innhold kommer snart."
+    },
     "Footer": {
         "copyright": "© {year} Qrydex. Alle rettigheter reservert.",
         "privacyLink": "Personvernerklæring"
