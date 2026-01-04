@@ -12,6 +12,22 @@
         "privacy": "Privatliv",
         "about": "Om os"
     },
+    "AboutPage": {
+        "title": "Om Qrydex",
+        "intro": "Effektivisering af global B2B-handel gennem præcision og tillid.",
+        "whyExistTitle": "Hvorfor vi eksisterer",
+        "whyExistText1": "På nutidens globale marked er udfordringen mangel på relevant information. Traditionelle søgemaskiner leverer for meget støj, når man leder efter specifikke forretningspartnere.",
+        "whyExistText2": "Vi eliminerer det uvæsentlige for at give dig en direkte vej til de virksomheder, der betyder noget for din drift.",
+        "insightTitle": "Fra støj til strategisk indsigt",
+        "insightText": "Uanset om du er en iværksætter, der har brug for prototypeproduktion, eller en indkøbschef, der leder efter en ny distributionspartner, sparer vi dig for dages research. Qrydex fungerer som et strategisk værktøj, der forbinder professionelle aktører på tværs af grænser.",
+        "visionTitle": "Vores Vision",
+        "visionText": "Vi ønsker at skabe et gennemsigtigt erhvervsliv, hvor innovation og B2B-handel flyder frit. Ved at kombinere verificerede data med en intelligent søgemaskine gør vi det lettere for virksomheder at finde hinanden og skabe værdi.",
+        "scalingTitle": "Skalering",
+        "scalingText": "Med over 11.000 indekserede virksomheder og et mål på 28.000 er vi godt på vej til at blive den foretrukne platform for dem, der kræver præcision i deres forretningssøgninger.",
+        "originTitle": "Vores Historie",
+        "originText": "Ideen til Qrydex opstod, da grundlæggeren arbejdede med en anden startup. Udfordringen med at finde relevante virksomheder uden at vade gennem irrelevante søgeresultater var frustrerende. Målet var at eliminere dagevis af googling efter distributionspartnere. Vi byggede Qrydex for at gøre det lettere for virksomheder at knytte kontakt på tværs af landegrænser, øge B2B-handel og fremme innovation.",
+        "seoKeywords": "Fremstilling, Kontraktfremstilling, prototypefremstilling, småskala produktion, Handel, B2B leverandørsøgning, verificerede virksomheder, distributionsaftale, Hjælp, Iværksætter hjælp, B2B handelsplatform"
+    },
     "Footer": {
         "copyright": "© {year} Qrydex. Alle rettigheder forbeholdes.",
         "privacyLink": "Privatlivspolitik"

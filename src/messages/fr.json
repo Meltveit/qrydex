@@ -12,6 +12,22 @@
         "privacy": "Confidentialité",
         "about": "À propos"
     },
+    "AboutPage": {
+        "title": "À propos de Qrydex",
+        "intro": "Rationaliser le commerce B2B mondial grâce à la précision et la confiance.",
+        "whyExistTitle": "Pourquoi nous existons",
+        "whyExistText1": "Sur le marché mondial actuel, le défi est le manque d'informations pertinentes. Les moteurs de recherche traditionnels fournissent trop de bruit lors de la recherche de partenaires commerciaux spécifiques.",
+        "whyExistText2": "Nous éliminons le superflu pour vous offrir un chemin direct vers les entreprises qui comptent pour vos opérations.",
+        "insightTitle": "Du bruit à l'analyse stratégique",
+        "insightText": "Que vous soyez un entrepreneur ayant besoin d'une production de prototypes ou un responsable des achats à la recherche d'un nouveau partenaire de distribution, nous vous épargnons des jours de recherche. Qrydex agit comme un outil stratégique reliant les acteurs professionnels au-delà des frontières.",
+        "visionTitle": "Notre Vision",
+        "visionText": "Nous voulons créer un environnement commercial transparent où l'innovation et le commerce B2B circulent librement. En combinant des données vérifiées avec un moteur de recherche intelligent, nous facilitons la recherche entre entreprises et la création de valeur.",
+        "scalingTitle": "Mise à l'échelle",
+        "scalingText": "Avec plus de 11 000 entreprises indexées et un objectif de 28 000, nous sommes en passe de devenir la plateforme privilégiée pour ceux qui exigent de la précision dans leurs recherches commerciales.",
+        "originTitle": "Notre Histoire",
+        "originText": "L'idée de Qrydex est née lorsque le fondateur travaillait avec une autre startup. Le défi de trouver des entreprises pertinentes sans avoir à passer au crible des résultats de recherche non pertinents était frustrant. L'objectif était d'éliminer les journées passées à chercher des partenaires de distribution sur Google. Nous avons créé Qrydex pour faciliter la mise en relation des entreprises au-delà des frontières, accroître le commerce B2B et promouvoir l'innovation.",
+        "seoKeywords": "Fabrication, Fabrication sous contrat, production en petite série, fabrication de prototypes, Sourcing, Développement de produits B2B, partenaire de distribution, sourcing stratégique, Outils, Outils pour entrepreneurs, ressources pour startups, vérification d'entreprise"
+    },
     "Footer": {
         "copyright": "© {year} Qrydex. Tous droits réservés.",
         "privacyLink": "Politique de confidentialité"

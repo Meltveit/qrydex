@@ -12,6 +12,22 @@
         "privacy": "Datenschutz",
         "about": "Über uns"
     },
+    "AboutPage": {
+        "title": "Über Qrydex",
+        "intro": "Optimierung des globalen B2B-Handels durch Präzision und Vertrauen.",
+        "whyExistTitle": "Warum wir existieren",
+        "whyExistText1": "Im heutigen globalen Markt ist die Herausforderung der Mangel an relevanten Informationen. Herkömmliche Suchmaschinen liefern zu viel Rauschen bei der Suche nach spezifischen Geschäftspartnern.",
+        "whyExistText2": "Wir eliminieren das Unwesentliche, um Ihnen einen direkten Weg zu den Unternehmen zu bieten, die für Ihren Betrieb wichtig sind.",
+        "insightTitle": "Vom Rauschen zur strategischen Erkenntnis",
+        "insightText": "Ob Sie ein Unternehmer sind, der Prototypenfertigung benötigt, oder ein Einkaufsleiter auf der Suche nach einem neuen Vertriebspartner – wir sparen Ihnen tagelange Recherche. Qrydex fungiert als strategisches Werkzeug, das professionelle Akteure über Grenzen hinweg verbindet.",
+        "visionTitle": "Unsere Vision",
+        "visionText": "Wir wollen ein transparentes Geschäftsumfeld schaffen, in dem Innovation und B2B-Handel frei fließen können. Durch die Kombination verifizierter Daten mit einer intelligenten Suchmaschine erleichtern wir es Unternehmen, sich zu finden und Werte zu schaffen.",
+        "scalingTitle": "Skalierung",
+        "scalingText": "Mit über 11.000 indexierten Unternehmen und einem Ziel von 28.000 sind wir auf dem Weg, die bevorzugte Plattform für diejenigen zu werden, die Präzision bei ihrer Geschäftssuche fordern.",
+        "originTitle": "Unsere Geschichte",
+        "originText": "Die Idee zu Qrydex entstand, als der Gründer bei einem anderen Startup arbeitete. Die Herausforderung, relevante Unternehmen zu finden, ohne sich durch irrelevante Suchergebnisse wühlen zu müssen, war frustrierend. Das Ziel war es, tagelanges Googeln nach Vertriebspartnern zu eliminieren. Wir haben Qrydex gebaut, um es Unternehmen zu erleichtern, Kontakte über Grenzen hinweg zu knüpfen, den B2B-Handel zu steigern und Innovationen zu fördern.",
+        "seoKeywords": "Industrie, Lohnfertigung, Auftragsfertigung, Prototypenbau, Sourcing, Kleinserienfertigung, Industriezulieferer, B2B-Lieferantensuche, Data, Verifizierte Firmendaten, Unternehmensgründung tools"
+    },
     "Footer": {
         "copyright": "© {year} Qrydex. Alle Rechte vorbehalten.",
         "privacyLink": "Datenschutzrichtlinie"

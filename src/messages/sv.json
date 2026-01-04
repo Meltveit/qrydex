@@ -12,6 +12,22 @@
         "privacy": "Integritet",
         "about": "Om oss"
     },
+    "AboutPage": {
+        "title": "Om Qrydex",
+        "intro": "Effektiviserar global B2B-handel genom precision och förtroende.",
+        "whyExistTitle": "Varför vi finns",
+        "whyExistText1": "På dagens globala marknad är utmaningen bristen på relevant information. Traditionella sökmotorer levererar för mycket brus när man letar efter specifika affärspartners.",
+        "whyExistText2": "Vi eliminerar det oväsentliga för att ge dig en direkt väg till de företag som betyder något för din verksamhet.",
+        "insightTitle": "Från brus till strategisk insikt",
+        "insightText": "Oavsett om du är en entreprenör som behöver prototyptillverkning eller en inköpschef som letar efter en ny distributionspartner, sparar vi dig dagar av research. Qrydex fungerar som ett strategiskt verktyg som kopplar samman professionella aktörer över gränserna.",
+        "visionTitle": "Vår Vision",
+        "visionText": "Vi vill skapa ett transparent affärsklimat där innovation och B2B-handel flödar fritt. Genom att kombinera verifierad data med en intelligent sökmotor gör vi det lättare för företag att hitta varandra och skapa värde.",
+        "scalingTitle": "Skalning",
+        "scalingText": "Med över 11 000 indexerade företag och ett mål på 28 000 är vi på väg att bli den föredragna plattformen för dem som kräver precision i sina företagssökningar.",
+        "originTitle": "Vår Historia",
+        "originText": "Idén till Qrydex uppstod när grundaren arbetade med en annan startup. Utmaningen att hitta relevanta företag utan att vada genom irrelevanta sökresultat var frustrerande. Målet var att eliminera dagar av googlande efter distributionspartners. Vi byggde Qrydex för att göra det enklare för företag att knyta kontakter över gränserna, öka B2B-handeln och främja innovation.",
+        "seoKeywords": "Tillverkning, Kontraktstillverkning, småskalig produktion, prototyptillverkning, Sourcing, Produktutveckling B2B, distributionspartner, strategisk sourcing, Verktyg, Entreprenörsverktyg, resurser för startups, företagsverifiering"
+    },
     "Footer": {
         "copyright": "© {year} Qrydex. Alla rättigheter förbehållna.",
         "privacyLink": "Integritetspolicy"

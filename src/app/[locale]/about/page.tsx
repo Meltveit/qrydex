@@ -9,9 +9,31 @@ type Props = {
 
 export async function generateMetadata({ params: { locale } }: Props): Promise<Metadata> {
     const t = await getTranslations({ locale, namespace: 'AboutPage' });
+
     return {
         title: t('title'),
-        description: t('intro')
+        description: t('intro'),
+        keywords: t('seoKeywords'),
+        openGraph: {
+            title: t('title'),
+            description: t('intro'),
+            type: 'website',
+            locale: locale,
+            siteName: 'Qrydex',
+        },
+        alternates: {
+            canonical: `/${locale}/about`,
+            languages: {
+                'en': '/en/about',
+                'no': '/no/about',
+                'sv': '/sv/about',
+                'da': '/da/about',
+                'fi': '/fi/about',
+                'de': '/de/about',
+                'fr': '/fr/about',
+                'es': '/es/about',
+            }
+        }
     };
 }
 
