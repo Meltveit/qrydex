@@ -60,7 +60,9 @@ export async function GET(
 </urlset>`,
                 {
                     headers: {
-                        'Content-Type': 'application/xml',
+                        'Content-Type': 'application/xml; charset=UTF-8',
+                        'Content-Disposition': 'inline',
+                        'Access-Control-Allow-Origin': '*',
                         'Cache-Control': 'public, max-age=86400',
                     },
                 }
@@ -120,7 +122,9 @@ export async function GET(
 
         return new Response(xml, {
             headers: {
-                'Content-Type': 'application/xml',
+                'Content-Type': 'application/xml; charset=UTF-8',
+                'Content-Disposition': 'inline',
+                'Access-Control-Allow-Origin': '*',
                 'Cache-Control': 'public, max-age=86400',
             },
         });

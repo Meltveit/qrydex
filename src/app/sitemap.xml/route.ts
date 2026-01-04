@@ -51,7 +51,9 @@ export async function GET(request: NextRequest) {
 
         return new Response(xml, {
             headers: {
-                'Content-Type': 'application/xml',
+                'Content-Type': 'application/xml; charset=UTF-8',
+                'Content-Disposition': 'inline',
+                'Access-Control-Allow-Origin': '*',
                 'Cache-Control': 'public, max-age=86400',
             },
         });
