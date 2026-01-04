@@ -92,7 +92,8 @@
         "privacyCookies": "Personvern og cookies",
         "verifiedAgainstRegistries": "Alle bedrifter verifisert mot offisielle registre",
         "searchInIndustry": "Søk i bransje",
-        "orgNr": "Org.nr"
+        "orgNr": "Org.nr",
+        "backToHome": "Tilbake til forsiden"
     },
     "BusinessCard": {
         "visitWebsite": "Besøk nettside",

@@ -37,12 +37,27 @@ export async function generateMetadata({ params: { locale } }: Props): Promise<M
     };
 }
 
+import { Link } from '@/i18n/routing';
+import { ArrowLeft } from 'lucide-react';
+
+// ... (existing code)
+
 export default function AboutPage() {
     const t = useTranslations('AboutPage');
+    const tCommon = useTranslations('Common');
 
     return (
         <div className="min-h-screen bg-[var(--color-background)] dark:bg-slate-950 py-12 md:py-20">
             <div className="max-w-4xl mx-auto px-4 md:px-6">
+                <div className="mb-8">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        {tCommon('backToHome')}
+                    </Link>
+                </div>
                 <div className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in-up">
                         {t('title')}

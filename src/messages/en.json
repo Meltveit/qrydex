@@ -92,7 +92,8 @@
         "privacyCookies": "Privacy & Cookies",
         "verifiedAgainstRegistries": "All businesses verified against official registries",
         "searchInIndustry": "Search in industry",
-        "orgNr": "Org. No."
+        "orgNr": "Org. No.",
+        "backToHome": "Back to Home"
     },
     "BusinessCard": {
         "visitWebsite": "Visit Website",

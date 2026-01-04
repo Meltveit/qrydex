@@ -30,13 +30,28 @@ export async function generateMetadata({ params: { locale } }: Props): Promise<M
     };
 }
 
+import { Link } from '@/i18n/routing';
+import { ArrowLeft } from 'lucide-react';
+
+// ... (existing code)
+
 export default function DnsLookupPage({ params: { locale } }: Props) {
     const t = useTranslations('Tools.DnsLookup');
+    const tCommon = useTranslations('Common');
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950/50 pb-20">
             {/* Tool Section */}
             <div className="py-12 px-4 md:px-6">
+                <div className="max-w-7xl mx-auto mb-8">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        {tCommon('backToHome')}
+                    </Link>
+                </div>
                 <DnsClient />
             </div>
 
