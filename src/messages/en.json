@@ -232,20 +232,44 @@
             "whyText": "Use this tool to verify if a domain points to the correct server (A-record), if email is set up correctly (MX-records), or simply to see if a desired domain name is already taken (Active/Inactive check)."
         },
         "StartupGuide": {
-            "title": "From Idea to Market",
-            "subtitle": "Your complete guide to starting and building a business",
-            "tabs": {
-                "validation": "1. Validation",
-                "prototyping": "2. Prototyping",
-                "funding": "3. Funding",
-                "starting": "4. Incorporation"
+            "title": "Startup Guide",
+            "heroTitle": "From Idea to Industry",
+            "heroSubtitle": "Your complete toolkit to build and scale your business. Where do you want to start?",
+            "sections": {
+                "byTopic": "Choose Topic",
+                "byCountry": "Choose Country"
             },
-            "validationTitle": "Validate Your Idea",
-            "validationText": "Before spending money, check if the market wants it.",
-            "heroTitle": " The Startup Journey",
-            "heroSubtitle": "Tools, suppliers, and a step-by-step guide for entrepreneurs.",
-            "findSuppliers": "Find suppliers in Qrydex:"
+            "topics": {
+                "validation": {
+                    "title": "1. Validation",
+                    "desc": "Market Research"
+                },
+                "prototyping": {
+                    "title": "2. Product Development",
+                    "desc": "Design & Prototyping"
+                },
+                "sourcing": {
+                    "title": "3. Sourcing",
+                    "desc": "Find Factories & Suppliers"
+                },
+                "funding": {
+                    "title": "4. Funding",
+                    "desc": "Grants & Investors"
+                },
+                "starting": {
+                    "title": "5. Incorporation",
+                    "desc": "Registration & Formalities"
+                },
+                "distribution": {
+                    "title": "6. Distribution",
+                    "desc": "Logistics & Sales"
+                }
+            },
+            "content": {
+                "findSuppliers": "Find suppliers in Qrydex:",
+                "resources": "Official Resources",
+                "readMore": "Read more about"
+            }
         }
     }
 }
-```
