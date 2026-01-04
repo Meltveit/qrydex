@@ -14,8 +14,19 @@
     },
     "AboutPage": {
         "title": "Om Qrydex",
-        "intro": "Fremtiden for B2B-søk.",
-        "content": "Vi bygger verdens mest pålitelige bedriftsindeks. Innhold kommer snart."
+        "intro": "Effektiviserer global B2B-handel gjennom presisjon og tillit.",
+        "whyExistTitle": "Hvorfor vi eksisterer",
+        "whyExistText1": "I dagens globale marked er utfordringen mangel på relevant informasjon. Tradisjonelle søkemotorer leverer for mye støy når man leter etter spesifikke forretningspartnere.",
+        "whyExistText2": "Vi eliminerer det uvesentlige for å gi deg en direkte vei til bedriftene som betyr noe for din drift.",
+        "insightTitle": "Fra støy til strategisk innsikt",
+        "insightText": "Enten du er en gründer som trenger prototype-produksjon eller en innkjøpssjef som ser etter en ny distribusjonspartner, sparer vi deg for dager med research. Qrydex fungerer som et strategisk verktøy som kobler profesjonelle aktører sammen på tvers av landegrenser.",
+        "visionTitle": "Vår visjon",
+        "visionText": "Vi ønsker å skape et gjennomsiktig næringsliv hvor innovasjon og B2B-handel flyter fritt. Ved å kombinere verifiserte data med en intelligent søkemotor, gjør vi det lettere for selskaper å finne hverandre og skape verdier.",
+        "scalingTitle": "Skalering",
+        "scalingText": "Med over 11 000 indekserte selskaper og et mål om 28 000, er vi på vei til å bli den foretrukne plattformen for de som krever presisjon i sine forretningssøk.",
+        "originTitle": "Vår Historie",
+        "originText": "Ideen til Qrydex oppstod da grunnleggeren jobbet med en annen startup. Utfordringen med å finne relevante firmaer uten å vasse gjennom urelaterte søkeresultater var frustrerende. Målet var å eliminere dagvis med googling etter distribusjonspartnere. Vi bygget Qrydex for å gjøre det enklere for bedrifter å knytte kontakt på tvers av landegrenser, øke B2B-handel og fremme innovasjon.",
+        "seoKeywords": "Produksjon, Kontraktsproduksjon, småskala produksjon, prototype produksjon, Sourcing, Produktutvikling B2B, distribusjonspartner, strategisk sourcing, Verktøy, Grunder verktøy, entreprenør verktøy, bedriftsverifisering"
     },
     "Footer": {
         "copyright": "© {year} Qrydex. Alle rettigheter reservert.",

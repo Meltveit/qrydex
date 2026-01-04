@@ -14,8 +14,19 @@
     },
     "AboutPage": {
         "title": "About Qrydex",
-        "intro": "The future of B2B search.",
-        "content": "Building the world's most trusted business index. Content coming soon."
+        "intro": "Streamlining global B2B trade through precision and trust.",
+        "whyExistTitle": "Why we exist",
+        "whyExistText1": "In today's global market, the challenge is a lack of relevant information. Traditional search engines deliver too much noise when looking for specific business partners.",
+        "whyExistText2": "We eliminate the non-essential to give you a direct path to the companies that matter for your operations.",
+        "insightTitle": "From noise to strategic insight",
+        "insightText": "Whether you are an entrepreneur needing prototype production or a purchasing manager looking for a new distribution partner, we save you days of research. Qrydex acts as a strategic tool connecting professional players across borders.",
+        "visionTitle": "Our Vision",
+        "visionText": "We want to create a transparent business environment where innovation and B2B trade flow freely. By combining verified data with an intelligent search engine, we make it easier for companies to find each other and create value.",
+        "scalingTitle": "Scaling",
+        "scalingText": "With over 11,000 indexed companies and a goal of 28,000, we are on our way to becoming the preferred platform for those who demand precision in their business searches.",
+        "originTitle": "Our Story",
+        "originText": "The idea for Qrydex arose when the founder was working with another startup. The challenge of finding relevant companies without wading through unrelated search results was frustrating. The goal was to eliminate days of googling for distribution partners. We built Qrydex to make it easier for companies to connect across borders, increase B2B trade, and promote innovation.",
+        "seoKeywords": "Manufacturing, Contract manufacturing, small-batch production, prototype manufacturing, Development, Custom parts production, product development B2B, Network, Strategic sourcing, B2B distribution network, verified supplier search, Resources, Entrepreneur tools, startup business resources, company database"
     },
     "Footer": {
         "copyright": "© {year} Qrydex. All rights reserved.",
