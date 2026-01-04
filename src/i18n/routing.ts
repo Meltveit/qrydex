@@ -6,7 +6,7 @@ export const routing = defineRouting({
     locales: ['no', 'en', 'de', 'fr', 'es', 'da', 'sv', 'fi'],
 
     // Used when no locale matches
-    defaultLocale: 'no',
+    defaultLocale: 'en',
 
     // Explicitly set this to 'always' so that /en, /no, etc. are always used.
     // This avoids the 'redirect' confusion where /no redirects to / and vice-versa.
