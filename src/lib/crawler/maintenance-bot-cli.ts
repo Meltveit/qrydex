@@ -137,8 +137,15 @@ if (require.main === module) {
                                 console.error(`   ❌ Scrape failed for ${business.domain}`);
                             }
 
-                            if (!websiteData) {
-                                console.log(`   ⚠️ Could not scrape. Skipping.`);
+                            if (!websiteData || Object.keys(websiteData).length === 0) {
+                                console.log(`   ⚠️ Could not scrape. Marking for RESCUE BOT. 🚑`);
+                                await supabase
+                                    .from('businesses')
+                                    .update({
+                                        website_status: 'needs_rescue',
+                                        last_scraped_at: new Date().toISOString()
+                                    })
+                                    .eq('id', business.id);
                                 return;
                             }
 

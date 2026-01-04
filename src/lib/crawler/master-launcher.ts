@@ -32,7 +32,7 @@ const BOTS: BotConfig[] = [
     {
         name: 'Website Discovery',
         script: 'src/lib/crawler/website-discovery-cli.ts',
-        instances: 2,
+        instances: 1,
         color: '\x1b[34m' // Blue
     },
 
@@ -40,7 +40,7 @@ const BOTS: BotConfig[] = [
     {
         name: 'Deep Scraper',
         script: 'src/lib/crawler/website-scraper-worker.ts',
-        instances: 4, // 4 parallel workers (Slow Mode)
+        instances: 1, // 4 parallel workers (Slow Mode)
         color: '\x1b[32m' // Green
     },
 
@@ -48,13 +48,13 @@ const BOTS: BotConfig[] = [
     {
         name: 'Translator',
         script: 'src/lib/crawler/translation-bot-cli.ts',
-        instances: 3, // 3 parallel translation workers
+        instances: 2, // 3 parallel translation workers
         color: '\x1b[33m' // Yellow
     },
     {
         name: 'Maintenance',
         script: 'src/lib/crawler/maintenance-bot-cli.ts',
-        instances: 2, // 2 parallel maintenance workers (Trust Score calculation)
+        instances: 1, // 2 parallel maintenance workers (Trust Score calculation)
         color: '\x1b[35m' // Magenta
     },
     {
@@ -72,7 +72,7 @@ const BOTS: BotConfig[] = [
     {
         name: 'Rescue Bot', // Puppeteer-based 403 solver
         script: 'src/lib/crawler/rescue-scraper.ts',
-        instances: 1, // Single instance to save memory
+        instances: 2, // Single instance to save memory
         color: '\x1b[31m' // Red
     }
 ];
@@ -122,6 +122,11 @@ function startAllBots() {
     const processes: any[] = [];
 
     for (const config of BOTS) {
+        if (config.instances === 0) {
+            console.log(`⏸️ Skipping ${config.name} (Instances: 0)`);
+            continue;
+        }
+
         if (config.instances > 1) {
             // Launch workers with sharding IDs
             for (let i = 0; i < config.instances; i++) {

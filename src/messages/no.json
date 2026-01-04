@@ -180,6 +180,7 @@
         "unitConverter": "Enhetskonverterer",
         "transferTime": "Overføringstid",
         "websiteEstimator": "Nettside Båndbredde",
+        "startupGuide": "Gründerguiden",
         "hostingConverter": "Hosting Båndbredde",
         "inputValue": "Verdi",
         "fromUnit": "Fra",
@@ -229,6 +230,21 @@
             "privacyText": "I motsetning til mange domeneregistrarer, sporer IKKE Qrydex søkene dine. Du kan trygt sjekke om et domene er aktivt uten å bekymre deg for front-running eller at dataene dine blir solgt. Hvis ingen oppføringer blir funnet, kan domenet være ledig.",
             "whyTitle": "Hvorfor bruke dette verktøyet?",
             "whyText": "Bruk dette verktøyet for å bekrefte om et domene peker til riktig server (A-record), om e-post er satt opp riktig (MX-records), eller rett og slett for å se om et domenenavn du ønsker deg allerede er tatt (Aktiv/Inaktiv sjekk)."
+        },
+        "StartupGuide": {
+            "title": "Fra Idé til Marked",
+            "subtitle": "Din komplette guide for å starte og bygge bedrift",
+            "tabs": {
+                "validation": "1. Validering",
+                "prototyping": "2. Prototyping",
+                "funding": "3. Finansiering",
+                "starting": "4. Etablering"
+            },
+            "validationTitle": "Valider Idéen Din",
+            "validationText": "Før du bruker penger, sjekk om markedet vil ha det.",
+            "heroTitle": "Startreisen",
+            "heroSubtitle": "Verktøy, leverandører og steg-for-steg guide for gründere.",
+            "findSuppliers": "Finn leverandører i Qrydex:"
         }
     }
 }

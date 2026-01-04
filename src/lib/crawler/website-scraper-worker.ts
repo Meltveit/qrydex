@@ -81,8 +81,20 @@ if (require.main === module) {
                         }
 
                         // Protect Rescued Sites: If Puppeteer fixed it, don't break it with the dumb scanner
+                        // Protect Rescued Sites: If Puppeteer fixed it, don't break it with the dumb scanner
                         if (business.quality_analysis?.rescue_method === 'puppeteer') {
-                            console.log(`🛡️ Skipping ${business.domain} - Protected (Rescued by Puppeteer).`);
+                            console.log(`🛡️ Skipping ${business.domain} - Protected (Rescued by Puppeteer). Snoozing for 21 days.`);
+                            // CRITICAL FIX: Update timestamp to FUTURE so we don't fetch it again for 3 weeks
+                            const futureDate = new Date();
+                            futureDate.setDate(futureDate.getDate() + 21); // Add 21 days
+
+                            await supabase
+                                .from('businesses')
+                                .update({
+                                    last_scraped_at: futureDate.toISOString(),
+                                    country_code: business.country_code || 'NO' // Ensure country code is set
+                                })
+                                .eq('id', business.id);
                             continue;
                         }
 

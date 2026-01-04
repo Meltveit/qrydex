@@ -180,6 +180,7 @@
         "unitConverter": "Data Unit Converter",
         "transferTime": "Download/Upload Time",
         "websiteEstimator": "Website Bandwidth",
+        "startupGuide": "Startup Guide",
         "hostingConverter": "Hosting Bandwidth",
         "inputValue": "Value",
         "fromUnit": "From",
@@ -228,7 +229,23 @@
             "privacyTitle": "Safe & Private Domain Check",
             "privacyText": "Unlike many domain registrars, Qrydex does NOT track your searches. You can safely check if a domain is active without worrying about front-running or your data being sold. If no records are found, the domain might be available.",
             "whyTitle": "Why use this tool?",
-            "whyText": "Use this tool to verify if a domain is pointing to the correct server (A record), if email is set up correctly (MX records), or simply to see if a domain name you want is already taken (Active/Inactive check)."
+            "whyText": "Use this tool to verify if a domain points to the correct server (A-record), if email is set up correctly (MX-records), or simply to see if a desired domain name is already taken (Active/Inactive check)."
+        },
+        "StartupGuide": {
+            "title": "From Idea to Market",
+            "subtitle": "Your complete guide to starting and building a business",
+            "tabs": {
+                "validation": "1. Validation",
+                "prototyping": "2. Prototyping",
+                "funding": "3. Funding",
+                "starting": "4. Incorporation"
+            },
+            "validationTitle": "Validate Your Idea",
+            "validationText": "Before spending money, check if the market wants it.",
+            "heroTitle": " The Startup Journey",
+            "heroSubtitle": "Tools, suppliers, and a step-by-step guide for entrepreneurs.",
+            "findSuppliers": "Find suppliers in Qrydex:"
         }
     }
 }
+```
