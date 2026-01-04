@@ -40,7 +40,7 @@ const BOTS: BotConfig[] = [
     {
         name: 'Deep Scraper',
         script: 'src/lib/crawler/website-scraper-worker.ts',
-        instances: 3, // 3 parallel workers (Slow Mode)
+        instances: 4, // 4 parallel workers (Slow Mode)
         color: '\x1b[32m' // Green
     },
 

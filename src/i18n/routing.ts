@@ -6,7 +6,12 @@ export const routing = defineRouting({
     locales: ['no', 'en', 'de', 'fr', 'es', 'da', 'sv', 'fi'],
 
     // Used when no locale matches
-    defaultLocale: 'no'
+    defaultLocale: 'no',
+
+    // Explicitly set this to 'always' so that /en, /no, etc. are always used.
+    // This avoids the 'redirect' confusion where /no redirects to / and vice-versa.
+    // For SEO, consistent URLs (always having the language prefix) are often safer.
+    localePrefix: 'always'
 });
 
 // Lightweight wrappers around Next.js' navigation APIs
