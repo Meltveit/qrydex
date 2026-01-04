@@ -146,10 +146,16 @@ if (require.main === module) {
 
                         const enriched = websiteData.enrichedData || {};
 
+                        // Extract Master Description (AI generated 350-400 chars)
+                        const masterDescription = scamAnalysis?.generated_descriptions?.master ||
+                            // Fallbacks
+                            websiteData.description ||
+                            enriched.company_description;
+
                         // Merge AI results
                         updates = {
                             ...updates,
-                            company_description: websiteData.description || enriched.company_description,
+                            company_description: masterDescription, // UPDATED: Priority to AI
                             logo_url: websiteData.logoUrl || enriched.logo_url,
                             social_media: websiteData.socialMedia || enriched.contact_info?.social_media,
                             country_code: business.country_code || (websiteData.potentialBusinessIds?.NO?.length ? 'NO' : 'UNKNOWN'),
@@ -174,7 +180,7 @@ if (require.main === module) {
                             opening_hours: enriched.business_hours,
                             trust_score: scamAnalysis?.credibilityScore || 0,
                             trust_score_breakdown: {},
-                            translations: scamAnalysis?.generated_descriptions || {},
+                            translations: {}, // Single language mode (saved in company_description)
                             indexed_pages_count: websiteData.subpages.length + 1
                         };
 

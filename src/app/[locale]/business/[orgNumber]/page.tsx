@@ -205,6 +205,10 @@ export default async function BusinessPage(props: any) {
     const quality = business.quality_analysis;
     const trustScore = formatTrustScore(business);
 
+    // Extract localized services description
+    const translations = business.translations as Record<string, any>;
+    const servicesDescription = translations?.[locale]?.services_description || quality?.services_description;
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
             {/* Header ... */}
@@ -278,12 +282,22 @@ export default async function BusinessPage(props: any) {
 
                                 {/* Company Description */}
                                 <div className="prose prose-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-none">
-                                    <p className="text-sm md:text-base">
+                                    <p className="text-sm md:text-base whitespace-pre-line">
                                         {business.translations?.[locale]?.company_description ||
                                             business.company_description ||
                                             quality?.ai_summary ||
                                             "No description available."}
                                     </p>
+
+
+                                    {/* Services Description (Separate Block) */}
+                                    {servicesDescription && (
+                                        <div className="mt-4">
+                                            <p className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 whitespace-pre-line">
+                                                {servicesDescription}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Social Media Links - Enhanced UI */}
@@ -682,7 +696,7 @@ export default async function BusinessPage(props: any) {
                 />
             </div>
 
-        </div>
+        </div >
     );
 }
 

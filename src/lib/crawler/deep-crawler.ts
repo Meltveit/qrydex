@@ -19,6 +19,7 @@ export interface PageResult {
     };
     structuredData?: any[]; // JSON-LD
     type?: 'home' | 'success_case' | 'contact' | 'about' | 'team' | 'products' | 'services' | 'careers' | 'legal' | 'news' | 'other';
+    emails?: string[]; // Added for rescue-scraper extraction
 }
 
 export interface DeepCrawlResult {

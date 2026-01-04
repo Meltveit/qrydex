@@ -104,23 +104,22 @@ function createAnalysisPrompt(
     1. Compare "websiteContent" with "previousAnalysis". If the website content provides NEW or BETTER information, use it. If the website is thin but previous analysis was good, RETAIN the previous insights in your output.
     2. Search Keywords: Generate/Update 10-15 localized keywords (EN, NO, DE, FR, ES) including broad categories (e.g. "Plumbing Services") + specific services.
     3. Descriptions: 
-       A) First, write a detailed "Master Description" in ENGLISH (100-150 words).
-       B) Then, for the other 7 languages (no, da, sv, fi, de, fr, es), TRANSLATE this Master Description into that language.
-       - CRITICAL: The translations must be FAITHFUL to the English master (same facts, same meaning, same length) but written in NATIVE, FLUENT grammar.
-       - Do NOT summarize. Translate the full depth.
-       - FOR NORWEGIAN (no): Use proper Norwegian Bokmål. 
-       - FOR SWEDISH (sv) / DANISH (da): Ensure distinct, correct spelling.
-       - Do NOT create different facts for different languages. Keep it consistent with the /en version.
-       - CRITICAL RULE 1 (PARKED DOMAINS): If the website content mentions "Domeneshop", "GoDaddy", "Domain is parked", "Webhuset", "One.com", or "FastName", and seems to be a placeholder page:
-         -> CHECK: Does the Company Name contain "Domeneshop", "GoDaddy", "Webhuset", etc? 
-         -> IF YES: The content is valid (It is the hosting company itself). Write a normal description.
-         -> IF NO: The website is just parked. IGNORE content. Use "Fallback" logic.
-       - CRITICAL RULE 2 (FALLBACK): If website is missing/parked/error, write a generic description based ONLY on Company Name + Industry code.
-         -> Example: "[Company Name] is a specialist in [Industry]. They provide services related to..." (Translate this template).
-       - CRITICAL RULE 3 (NO META-TALK): NEVER write "Absence of content limits checking", "Based on the name", "No description available", or "I cannot browse".
-         -> If you really cannot write a description, look at the "Fallback" rule.
-       - CRITICAL RULE 4 (FALSE CONTENT): Do NOT write a description about "Domeneshop" if the company is "Afterburner Coffee". That is the hosting provider, not the business!
-    4. Address Detection: If the official registry data is incomplete (e.g. just "DK" or "NO"), try to find the full physical address on the website.
+       - Write ONE high-quality, professional description (ENGLISH ONLY).
+       - Structure it in TWO PARTS separated by a double line break (\n\n).
+       - PART 1 (Main): Approx 350-400 characters. Focus on core business, value proposition, and history. No meta-talk.
+       - PART 2 (Services): A concise summary (50-150 chars) listing specific services/products. Start with "Key Offerings:" or similar. Improve SEO with high-value keywords.
+       - Example:
+         "Magna is a leading automotive supplier... [Main Body] ... reliable quality.
+         
+         Key Offerings: Chassis systems, power-trains, vehicle engineering, ADAS solutions, and custom manufacturing."
+       - Rules: 
+         - MUST BE IN ENGLISH.
+         - If parked domain, keep it generic.
+    
+    4. Data Extraction & Verification:
+       - Emails: Look for hidden emails in the text (e.g. "contact at domain dot com"). 
+       - Sitelinks: Identify key pages (Contact, About, Services) -> Add to 'trustSignals' if found.
+       - Address: If official registry data is poor, try to find full physical address.
     
     Output JSON:
     {
@@ -131,14 +130,13 @@ function createAnalysisPrompt(
         "trustSignals": string[],
         "riskLevel": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
         "summary": "Verdict",
-        "industry_category": "Main Industry (e.g. Construction, SaaS, etc.)",
-        "certifications": ["ISO 9001"],
+        "industry_category": "Main Industry",
         "certifications": ["ISO 9001"],
         "customerSegment": "B2B/B2C/BOTH",
         "keyFeatures": ["Feature 1", "Feature 2"],
         "search_keywords": ["Keyword1", "Keyword2"],
-        "detected_address": "Street Name 123, 0000 City, Country",
-        "generated_descriptions": { "en": "...", "no": "...", "da": "...", "sv": "...", "fi": "...", "de": "...", "fr": "...", "es": "..." }
+        "detected_address": "Street Name, City",
+        "generated_descriptions": { "master": "Main Text...\n\nKey Offerings: Service A, Service B..." }
     }
     `;
 }

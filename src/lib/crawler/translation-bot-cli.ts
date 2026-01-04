@@ -28,6 +28,7 @@ interface TranslationTask {
     sourceLanguage: string;
     sourceData: {
         company_description?: string;
+        services_description?: string;
         services?: string[];
         products?: string[];
         industry_text?: string;
@@ -105,6 +106,28 @@ export async function translateBusiness(task: TranslationTask): Promise<boolean>
 
                     // Rate limiting (reduced for faster processing)
                     await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+        }
+
+        // Translate services DESCRIPTION (the text block)
+        if (task.sourceData.services_description) {
+            for (const lang of LANGUAGES) {
+                // Skip if already exists
+                if (translations[lang]?.services_description) continue;
+
+                if (!translations[lang]) translations[lang] = {};
+
+                if (lang === task.sourceLanguage) {
+                    translations[lang].services_description = task.sourceData.services_description;
+                } else {
+                    const translated = await translateText(
+                        task.sourceData.services_description,
+                        task.sourceLanguage,
+                        lang
+                    );
+                    translations[lang].services_description = translated;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
         }
@@ -286,7 +309,7 @@ if (require.main === module) {
                             let primaryCode = '';
 
                             if (Array.isArray(industryCodeVal) && industryCodeVal.length > 0) {
-                                primaryCode = industryCodeVal[0];
+                                primaryCode = String(industryCodeVal[0] || '');
                             } else if (typeof industryCodeVal === 'string') {
                                 primaryCode = industryCodeVal;
                             }
@@ -302,6 +325,7 @@ if (require.main === module) {
                                 sourceLanguage,
                                 sourceData: {
                                     company_description: business.company_description,
+                                    services_description: (business.quality_analysis as any)?.services_description,
                                     services: [], // Services col missing
                                     products: business.product_categories || [], // Map product_categories
                                     industry_text: industryTextToTranslate
@@ -312,8 +336,9 @@ if (require.main === module) {
                             await translateBusiness(task);
 
                             // Rate limiting between businesses (reduced for faster processing)
-                            console.log('  ⏳ Cooling down (30s)...');
-                            await new Promise(resolve => setTimeout(resolve, 30000));
+                            // Rate limiting between businesses (reduced for faster processing)
+                            console.log('  ⏳ Cooling down (2s)...');
+                            await new Promise(resolve => setTimeout(resolve, 2000));
 
                         } catch (error: any) {
                             console.error(`  ❌ Error processing ${business.id}:`, error.message);
@@ -321,13 +346,13 @@ if (require.main === module) {
                     }
                 }
 
-                console.log('\n⏱️  Sleeping 5 minutes before next cycle...');
-                await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000)); // 5 min
+                console.log('\n⏱️  Sleeping 1 minute before next cycle...');
+                await new Promise(resolve => setTimeout(resolve, 60 * 1000)); // 1 min
 
             } catch (err: any) {
                 console.error('❌ Error in cycle:', err.message);
-                console.log('   Retrying in 5 minutes...');
-                await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
+                console.log('   Retrying in 1 minute...');
+                await new Promise(resolve => setTimeout(resolve, 60 * 1000));
             }
 
             // Pagination Logic

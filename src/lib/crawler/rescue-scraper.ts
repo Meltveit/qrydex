@@ -18,11 +18,303 @@ const BATCH_SIZE = 5; // Process 5 at a time, then restart browser to prevent le
 const WORKER_ID = parseInt(process.argv[2] || '0', 10);
 const TOTAL_WORKERS = parseInt(process.argv[3] || '1', 10);
 
+// ============================================================================
+// MULTI-PAGE NAVIGATION HELPERS
+// ============================================================================
+
+interface VisitedPage {
+    url: string;
+    title: string;
+    content: string;
+    html: string;
+    type: 'home' | 'contact' | 'about' | 'team' | 'products' | 'services' | 'other';
+    emails: string[];
+    socialMedia: {
+        linkedin?: string;
+        facebook?: string;
+        twitter?: string;
+        instagram?: string;
+        youtube?: string;
+    };
+    links: Array<{ url: string; text: string; priority: 'high' | 'low'; type?: string }>;
+    headings: { h1: string[]; h2: string[]; h3: string[] };
+    meta: { description?: string; language?: string };
+}
+
+/**
+ * Classify links by importance and type (multilingual)
+ */
+function classifyLinks(links: any[], baseUrl: string): Array<{ url: string; text: string; type: string; priority: number }> {
+    const baseDomain = new URL(baseUrl).hostname;
+
+    const keywords = {
+        contact: ['contact', 'get-in-touch', 'kontakt', 'kundeservice', 'yhteystiedot', 'contacto', 'contactez'],
+        about: ['about', 'om-oss', 'om-os', 'company', 'yritys', 'über-uns', 'á-propos'],
+        products: ['product', 'produkt', 'tuotteet', 'service', 'tjeneste', 'losning', 'lösung', 'produit'],
+        team: ['team', 'ansatte', 'people', 'henkilöstö', 'employees', 'medarbetare', 'équipe']
+    };
+
+    const classified = links
+        .filter(link => {
+            try {
+                const linkDomain = new URL(link.url).hostname;
+                return linkDomain === baseDomain || linkDomain.endsWith(`.${baseDomain}`);
+            } catch {
+                return false;
+            }
+        })
+        .map(link => {
+            const urlLower = link.url.toLowerCase();
+            const textLower = link.text.toLowerCase();
+
+            let type = 'other';
+            let priority = 10;
+
+            for (const [typeName, kws] of Object.entries(keywords)) {
+                if (kws.some(kw => urlLower.includes(kw) || textLower.includes(kw))) {
+                    type = typeName;
+                    priority = typeName === 'contact' ? 1 : typeName === 'about' ? 2 : typeName === 'products' ? 3 : 4;
+                    break;
+                }
+            }
+
+            return { ...link, type, priority };
+        })
+        .sort((a, b) => a.priority - b.priority);
+
+    return classified;
+}
+
+/**
+ * Scrape individual page with Puppeteer
+ */
+async function scrapePage(page: any, url: string): Promise<VisitedPage> {
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await sleep(3000);
+
+    const title = await page.title();
+    const content = await page.content();
+    const $ = cheerio.load(content);
+
+    // Clean content
+    $('script, style, noscript, svg, iframe').remove();
+    const cleanText = $('body').text().replace(/\s+/g, ' ').trim();
+
+    // Extract emails
+    const extractedEmails: string[] = [];
+    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+    const textMatches = cleanText.match(emailRegex) || [];
+    textMatches.forEach(e => extractedEmails.push(e.toLowerCase()));
+
+    $('a[href^="mailto:"]').each((_, el) => {
+        const href = $(el).attr('href');
+        if (href) {
+            const e = href.replace('mailto:', '').split('?')[0].trim();
+            if (e.includes('@')) extractedEmails.push(e.toLowerCase());
+        }
+    });
+
+    // Extract links
+    const extractedLinks: any[] = [];
+    const importantKeywords = [
+        'contact', 'about', 'kontakt', 'om oss', 'support', 'help', 'hjelp', 'team', 'ansatte', 'kundeservice', 'faq',
+        'product', 'produkt', 'service', 'tjeneste', 'tjänst', 'solution', 'losning', 'løsning', 'price', 'pris',
+        'shop', 'butikk', 'butik', 'store', 'katalog', 'leistungen', 'produkte', 'offer', 'tilbud'
+    ];
+
+    $('a[href]').each((_, el) => {
+        const href = $(el).attr('href');
+        const text = $(el).text().trim();
+
+        if (href && text.length > 2 && !href.startsWith('#') && !href.startsWith('javascript:') && !href.startsWith('mailto:')) {
+            try {
+                const fullUrl = new URL(href, url).toString();
+                const isImportant = importantKeywords.some(k =>
+                    text.toLowerCase().includes(k) || href.toLowerCase().includes(k)
+                );
+
+                extractedLinks.push({
+                    url: fullUrl,
+                    text: text,
+                    priority: isImportant ? 'high' : 'low'
+                });
+            } catch (e) { /* ignore */ }
+        }
+    });
+
+    // Extract Social Media Links
+    const socialMedia: any = {};
+    const socialPatterns = {
+        linkedin: /linkedin\.com\/(company|in)\/[a-zA-Z0-9-_]+/i,
+        facebook: /facebook\.com\/[a-zA-Z0-9-_\.]+/i,
+        instagram: /instagram\.com\/[a-zA-Z0-9-_\.]+/i,
+        twitter: /(twitter\.com|x\.com)\/[a-zA-Z0-9-_]+/i,
+        youtube: /youtube\.com\/(channel|c|user|@)[a-zA-Z0-9-_]+/i
+    };
+
+    $('a[href]').each((_, el) => {
+        const href = $(el).attr('href');
+        if (!href) return;
+
+        for (const [platform, regex] of Object.entries(socialPatterns)) {
+            if (regex.test(href)) {
+                try {
+                    const fullUrl = new URL(href).toString();
+                    socialMedia[platform] = fullUrl;
+                } catch (e) { /* ignore */ }
+            }
+        }
+    });
+
+    return {
+        url: page.url(),
+        title,
+        content: cleanText,
+        html: content,
+        type: 'other',
+        emails: [...new Set(extractedEmails)],
+        socialMedia,
+        links: extractedLinks,
+        headings: {
+            h1: $('h1').map((i, el) => $(el).text().trim()).get(),
+            h2: $('h2').map((i, el) => $(el).text().trim()).get(),
+            h3: $('h3').map((i, el) => $(el).text().trim()).get()
+        },
+        meta: {
+            description: $('meta[name="description"]').attr('content') || $('meta[property="og:description"]').attr('content'),
+            language: $('html').attr('lang')
+        }
+    };
+}
+
+/**
+ * Scrape LinkedIn company page for employee count
+ */
+async function scrapeLinkedInEmployeeCount(page: any, linkedinUrl: string): Promise<number | null> {
+    try {
+        console.log(`   🔍 Checking LinkedIn for employee count...`);
+        await page.goto(linkedinUrl, { waitUntil: 'networkidle2', timeout: 20000 });
+        await sleep(2000);
+
+        const content = await page.content();
+        const $ = cheerio.load(content);
+
+        // LinkedIn shows employee count in various formats:
+        // "X employees on LinkedIn"
+        // "X-Y employees"
+        // "X medarbeidere" (Norwegian)
+        const text = $('body').text();
+
+        // Pattern 1: "X employees" or "X-Y employees"
+        const employeeMatch = text.match(/(\d{1,6})(?:-\d{1,6})?\s+(employees|medarbeidere|ansatte|työntekijät)/i);
+        if (employeeMatch) {
+            const count = parseInt(employeeMatch[1], 10);
+            console.log(`   👥 Found ${count}+ employees on LinkedIn`);
+            return count;
+        }
+
+        // Pattern 2: Look for structured data
+        const jsonLdMatch = content.match(/<script type="application\/ld\+json">(.*?)<\/script>/g);
+        if (jsonLdMatch) {
+            for (const script of jsonLdMatch) {
+                try {
+                    const json = JSON.parse(script.replace(/<\/?script[^>]*>/g, ''));
+                    if (json.numberOfEmployees || json.employee) {
+                        const count = typeof json.numberOfEmployees === 'number'
+                            ? json.numberOfEmployees
+                            : parseInt(json.numberOfEmployees, 10);
+                        if (!isNaN(count)) {
+                            console.log(`   👥 Found ${count} employees (from JSON-LD)`);
+                            return count;
+                        }
+                    }
+                } catch (e) { /* ignore parse errors */ }
+            }
+        }
+
+        console.log(`   ⚠️ Could not extract employee count from LinkedIn`);
+        return null;
+    } catch (e: any) {
+        console.log(`   ⚠️ LinkedIn scrape failed: ${e.message}`);
+        return null;
+    }
+}
+
+
+// Return type for navigateAndExtract with metadata
+interface NavigationResult {
+    visitedPages: VisitedPage[];
+    employeeCount: number | null;
+    socialMedia: Record<string, string>;
+}
+
+/**
+ * Navigate and extract from multiple pages
+ */
+async function navigateAndExtract(page: any, url: string): Promise<NavigationResult> {
+    const visitedPages: VisitedPage[] = [];
+    const maxPages = 5;
+
+    console.log('   📄 Scraping homepage...');
+    const homepage = await scrapePage(page, url);
+    homepage.type = 'home';
+    visitedPages.push(homepage);
+
+    // Classify links from homepage
+    const classifiedLinks = classifyLinks(homepage.links, url);
+
+    // Visit priority pages
+    const priorities = ['contact', 'about', 'products'];
+    for (const priorityType of priorities) {
+        if (visitedPages.length >= maxPages) break;
+
+        const link = classifiedLinks.find(l => l.type === priorityType);
+        if (link) {
+            try {
+                console.log(`   📄 Scraping ${priorityType} page...`);
+                await sleep(2000); // Polite delay
+                const subpage = await scrapePage(page, link.url);
+                subpage.type = priorityType as any;
+                visitedPages.push(subpage);
+            } catch (e: any) {
+                console.log(`   ⚠️ Failed to visit ${priorityType}: ${e.message}`);
+            }
+        }
+    }
+
+    // Merge social media from all pages (prioritize homepage)
+    const mergedSocialMedia: any = {};
+    for (const vp of [...visitedPages].reverse()) {  // Reverse copy so homepage overwrites
+        Object.assign(mergedSocialMedia, vp.socialMedia);
+    }
+
+    // If LinkedIn company page found, try to get employee count
+    let employeeCount: number | null = null;
+    if (mergedSocialMedia.linkedin && mergedSocialMedia.linkedin.includes('/company/')) {
+        try {
+            await sleep(2000);
+            employeeCount = await scrapeLinkedInEmployeeCount(page, mergedSocialMedia.linkedin);
+        } catch (e) {
+            console.log(`   ⚠️ LinkedIn employee extraction failed`);
+        }
+    }
+
+    console.log(`   ✅ Scraped ${visitedPages.length} pages`);
+
+    return {
+        visitedPages,
+        employeeCount,
+        socialMedia: mergedSocialMedia
+    };
+}
+
+
 async function runRescueMission() {
     console.log(`🚑 RESCUE BOT INITIALIZED (Worker ${WORKER_ID + 1}/${TOTAL_WORKERS})`);
     const supabase = createServerClient();
 
-    while (true) {
+
+    while (true) {  // Main loop
         // 1. Fetch Candidates (Fetch larger batch to allow for sharding filtering)
         const { count } = await supabase
             .from('businesses')
@@ -49,7 +341,7 @@ async function runRescueMission() {
         }
 
         // SHARDING FILTER
-        const businesses = allBusinesses.filter(b => {
+        const businesses = allBusinesses!.filter((b: any) => {
             const hash = parseInt(b.id.replace(/-/g, '').substring(0, 8), 16);
             return (hash % TOTAL_WORKERS) === WORKER_ID;
         }).slice(0, BATCH_SIZE);
@@ -82,89 +374,67 @@ async function runRescueMission() {
                 const url = business.domain.startsWith('http') ? business.domain : `https://${business.domain}`;
 
                 try {
-                    // ... same loop content ...
-
-                    // Navigate
-                    console.log('   Navigating...');
+                    // Check if Cloudflare blocked
                     await page.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
-
-                    // Wait a bit for JS to settle (Cloudflare check often takes 5s)
                     await sleep(5000);
 
-                    // Check if we are still blocked (Title check)
                     const title = await page.title();
                     if (title.includes('Just a moment') || title.includes('Attention Required') || title.includes('Cloudflare')) {
                         console.log('   ⚠️ Still blocked by Cloudflare challenge.');
                         throw new Error('Cloudflare Block');
                     }
 
-                    // REAL URL (for SSL check)
-                    const finalUrl = page.url();
-                    const hasSsl = finalUrl.startsWith('https://');
+                    // ========================================
+                    // MULTI-PAGE NAVIGATION (NEW)
+                    // ========================================
+                    const { visitedPages, employeeCount, socialMedia } = await navigateAndExtract(page, url);
+                    const hasSsl = visitedPages[0].url.startsWith('https://');
 
-                    // Extract Content
-                    const content = await page.content();
-                    const $ = cheerio.load(content);
-
-                    // Clean content
-                    $('script, style, noscript, svg, iframe').remove();
-                    const cleanText = $('body').text().replace(/\s+/g, ' ').trim();
-
-                    // EXTRACT LINKS (for Sitelinks/Product finding)
-                    const extractedLinks: any[] = [];
-                    $('a[href]').each((_, el) => {
-                        const href = $(el).attr('href');
-                        const text = $(el).text().trim();
-                        if (href && text.length > 2 && !href.startsWith('#') && !href.startsWith('javascript:')) {
-                            // Normalize URL
-                            try {
-                                const fullUrl = new URL(href, finalUrl).toString();
-                                extractedLinks.push({ url: fullUrl, text: text });
-                            } catch (e) { /* ignore invalid urls */ }
-                        }
-                    });
-
-                    // Construct basic DeepCrawlResult (Single Page simulation)
-                    const pageResult: PageResult = {
-                        url: finalUrl,
-                        title: title,
-                        content: cleanText,
-                        html: content,
-                        links: extractedLinks, // NOW POPULATED
-                        headings: {
-                            h1: $('h1').map((i, el) => $(el).text().trim()).get(),
-                            h2: $('h2').map((i, el) => $(el).text().trim()).get(),
-                            h3: $('h3').map((i, el) => $(el).text().trim()).get()
-                        },
-                        meta: {
-                            description: $('meta[name="description"]').attr('content') || $('meta[property="og:description"]').attr('content'),
-                            language: $('html').attr('lang')
-                        },
-                        structuredData: []
-                    };
+                    // Build comprehensive DeepCrawlResult from multiple pages
+                    const allEmails = visitedPages.flatMap(p => p.emails);
+                    const allPhones: string[] = []; // TODO: Extract phones from pages
 
                     const crawlResult: DeepCrawlResult = {
                         baseUrl: url,
-                        totalPages: 1,
-                        pages: [pageResult],
+                        totalPages: visitedPages.length,  // 🎯 NOW > 1
+                        pages: visitedPages.map(vp => ({
+                            url: vp.url,
+                            title: vp.title,
+                            content: vp.content,
+                            html: vp.html,
+                            links: vp.links.map(l => l.url),  // Convert to string[] for compatibility
+                            emails: vp.emails,
+                            headings: vp.headings,
+                            meta: vp.meta,
+                            structuredData: [],
+                            type: vp.type
+                        })),
                         allImages: [],
                         sitemapUrls: [],
                         crawlStats: { startTime: Date.now(), endTime: Date.now(), duration: 0, failedUrls: [] },
-                        sitelinks: [], // Will be filled by processDeepCrawl
+                        sitelinks: [],  // Will be extracted by processDeepCrawl
                         businessHours: null,
-                        extractedContact: { emails: [], phones: [], socials: {} } // Will be extracted by processDeepCrawl
+                        extractedContact: {
+                            emails: allEmails,
+                            phones: allPhones,
+                            socials: socialMedia  // 🎯 NOW POPULATED
+                        }
                     };
 
                     // Process Data
                     const enrichedData = await processDeepCrawl(crawlResult);
 
                     // 3. AI Analysis & Translation (CRITICAL: Added per user request)
-                    console.log('   🧠 Running AI analysis & Generating 8 translations...');
+                    console.log('   🧠 Running AI analysis & Generating description...');
+
+                    // Use homepage (first visited page) for AI context
+                    const homepage = visitedPages[0];
+
                     // Transform to WebsiteData format expected by AI
                     const websiteDataForAI: any = {
-                        homepage: { title: title, content: cleanText, url: url },
+                        homepage: { title: homepage.title, content: homepage.content, url: homepage.url },
                         description: enrichedData.company_description,
-                        subpages: [],
+                        subpages: visitedPages.slice(1),  // Include other pages for richer context
                         contactInfo: enrichedData.contact_info,
                         socialMedia: enrichedData.contact_info.social_media,
                         enrichedData: enrichedData
@@ -176,16 +446,10 @@ async function runRescueMission() {
                         websiteDataForAI
                     );
 
-                    // Transform translations to match frontend expectation: { en: { company_description: "..." } }
-                    const formattedTranslations: any = {};
-                    if (scamAnalysis.generated_descriptions) {
-                        for (const [lang, desc] of Object.entries(scamAnalysis.generated_descriptions)) {
-                            // Ensure we don't overwrite existing complex structure if we merge, but here we likely overwrite
-                            formattedTranslations[lang] = {
-                                company_description: desc
-                            };
-                        }
-                    }
+                    // Extract the single master description
+                    const masterDescription = scamAnalysis.generated_descriptions?.master ||
+                        Object.values(scamAnalysis.generated_descriptions || {})[0] ||
+                        enrichedData.company_description;
 
                     // Calculate Professional Email (Simple heuristic) matches Deep Scraper Logic
                     const emails = enrichedData.contact_info?.emails || [];
@@ -195,19 +459,30 @@ async function runRescueMission() {
                         return domain && !genericDomains.includes(domain);
                     });
 
+                    // Merge logic for registry data
+                    const updatedRegistryData = {
+                        ...(business.registry_data || {}),
+                        ...(employeeCount ? { employee_count: employeeCount } : {})
+                    };
+
                     // Prepare update object
                     const updates: any = {
-                        company_description: scamAnalysis.generated_descriptions?.en || enrichedData.company_description,
+                        company_description: masterDescription,
                         logo_url: enrichedData.logo_url,
+                        social_media: socialMedia,  // 🎯 Top level column is valid JSONB
                         website_status: 'active', // SUCCESS!
                         website_last_crawled: new Date().toISOString(),
-                        has_ssl: hasSsl, // Correct SSL status
-                        sitelinks: enrichedData.sitelinks, // Top level sitelinks
+                        // has_ssl: hasSsl, // REMOVED: Causing DB Schema Cache error
+                        sitelinks: enrichedData.sitelinks, // Top level sitelinks (NOW POPULATED!)
+                        indexed_pages_count: visitedPages.length,  // 🎯 Multi-page count
+                        registry_data: updatedRegistryData, // 🎯 Updated with employee count
 
                         quality_analysis: {
                             website_scraped: true,
-                            rescue_method: 'puppeteer', // Mark source
+                            rescue_method: 'puppeteer_multipage', // Updated marker
                             scraped_at: new Date().toISOString(),
+                            employee_count: employeeCount,  // 🎯 Saved here instead
+                            social_media_extracted: socialMedia,
 
                             // Content
                             contact_info: enrichedData.contact_info,
@@ -231,10 +506,10 @@ async function runRescueMission() {
                             contact_email: emails[0] || null
                         },
 
-                        social_media: enrichedData.contact_info.social_media,
+
                         trust_score: scamAnalysis.credibilityScore,
                         last_scraped_at: new Date().toISOString(),
-                        translations: formattedTranslations // Use the FIX from Step 1090
+                        translations: {} // Disabled per user request (single description only)
                     };
 
                     // Update DB with FULL RICH DATA
@@ -250,7 +525,13 @@ async function runRescueMission() {
 
                     // Success Log
                     console.log(`\u001b[32m   ✅ Rescue Successful: ${business.legal_name} (${business.domain}) \u001b[0m`);
-                    console.log(`      Trust Score: ${scamAnalysis.credibilityScore} | Translations: ${Object.keys(formattedTranslations || {}).length}`);
+                    console.log(`      📄 Pages: ${visitedPages.length} | 🔗 Sitelinks: ${enrichedData.sitelinks?.length || 0} | Trust: ${scamAnalysis.credibilityScore}`);
+                    if (Object.keys(socialMedia).length > 0) {
+                        console.log(`      📱 Social: ${Object.keys(socialMedia).join(', ')}`);
+                    }
+                    if (employeeCount) {
+                        console.log(`      👥 Employees: ~${employeeCount}`);
+                    }
 
 
                     // If we found a VAT number, try to update org_number column too if empty
@@ -284,8 +565,9 @@ async function runRescueMission() {
             if (browser) await browser.close();
             console.log(`♻️  Batch complete. Restarting browser...`);
         }
-    }
+    }  // End while loop
 }
+
 
 
 /**

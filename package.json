@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "master-bots": "npx tsx --env-file=.env.local src/lib/crawler/master-launcher.ts",
+    "enhancer": "npx tsx --env-file=.env.local src/lib/crawler/description-enhancer.ts",
     "registry-importer": "npx tsx --env-file=.env.local src/lib/crawler/nordic-continuous.ts",
     "website-discovery": "npx tsx --env-file=.env.local src/lib/crawler/website-discovery-cli.ts",
     "scraper-w1": "npx tsx --env-file=.env.local src/lib/crawler/website-scraper-worker.ts 0 3",

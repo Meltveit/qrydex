@@ -32,7 +32,7 @@ const BOTS: BotConfig[] = [
     {
         name: 'Website Discovery',
         script: 'src/lib/crawler/website-discovery-cli.ts',
-        instances: 1,
+        instances: 2,
         color: '\x1b[34m' // Blue
     },
 
@@ -72,7 +72,7 @@ const BOTS: BotConfig[] = [
     {
         name: 'Rescue Bot', // Puppeteer-based 403 solver
         script: 'src/lib/crawler/rescue-scraper.ts',
-        instances: 2, // Single instance to save memory
+        instances: 1, // Single instance to save memory
         color: '\x1b[31m' // Red
     }
 ];
