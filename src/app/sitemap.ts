@@ -19,8 +19,11 @@ export async function generateSitemaps() {
 export default async function sitemap({
     id,
 }: {
-    id: number;
+    id: Promise<number>;
 }): Promise<MetadataRoute.Sitemap> {
+    // Await the id parameter (Next.js 16 passes it as a Promise)
+    const chunkId = await id;
+
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://qrydex.com';
     const locales = routing.locales;
 
@@ -38,9 +41,9 @@ export default async function sitemap({
         'CA': 'en',
     };
 
-    const offset = id * BUSINESSES_PER_CHUNK;
+    const offset = chunkId * BUSINESSES_PER_CHUNK;
 
-    console.log('[Sitemap] Generating for chunk ID:', id, 'offset:', offset);
+    console.log('[Sitemap] Generating for chunk ID:', chunkId, 'offset:', offset);
 
     const { data: businesses, error } = await supabase
         .from('businesses')
