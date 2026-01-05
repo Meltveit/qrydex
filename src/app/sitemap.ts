@@ -40,13 +40,18 @@ export default async function sitemap({
 
     const offset = id * BUSINESSES_PER_CHUNK;
 
-    const { data: businesses } = await supabase
+    console.log('[Sitemap] Generating for chunk ID:', id, 'offset:', offset);
+
+    const { data: businesses, error } = await supabase
         .from('businesses')
         .select('org_number, updated_at, trust_score, country_code, translations')
         .order('org_number', { ascending: true })
         .range(offset, offset + BUSINESSES_PER_CHUNK - 1);
 
+    console.log('[Sitemap] Fetched', businesses?.length || 0, 'businesses. Error:', error);
+
     if (!businesses || businesses.length === 0) {
+        console.log('[Sitemap] Returning empty array - no businesses found');
         return [];
     }
 
