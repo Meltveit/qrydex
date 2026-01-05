@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 import { routing } from '@/i18n/routing';
 
-const BUSINESSES_PER_CHUNK = 500;
+const BUSINESSES_PER_CHUNK = 3000;
 
 // Tell Next.js which sitemap IDs exist
 export async function generateSitemaps() {
