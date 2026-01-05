@@ -5,7 +5,7 @@ import { routing } from '@/i18n/routing';
 export const dynamic = 'force-static';
 export const revalidate = 86400; // 1 day
 
-const BUSINESSES_PER_CHUNK = 500;
+const BUSINESSES_PER_CHUNK = 1000;
 
 export async function GET(
     request: NextRequest,
