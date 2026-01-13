@@ -1,11 +1,15 @@
-import createMiddleware from 'next-intl/middleware';
-import { routing } from './i18n/routing';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default createMiddleware(routing);
+export default function middleware(request: NextRequest) {
+    return new NextResponse('410 Gone - This project has been discontinued.', {
+        status: 410,
+        headers: {
+            'Content-Type': 'text/plain',
+        },
+    });
+}
 
 export const config = {
-    // Match all pathnames except for
-    // - … if they start with `/api`, `/_next` or `/_vercel`
-    // - … the ones containing a dot (e.g. `favicon.ico`)
-    matcher: ['/((?!api|_next|_vercel|sitemap|robots|.*\\..*).*)']
+    matcher: '/:path*',
 };

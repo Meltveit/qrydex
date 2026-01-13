@@ -32,7 +32,7 @@ const BOTS: BotConfig[] = [
     {
         name: 'Website Discovery',
         script: 'src/lib/crawler/website-discovery-cli.ts',
-        instances: 2,
+        instances: 0,
         color: '\x1b[34m' // Blue
     },
 
@@ -40,7 +40,7 @@ const BOTS: BotConfig[] = [
     {
         name: 'Deep Scraper',
         script: 'src/lib/crawler/website-scraper-worker.ts',
-        instances: 1, // 4 parallel workers (Slow Mode)
+        instances: 0, // 4 parallel workers (Slow Mode)
         color: '\x1b[32m' // Green
     },
 
