@@ -85,6 +85,29 @@ export default async function PostDetailPage({ params }: Props) {
     const author = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
     const country = Array.isArray(post.countries) ? post.countries[0] : post.countries;
 
+    // Check if user can edit post
+    let canEdit = false;
+    if (user) {
+        canEdit = post.user_id === user.id;
+
+        // OR user is mod/owner of channel
+        if (!canEdit && post.channel_id) {
+            const { data: membership } = await supabase
+                .from('channel_members')
+                .select('role')
+                .eq('channel_id', post.channel_id)
+                .eq('user_id', user.id)
+                .single();
+            canEdit = membership?.role === 'owner' || membership?.role === 'moderator';
+        }
+
+        // Track view (server-side)
+        await supabase
+            .from('post_views')
+            .insert({ post_id: postId, user_id: user.id })
+            .select();
+    }
+
     return (
         <div className="min-h-screen bg-noir-bg">
             <div className="max-w-4xl mx-auto px-4 py-8">
@@ -158,8 +181,24 @@ export default async function PostDetailPage({ params }: Props) {
                     )}
 
                     {/* Actions */}
-                    <div className="flex items-center space-x-4 border-t border-gray-800 pt-4">
+                    <div className="flex items-center justify-between border-t border-gray-800 pt-4">
                         <VoteButtons postId={post.id} initialLikes={post.likes_count} />
+
+                        <div className="flex items-center space-x-4">
+                            {post.views_count !== undefined && post.views_count > 0 && (
+                                <span className="text-sm text-gray-500">
+                                    {post.views_count} {post.views_count === 1 ? 'view' : 'views'}
+                                </span>
+                            )}
+                            {canEdit && (
+                                <Link
+                                    href={`/p/${postId}/edit`}
+                                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                                >
+                                    Edit
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 </article>
 

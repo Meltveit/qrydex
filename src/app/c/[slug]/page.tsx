@@ -48,6 +48,19 @@ export default async function ChannelDetailPage({ params }: Props) {
         );
     }
 
+    // Check if user is owner/moderator
+    const { data: { user } } = await supabase.auth.getUser();
+    let userRole = null;
+    if (user) {
+        const { data: membership } = await supabase
+            .from('channel_members')
+            .select('role')
+            .eq('channel_id', channel.id)
+            .eq('user_id', user.id)
+            .single();
+        userRole = membership?.role;
+    }
+
     // Fetch posts in this channel
     const { data: posts } = await supabase
         .from('posts')
@@ -59,8 +72,7 @@ export default async function ChannelDetailPage({ params }: Props) {
             created_at,
             likes_count,
             comments_count,
-            country_code,
-            profiles:author_id (username, avatar_url)
+            profiles:user_id (username, avatar_url)
         `)
         .eq('channel_id', channel.id)
         .order('created_at', { ascending: false })
@@ -97,6 +109,17 @@ export default async function ChannelDetailPage({ params }: Props) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Settings button for owner */}
+                        {userRole === 'owner' && (
+                            <Link
+                                href={`/c/${slug}/settings`}
+                                className="flex items-center space-x-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                <Settings className="w-4 h-4" />
+                                <span>Settings</span>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
