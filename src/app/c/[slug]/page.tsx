@@ -72,7 +72,7 @@ export default async function ChannelDetailPage({ params }: Props) {
             created_at,
             likes_count,
             comments_count,
-            profiles:user_id (username, avatar_url)
+            profiles:user_id (username, display_name, avatar_url)
         `)
         .eq('channel_id', channel.id)
         .order('created_at', { ascending: false })

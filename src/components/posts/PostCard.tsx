@@ -31,10 +31,12 @@ interface PostCardProps {
         // Handle both author (aliased) and profiles (direct join)
         author?: {
             username: string;
+            display_name?: string;
             avatar_url?: string;
         };
         profiles?: {
             username: string;
+            display_name?: string;
             avatar_url?: string;
         };
         channel?: {
@@ -63,7 +65,7 @@ export function PostCard({ post, showChannel = true }: PostCardProps) {
                 <span className="flex items-center text-gray-500">
                     <span className="mr-1">Posted by</span>
                     <Link href={`/u/${author?.username || 'deleted'}`} className="hover:text-white transition-colors">
-                        u/{author?.username || 'deleted'}
+                        {author?.display_name || `u/${author?.username}` || 'deleted user'}
                     </Link>
                 </span>
                 <span>•</span>
@@ -75,8 +77,8 @@ export function PostCard({ post, showChannel = true }: PostCardProps) {
 
             <div className="mb-2">
                 <span className={`text-xs font-bold px-2 py-0.5 rounded ${post.type === 'PROMPT'
-                        ? 'bg-neon-blue/20 text-neon-blue'
-                        : 'bg-yellow-500/20 text-yellow-400'
+                    ? 'bg-neon-blue/20 text-neon-blue'
+                    : 'bg-yellow-500/20 text-yellow-400'
                     }`}>
                     {post.type}
                 </span>

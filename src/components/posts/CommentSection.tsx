@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { MessageSquare } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -25,7 +26,8 @@ interface Comment {
     created_at: string;
     author: {
         username: string;
-        avatar_url?: string | null;
+        display_name?: string;
+        avatar_url?: string;
     };
     replies?: Comment[];
 }
@@ -64,7 +66,7 @@ export function CommentSection({ postId, comments: initialComments, user }: Comm
                     id,
                     content,
                     created_at,
-                    profiles:author_id (username, avatar_url)
+                    profiles:author_id (username, display_name, avatar_url)
                 `)
                 .single();
 
@@ -128,16 +130,17 @@ function CommentItem({ comment }: { comment: Comment }) {
         <div className="flex space-x-3">
             <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold text-white">
-                    {comment.author.username[0].toUpperCase()}
+                    {comment.author?.username?.[0]?.toUpperCase() || '?'}
                 </div>
             </div>
             <div className="flex-1">
                 <div className="bg-noir-panel border border-gray-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="font-bold text-white text-sm">u/{comment.author.username}</span>
-                        <span className="text-xs text-gray-500">
-                            {timeAgo(comment.created_at)}
-                        </span>
+                    <div className="flex items-center space-x-2 text-sm mb-2">
+                        <Link href={`/u/${comment.author?.username || 'deleted'}`} className="font-bold text-white hover:text-neon-blue">
+                            {comment.author?.display_name || `u/${comment.author?.username}` || 'deleted user'}
+                        </Link>
+                        <span className="text-gray-500">•</span>
+                        <span className="text-gray-500">{timeAgo(comment.created_at)}</span>
                     </div>
                     <p className="text-gray-300 text-sm">{comment.content}</p>
                 </div>

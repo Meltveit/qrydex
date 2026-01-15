@@ -77,7 +77,7 @@ export default async function PostDetailPage({ params }: Props) {
             id,
             content,
             created_at,
-            profiles:user_id (username, avatar_url)
+            profiles:user_id (username, display_name, avatar_url)
         `)
         .eq('post_id', postId)
         .order('created_at', { ascending: false });

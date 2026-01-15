@@ -61,7 +61,7 @@ export default async function CountryPage({ params, searchParams }: Props) {
             created_at,
             likes_count,
             comments_count,
-            profiles:user_id (username, avatar_url),
+            profiles:user_id (username, display_name, avatar_url),
             channels:channel_id (name, slug)
         `)
         .eq('country_id', country.id);
