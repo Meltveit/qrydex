@@ -1,10 +1,9 @@
-import createNextIntlPlugin from 'next-intl/plugin';
-
-const withNextIntl = createNextIntlPlugin();
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    /* config options here */
+    images: {
+        domains: ['lh3.googleusercontent.com'], // For Google Auth avatars
+    },
+    // Ensure we don't redirect strict locale logic if we want /usa
 };
 
-export default withNextIntl(nextConfig);
+export default nextConfig;
