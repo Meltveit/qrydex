@@ -50,7 +50,7 @@ export default async function PostDetailPage({ params }: Props) {
         .from('posts')
         .select(`
             *,
-            profiles:user_id (username, avatar_url),
+            profiles:user_id (username, display_name, avatar_url),
             countries:country_id (name, flag_emoji, code)
         `)
         .eq('id', postId)
@@ -140,7 +140,7 @@ export default async function PostDetailPage({ params }: Props) {
                         <div className="flex items-center">
                             <User className="w-4 h-4 mr-1" />
                             <Link href={`/u/${author?.username || 'deleted'}`} className="hover:text-white">
-                                u/{author?.username || 'deleted'}
+                                {author?.display_name || `u/${author?.username}` || 'deleted user'}
                             </Link>
                         </div>
                         <div className="flex items-center">
