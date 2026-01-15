@@ -45,13 +45,13 @@ export default async function PostDetailPage({ params }: Props) {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Fetch post with author
+    // Fetch post with author and country
     const { data: post } = await supabase
         .from('posts')
         .select(`
             *,
-            profiles:author_id (username, avatar_url),
-            countries:country_code (name, flag_emoji)
+            profiles:user_id (username, avatar_url),
+            countries:country_id (name, flag_emoji, code)
         `)
         .eq('id', postId)
         .single();
@@ -77,12 +77,12 @@ export default async function PostDetailPage({ params }: Props) {
             id,
             content,
             created_at,
-            profiles:author_id (username, avatar_url)
+            profiles:user_id (username, avatar_url)
         `)
         .eq('post_id', postId)
         .order('created_at', { ascending: false });
 
-    const author = post.profiles;
+    const author = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
     const country = Array.isArray(post.countries) ? post.countries[0] : post.countries;
 
     return (
@@ -90,7 +90,7 @@ export default async function PostDetailPage({ params }: Props) {
             <div className="max-w-4xl mx-auto px-4 py-8">
                 {/* Back Link */}
                 <Link
-                    href={`/${countryCode}`}
+                    href={`/${country?.code || countryCode}`}
                     className="inline-flex items-center text-gray-400 hover:text-white mb-6 transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -102,8 +102,8 @@ export default async function PostDetailPage({ params }: Props) {
                     {/* Type Badge */}
                     <div className="mb-4">
                         <span className={`text-sm font-bold px-3 py-1 rounded ${post.type === 'PROMPT'
-                                ? 'bg-neon-blue/20 text-neon-blue'
-                                : 'bg-yellow-500/20 text-yellow-400'
+                            ? 'bg-neon-blue/20 text-neon-blue'
+                            : 'bg-yellow-500/20 text-yellow-400'
                             }`}>
                             {post.type}
                         </span>

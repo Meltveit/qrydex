@@ -68,6 +68,13 @@ export function Header() {
                                     My Feed
                                 </Link>
                                 <Link
+                                    href="/communities"
+                                    className={`text-sm font-medium transition-colors ${pathname === '/communities' ? 'text-neon-blue' : 'text-gray-400 hover:text-white'
+                                        }`}
+                                >
+                                    My Communities
+                                </Link>
+                                <Link
                                     href="/submit"
                                     className="flex items-center space-x-1 bg-neon-blue text-noir-bg px-4 py-2 rounded-lg font-bold hover:bg-neon-blue/90 transition-colors"
                                 >

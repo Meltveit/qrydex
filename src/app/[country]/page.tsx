@@ -61,11 +61,10 @@ export default async function CountryPage({ params, searchParams }: Props) {
             created_at,
             likes_count,
             comments_count,
-            country_code,
-            profiles:author_id (username, avatar_url),
+            profiles:user_id (username, avatar_url),
             channels:channel_id (name, slug)
         `)
-        .eq('country_code', countryCode.toLowerCase());
+        .eq('country_id', country.id);
 
     // Apply sorting
     if (sort === 'new') {

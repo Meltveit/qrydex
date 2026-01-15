@@ -11,6 +11,16 @@ export default async function ChannelsPage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Get user's joined channels
+    let joinedChannelIds: string[] = [];
+    if (user) {
+        const { data: memberships } = await supabase
+            .from('channel_members')
+            .select('channel_id')
+            .eq('user_id', user.id);
+        joinedChannelIds = memberships?.map(m => m.channel_id) || [];
+    }
+
     // Get user interests for recommendations
     let recommendedChannels: any[] = [];
     if (user) {
@@ -75,11 +85,16 @@ export default async function ChannelsPage() {
                                             <Hash className="w-6 h-6 text-neon-blue" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex items-center">
+                                            <div className="flex items-center gap-2">
                                                 <h3 className="font-bold text-white group-hover:text-neon-blue transition-colors truncate">
                                                     c/{channel.name}
                                                 </h3>
-                                                <Star className="w-3 h-3 text-yellow-400 ml-1" />
+                                                <Star className="w-3 h-3 text-yellow-400" />
+                                                {joinedChannelIds.includes(channel.id) && (
+                                                    <span className="text-xs bg-neon-blue/20 text-neon-blue px-2 py-0.5 rounded font-medium">
+                                                        Joined
+                                                    </span>
+                                                )}
                                             </div>
                                             <p className="text-sm text-gray-400 line-clamp-2">{channel.description}</p>
                                             <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
@@ -108,9 +123,16 @@ export default async function ChannelsPage() {
                                     <Hash className="w-6 h-6 text-neon-blue" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-bold text-white group-hover:text-neon-blue transition-colors truncate">
-                                        c/{channel.name}
-                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-bold text-white group-hover:text-neon-blue transition-colors truncate">
+                                            c/{channel.name}
+                                        </h3>
+                                        {joinedChannelIds.includes(channel.id) && (
+                                            <span className="text-xs bg-neon-blue/20 text-neon-blue px-2 py-0.5 rounded font-medium">
+                                                Joined
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-sm text-gray-400 line-clamp-2">{channel.description}</p>
                                     <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
                                         <Users className="w-3 h-3" />
