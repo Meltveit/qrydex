@@ -13,12 +13,22 @@ export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
     const [user, setUser] = useState<any>(null);
+    const [profile, setProfile] = useState<any>(null);
     const supabase = createClient();
 
     useEffect(() => {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
+
+            if (user) {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('username, display_name, avatar_url')
+                    .eq('id', user.id)
+                    .single();
+                setProfile(data);
+            }
         };
         getUser();
 
@@ -82,10 +92,13 @@ export function Header() {
                                     <span>Post</span>
                                 </Link>
                                 <Link
-                                    href="/settings"
-                                    className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                                    href={`/u/${profile?.username || 'profile'}`}
+                                    className="flex items-center space-x-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
                                 >
-                                    Settings
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neon-blue to-purple-600 flex items-center justify-center font-bold text-white text-xs">
+                                        {profile?.display_name?.[0]?.toUpperCase() || profile?.username?.[0]?.toUpperCase() || 'U'}
+                                    </div>
+                                    <span>Profile</span>
                                 </Link>
                             </>
                         ) : (
