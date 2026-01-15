@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader } from 'lucide-react';
 
-export default function EditPostPage({ params }: { params: { postId: string } }) {
+export default function EditPostPage() {
+    const params = useParams();
+    const postId = params.postId as string;
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [loading, setLoading] = useState(true);
@@ -66,7 +68,7 @@ export default function EditPostPage({ params }: { params: { postId: string } })
         };
 
         fetchPost();
-    }, [params.postId]);
+    }, [postId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
