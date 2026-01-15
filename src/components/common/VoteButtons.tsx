@@ -17,6 +17,27 @@ export function VoteButtons({ postId, initialLikes, initialUserVote = 0 }: VoteB
     const supabase = createClient();
     const router = useRouter();
 
+    useEffect(() => {
+        // Fetch user's existing vote
+        const fetchUserVote = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data } = await supabase
+                .from('post_votes')
+                .select('value')
+                .eq('post_id', postId)
+                .eq('user_id', user.id)
+                .single();
+
+            if (data) {
+                setUserVote(data.value);
+            }
+        };
+
+        fetchUserVote();
+    }, [postId]);
+
     const handleVote = async (value: number) => {
         // Optimistic update
         const newVote = userVote === value ? 0 : value;

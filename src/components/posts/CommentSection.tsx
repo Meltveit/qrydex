@@ -66,7 +66,7 @@ export function CommentSection({ postId, comments: initialComments, user }: Comm
                     id,
                     content,
                     created_at,
-                    profiles:author_id (username, display_name, avatar_url)
+                    profiles:user_id (username, display_name, avatar_url)
                 `)
                 .single();
 

@@ -147,11 +147,25 @@ export function Header() {
                                         Post to Index
                                     </Link>
                                     <Link
-                                        href="/settings"
+                                        href="/feed"
                                         className="text-gray-400 hover:text-white"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
-                                        Settings
+                                        My Feed
+                                    </Link>
+                                    <Link
+                                        href="/communities"
+                                        className="text-gray-400 hover:text-white"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        My Communities
+                                    </Link>
+                                    <Link
+                                        href={`/u/${profile?.username || 'profile'}`}
+                                        className="text-gray-400 hover:text-white"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        Profile
                                     </Link>
                                 </>
                             ) : (
