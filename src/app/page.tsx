@@ -38,20 +38,26 @@ export default async function Home() {
     const featuredCodes = ['us', 'gb', 'de', 'no', 'fr', 'jp', 'au', 'ca'];
     const featuredCountries = countries?.filter(c => featuredCodes.includes(c.code)) || [];
 
-    // Get total stats
+    // Get stats from last 24 hours
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
     const { count: totalPosts } = await supabase
         .from('posts')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', twentyFourHoursAgo);
 
     const { count: totalUsers } = await supabase
         .from('profiles')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', twentyFourHoursAgo);
 
     const { count: totalChannels } = await supabase
         .from('channels')
         .select('*', { count: 'exact', head: true });
 
-    // Get trending posts (global)
+    // Get trending posts (last 6 months - AI moves fast!)
+    const sixMonthsAgo = new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString();
+
     const { data: trendingPosts } = await supabase
         .from('posts')
         .select(`
@@ -62,6 +68,7 @@ export default async function Home() {
             country_code,
             countries(flag_emoji, name)
         `)
+        .gte('created_at', sixMonthsAgo)
         .order('likes_count', { ascending: false })
         .limit(5);
 
@@ -113,17 +120,17 @@ export default async function Home() {
 
                     {/* The Pulse - Live Activity */}
                     <div className="overflow-hidden max-w-3xl mx-auto mb-8">
-                        <div className="flex items-center space-x-4 text-sm animate-pulse">
+                        <div className="flex items-center space-x-4 text-sm">
                             <span className="flex items-center space-x-1 text-gray-400">
                                 <span className="w-2 h-2 bg-neon-green rounded-full animate-ping" />
-                                <span>Live</span>
+                                <span>Last 24h</span>
                             </span>
                             <div className="flex items-center space-x-4 overflow-hidden text-gray-500">
-                                <span>🇺🇸 <span className="text-neon-blue">12</span> new prompts</span>
+                                <span>📊 <span className="text-neon-blue">{totalPosts || 0}</span> prompts</span>
                                 <span className="text-gray-700">|</span>
-                                <span>🇳🇴 <span className="text-neon-green">5</span> solutions found</span>
+                                <span>👥 <span className="text-neon-green">{totalUsers || 0}</span> new users</span>
                                 <span className="text-gray-700">|</span>
-                                <span>🇩🇪 Trending: <span className="text-yellow-400">#LegalAI</span></span>
+                                <span>🌍 <span className="text-yellow-400">{countries?.length || 0}</span> countries</span>
                             </div>
                         </div>
                     </div>

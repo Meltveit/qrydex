@@ -4,12 +4,12 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { Search, FileText, Hash, User } from 'lucide-react';
+import { Search, FileText, Hash, User, Globe } from 'lucide-react';
 
 function SearchContent() {
     const searchParams = useSearchParams();
     const query = searchParams.get('q') || '';
-    const [results, setResults] = useState<any>({ posts: [], channels: [], users: [] });
+    const [results, setResults] = useState<any>({ posts: [], channels: [], users: [], countries: [] });
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('posts');
     const supabase = createClient();
@@ -19,7 +19,7 @@ function SearchContent() {
             if (!query) return;
             setLoading(true);
 
-            const [postsRes, channelsRes, usersRes] = await Promise.all([
+            const [postsRes, channelsRes, usersRes, countriesRes] = await Promise.all([
                 supabase
                     .from('posts')
                     .select('id, title, type, country_code, likes_count')
@@ -35,12 +35,19 @@ function SearchContent() {
                     .select('id, username, avatar_url')
                     .ilike('username', `%${query}%`)
                     .limit(20),
+                supabase
+                    .from('countries')
+                    .select('code, name, flag_emoji')
+                    .eq('is_active', true)
+                    .or(`name.ilike.%${query}%,native_name.ilike.%${query}%`)
+                    .limit(20),
             ]);
 
             setResults({
                 posts: postsRes.data || [],
                 channels: channelsRes.data || [],
                 users: usersRes.data || [],
+                countries: countriesRes.data || [],
             });
             setLoading(false);
         };
@@ -50,6 +57,7 @@ function SearchContent() {
     const tabs = [
         { id: 'posts', label: 'Posts', icon: FileText, count: results.posts.length },
         { id: 'channels', label: 'Channels', icon: Hash, count: results.channels.length },
+        { id: 'countries', label: 'Countries', icon: Globe, count: results.countries.length },
         { id: 'users', label: 'Users', icon: User, count: results.users.length },
     ];
 
@@ -68,8 +76,8 @@ function SearchContent() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === tab.id
-                                    ? 'bg-neon-blue text-noir-bg'
-                                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                                ? 'bg-neon-blue text-noir-bg'
+                                : 'bg-gray-800 text-gray-400 hover:text-white'
                                 }`}
                         >
                             <tab.icon className="w-4 h-4" />
@@ -112,6 +120,19 @@ function SearchContent() {
                                         <span className="text-white font-medium">c/{channel.name}</span>
                                         <p className="text-sm text-gray-400">{channel.description}</p>
                                     </div>
+                                </div>
+                            </Link>
+                        ))}
+
+                        {activeTab === 'countries' && results.countries.map((country: any) => (
+                            <Link
+                                key={country.code}
+                                href={`/${country.code}`}
+                                className="block bg-noir-panel border border-gray-800 rounded-lg p-4 hover:border-neon-blue transition-colors"
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <span className="text-3xl">{country.flag_emoji}</span>
+                                    <span className="text-white font-medium">{country.name}</span>
                                 </div>
                             </Link>
                         ))}

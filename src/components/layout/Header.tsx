@@ -39,12 +39,14 @@ export function Header() {
                         <span className="text-xl font-bold text-white hidden sm:block">QRYDEX</span>
                     </Link>
 
-                    {/* Search Bar - Desktop */}
-                    <div className="flex-1 max-w-xl mx-8 hidden md:block">
-                        <Suspense fallback={<div className="w-full h-10 bg-gray-800 rounded-lg animate-pulse" />}>
-                            <SearchBar />
-                        </Suspense>
-                    </div>
+                    {/* Search Bar - Desktop (hidden on homepage) */}
+                    {pathname !== '/' && (
+                        <div className="flex-1 max-w-xl mx-8 hidden md:block">
+                            <Suspense fallback={<div className="w-full h-10 bg-gray-800 rounded-lg animate-pulse" />}>
+                                <SearchBar />
+                            </Suspense>
+                        </div>
+                    )}
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-4">
