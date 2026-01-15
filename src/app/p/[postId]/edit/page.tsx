@@ -13,8 +13,10 @@ export default function EditPostPage() {
     const [content, setContent] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [error, setError] = useState('');
     const [post, setPost] = useState<any>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const router = useRouter();
     const supabase = createClient();
@@ -98,6 +100,33 @@ export default function EditPostPage() {
             router.push(`/${countryCode}/${postId}`);
         } else {
             router.back();
+        }
+    };
+
+    const handleDelete = async () => {
+        setDeleting(true);
+        setError('');
+
+        const response = await fetch('/api/post/delete', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ postId }),
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            setError(data.error || 'Failed to delete post');
+            setDeleting(false);
+            setShowDeleteConfirm(false);
+            return;
+        }
+
+        // Redirect to country page or home
+        const countryCode = post.countries?.code;
+        if (countryCode) {
+            router.push(`/${countryCode}`);
+        } else {
+            router.push('/');
         }
     };
 
@@ -189,7 +218,47 @@ export default function EditPostPage() {
                             </button>
                         </div>
                     </form>
+
+                    {/* Danger Zone */}
+                    <div className="mt-8 pt-6 border-t border-red-900/50">
+                        <h2 className="text-lg font-bold text-red-400 mb-4">Danger Zone</h2>
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-2 rounded-lg hover:bg-red-500/20 transition-colors"
+                        >
+                            Delete Post
+                        </button>
+                    </div>
                 </div>
+
+                {/* Delete Confirmation Modal */}
+                {showDeleteConfirm && (
+                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                        <div className="bg-noir-panel border border-gray-800 rounded-xl p-6 max-w-md w-full">
+                            <h3 className="text-xl font-bold text-white mb-4">Delete Post?</h3>
+                            <p className="text-gray-400 mb-6">
+                                Are you sure you want to delete this post? This action cannot be undone.
+                                All comments and votes will also be deleted.
+                            </p>
+                            <div className="flex items-center space-x-4">
+                                <button
+                                    onClick={handleDelete}
+                                    disabled={deleting}
+                                    className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                                >
+                                    {deleting ? 'Deleting...' : 'Delete'}
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    disabled={deleting}
+                                    className="text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

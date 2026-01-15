@@ -11,6 +11,7 @@ function SubmitForm() {
     const [type, setType] = useState<'PROMPT' | 'REQUEST'>('PROMPT');
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
+    const [aiModel, setAiModel] = useState('');
     const [countryCode, setCountryCode] = useState('');
     const [countries, setCountries] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -68,6 +69,7 @@ function SubmitForm() {
                 type,
                 country_id: country.id,
                 user_id: user.id,
+                ai_model: aiModel || null,
             })
             .select()
             .single();
@@ -154,6 +156,21 @@ function SubmitForm() {
                                 className="w-full bg-noir-bg border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-neon-blue"
                                 required
                             />
+                        </div>
+
+                        {/* AI Model (Optional) */}
+                        <div>
+                            <label className="block text-white font-medium mb-2">
+                                AI Model <span className="text-gray-500 text-sm">(Optional)</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={aiModel}
+                                onChange={(e) => setAiModel(e.target.value)}
+                                placeholder="e.g., GPT-4, Claude, Gemini, etc."
+                                className="w-full bg-noir-bg border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-neon-blue"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Tag which AI model you used (optional)</p>
                         </div>
 
                         {/* Content */}
