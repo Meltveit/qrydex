@@ -47,14 +47,27 @@ function SubmitForm() {
             return;
         }
 
+        // Get country_id from country code
+        const { data: country } = await supabase
+            .from('countries')
+            .select('id')
+            .eq('code', countryCode)
+            .single();
+
+        if (!country) {
+            setError('Invalid country selected');
+            setLoading(false);
+            return;
+        }
+
         const { data, error: insertError } = await supabase
             .from('posts')
             .insert({
                 title,
                 content,
                 type,
-                country_code: countryCode,
-                author_id: user.id,
+                country_id: country.id,
+                user_id: user.id,
             })
             .select()
             .single();

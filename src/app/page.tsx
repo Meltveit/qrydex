@@ -119,13 +119,13 @@ export default async function Home() {
                     </form>
 
                     {/* The Pulse - Live Activity */}
-                    <div className="overflow-hidden max-w-3xl mx-auto mb-8">
-                        <div className="flex items-center space-x-4 text-sm">
+                    <div className="max-w-3xl mx-auto mb-8">
+                        <div className="flex items-center justify-center space-x-4 text-sm">
                             <span className="flex items-center space-x-1 text-gray-400">
                                 <span className="w-2 h-2 bg-neon-green rounded-full animate-ping" />
                                 <span>Last 24h</span>
                             </span>
-                            <div className="flex items-center space-x-4 overflow-hidden text-gray-500">
+                            <div className="flex items-center space-x-4 text-gray-500">
                                 <span>📊 <span className="text-neon-blue">{totalPosts || 0}</span> prompts</span>
                                 <span className="text-gray-700">|</span>
                                 <span>👥 <span className="text-neon-green">{totalUsers || 0}</span> new users</span>
