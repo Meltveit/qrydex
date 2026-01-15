@@ -60,7 +60,7 @@ export function CommentSection({ postId, comments: initialComments, user }: Comm
                 .insert({
                     post_id: postId,
                     content: newComment,
-                    author_id: user.id
+                    user_id: user.id
                 })
                 .select(`
                     id,

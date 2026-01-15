@@ -1,18 +1,19 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
     try {
-        const { postId, voteType } = await request.json();
+        const { postId, value } = await request.json();
 
-        if (!postId || !['LIKE', 'DISLIKE'].includes(voteType)) {
+        if (!postId || ![1, -1, 0].includes(value)) {
             return NextResponse.json(
-                { error: 'Invalid request' },
+                { error: 'Invalid request. Value must be 1, -1, or 0' },
                 { status: 400 }
             );
         }
+
+        const response = NextResponse.json({ success: true });
 
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,80 +24,69 @@ export async function POST(request: NextRequest) {
                         return request.cookies.getAll();
                     },
                     setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
-                        // Not needed for this route
+                        cookiesToSet.forEach(({ name, value, options }) => {
+                            response.cookies.set(name, value, options);
+                        });
                     },
                 },
             }
         );
 
         // Check if user is authenticated
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-        // Get IP hash for anonymous voting
-        const forwardedFor = request.headers.get('x-forwarded-for');
-        const ip = forwardedFor?.split(',')[0] || request.headers.get('x-real-ip') || 'unknown';
-        const ipHash = crypto.createHash('sha256').update(ip + (process.env.VOTE_SALT || 'qrydex')).digest('hex');
+        if (authError || !user) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
 
-        if (user) {
-            // Authenticated user voting
-            // Check existing vote
-            const { data: existingVote } = await supabase
-                .from('votes')
-                .select('id, vote_type')
+        if (value === 0) {
+            // Remove vote
+            const { error } = await supabase
+                .from('post_votes')
+                .delete()
                 .eq('post_id', postId)
-                .eq('user_id', user.id)
-                .single();
+                .eq('user_id', user.id);
 
-            if (existingVote) {
-                if (existingVote.vote_type === voteType) {
-                    // Remove vote
-                    await supabase.from('votes').delete().eq('id', existingVote.id);
-                } else {
-                    // Change vote
-                    await supabase
-                        .from('votes')
-                        .update({ vote_type: voteType })
-                        .eq('id', existingVote.id);
-                }
-            } else {
-                // New vote
-                await supabase.from('votes').insert({
-                    post_id: postId,
-                    user_id: user.id,
-                    vote_type: voteType,
-                });
+            if (error) {
+                console.error('Delete vote error:', error);
+                return NextResponse.json({ error: error.message }, { status: 500 });
             }
         } else {
-            // Anonymous voting via IP hash
-            const { data: existingVote } = await supabase
-                .from('votes')
-                .select('id, vote_type')
-                .eq('post_id', postId)
-                .eq('ip_hash', ipHash)
-                .single();
-
-            if (existingVote) {
-                if (existingVote.vote_type === voteType) {
-                    // Remove vote
-                    await supabase.from('votes').delete().eq('id', existingVote.id);
-                } else {
-                    // Change vote
-                    await supabase
-                        .from('votes')
-                        .update({ vote_type: voteType })
-                        .eq('id', existingVote.id);
-                }
-            } else {
-                // New anonymous vote
-                await supabase.from('votes').insert({
+            // Upsert vote (insert or update)
+            const { error } = await supabase
+                .from('post_votes')
+                .upsert({
                     post_id: postId,
-                    ip_hash: ipHash,
-                    vote_type: voteType,
+                    user_id: user.id,
+                    value: value,
+                    updated_at: new Date().toISOString(),
+                }, {
+                    onConflict: 'post_id,user_id'
                 });
+
+            if (error) {
+                console.error('Upsert vote error:', error);
+                return NextResponse.json({ error: error.message }, { status: 500 });
             }
         }
 
-        return NextResponse.json({ success: true });
+        // Update post likes_count
+        const { data: votes } = await supabase
+            .from('post_votes')
+            .select('value')
+            .eq('post_id', postId);
+
+        const likesCount = votes?.reduce((sum, vote) => sum + vote.value, 0) || 0;
+
+        await supabase
+            .from('posts')
+            .update({ likes_count: likesCount })
+            .eq('id', postId);
+
+        return response;
     } catch (error) {
         console.error('Vote error:', error);
         return NextResponse.json(
