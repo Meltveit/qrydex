@@ -77,6 +77,8 @@ export default async function PostDetailPage({ params }: Props) {
             id,
             content,
             created_at,
+            user_id,
+            parent_id,
             profiles:user_id (username, display_name, avatar_url)
         `)
         .eq('post_id', postId)
@@ -210,6 +212,8 @@ export default async function PostDetailPage({ params }: Props) {
                         author: Array.isArray(c.profiles) ? c.profiles[0] : c.profiles,
                     }))}
                     user={user}
+                    postAuthorId={post.user_id}
+                    channelId={post.channel_id}
                 />
             </div>
         </div>
