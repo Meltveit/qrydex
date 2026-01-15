@@ -33,7 +33,7 @@ export default function EditPostPage() {
                     *,
                     countries:country_id (code)
                 `)
-                .eq('id', params.postId)
+                .eq('id', postId)
                 .single();
 
             if (error || !data) {
@@ -79,7 +79,7 @@ export default function EditPostPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                postId: params.postId,
+                postId: postId,
                 title,
                 content,
             }),
@@ -95,7 +95,7 @@ export default function EditPostPage() {
         // Redirect back to post
         const countryCode = post.countries?.code;
         if (countryCode) {
-            router.push(`/${countryCode}/${params.postId}`);
+            router.push(`/${countryCode}/${postId}`);
         } else {
             router.back();
         }
