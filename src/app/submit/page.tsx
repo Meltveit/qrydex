@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { ArrowLeft, Send } from 'lucide-react';
 
-export default function SubmitPage() {
+function SubmitForm() {
+    const searchParams = useSearchParams();
     const [type, setType] = useState<'PROMPT' | 'REQUEST'>('PROMPT');
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -25,9 +26,15 @@ export default function SubmitPage() {
                 .eq('is_active', true)
                 .order('name');
             if (data) setCountries(data);
+
+            // Pre-select country from URL if provided
+            const urlCountry = searchParams.get('country');
+            if (urlCountry && data?.some(c => c.code === urlCountry)) {
+                setCountryCode(urlCountry);
+            }
         };
         fetchCountries();
-    }, []);
+    }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -81,8 +88,8 @@ export default function SubmitPage() {
                                     type="button"
                                     onClick={() => setType('PROMPT')}
                                     className={`flex-1 py-3 rounded-lg font-bold transition-colors ${type === 'PROMPT'
-                                            ? 'bg-neon-blue text-noir-bg'
-                                            : 'bg-gray-800 text-gray-400 hover:text-white'
+                                        ? 'bg-neon-blue text-noir-bg'
+                                        : 'bg-gray-800 text-gray-400 hover:text-white'
                                         }`}
                                 >
                                     🎯 PROMPT
@@ -91,8 +98,8 @@ export default function SubmitPage() {
                                     type="button"
                                     onClick={() => setType('REQUEST')}
                                     className={`flex-1 py-3 rounded-lg font-bold transition-colors ${type === 'REQUEST'
-                                            ? 'bg-yellow-500 text-noir-bg'
-                                            : 'bg-gray-800 text-gray-400 hover:text-white'
+                                        ? 'bg-yellow-500 text-noir-bg'
+                                        : 'bg-gray-800 text-gray-400 hover:text-white'
                                         }`}
                                 >
                                     ❓ REQUEST
@@ -172,5 +179,17 @@ export default function SubmitPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function SubmitPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-noir-bg flex items-center justify-center">
+                <div className="animate-spin w-8 h-8 border-2 border-neon-blue border-t-transparent rounded-full"></div>
+            </div>
+        }>
+            <SubmitForm />
+        </Suspense>
     );
 }

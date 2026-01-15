@@ -59,6 +59,13 @@ export function Header() {
                         {user ? (
                             <>
                                 <Link
+                                    href="/feed"
+                                    className={`text-sm font-medium transition-colors ${pathname === '/feed' ? 'text-neon-blue' : 'text-gray-400 hover:text-white'
+                                        }`}
+                                >
+                                    My Feed
+                                </Link>
+                                <Link
                                     href="/submit"
                                     className="flex items-center space-x-1 bg-neon-blue text-noir-bg px-4 py-2 rounded-lg font-bold hover:bg-neon-blue/90 transition-colors"
                                 >
