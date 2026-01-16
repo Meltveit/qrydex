@@ -153,23 +153,34 @@ function SubmitForm() {
                             </p>
                         </div>
 
-                        {/* Country Selection */}
-                        <div>
-                            <label className="block text-white font-medium mb-2">Country Hub</label>
-                            <select
-                                value={countryCode}
-                                onChange={(e) => setCountryCode(e.target.value)}
-                                className="w-full bg-noir-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-blue"
-                                required
-                            >
-                                <option value="">Select a country...</option>
-                                {countries.map((c) => (
-                                    <option key={c.code} value={c.code}>
-                                        {c.flag_emoji} {c.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        {/* Country Selection - Hidden for channel posts */}
+                        {!isChannelPost && (
+                            <div>
+                                <label className="block text-white font-medium mb-2">Country Hub</label>
+                                <select
+                                    value={countryCode}
+                                    onChange={(e) => setCountryCode(e.target.value)}
+                                    className="w-full bg-noir-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-blue"
+                                    required
+                                >
+                                    <option value="">Select a country...</option>
+                                    {countries.map((c) => (
+                                        <option key={c.code} value={c.code}>
+                                            {c.flag_emoji} {c.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {/* Channel Context Message */}
+                        {isChannelPost && (
+                            <div className="bg-neon-blue/10 border border-neon-blue/50 rounded-lg p-4">
+                                <p className="text-neon-blue text-sm font-medium">
+                                    📢 Posting to channel
+                                </p>
+                            </div>
+                        )}
 
                         {/* Title */}
                         <div>
