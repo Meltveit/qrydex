@@ -19,6 +19,10 @@ function SubmitForm() {
     const router = useRouter();
     const supabase = createClient();
 
+    // Check if posting to a channel
+    const channelId = searchParams.get('channel');
+    const isChannelPost = !!channelId;
+
     useEffect(() => {
         const fetchCountries = async () => {
             const { data } = await supabase
@@ -28,14 +32,19 @@ function SubmitForm() {
                 .order('name');
             if (data) setCountries(data);
 
-            // Pre-select country from URL if provided
-            const urlCountry = searchParams.get('country');
-            if (urlCountry && data?.some(c => c.code === urlCountry)) {
-                setCountryCode(urlCountry);
+            // For channel posts, use 'global' as default
+            if (isChannelPost) {
+                setCountryCode('global');
+            } else {
+                // Pre-select country from URL if provided
+                const urlCountry = searchParams.get('country');
+                if (urlCountry && data?.some(c => c.code === urlCountry)) {
+                    setCountryCode(urlCountry);
+                }
             }
         };
         fetchCountries();
-    }, [searchParams]);
+    }, [searchParams, isChannelPost]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -62,7 +71,6 @@ function SubmitForm() {
         }
 
         // If posting to a channel, check membership
-        const channelId = searchParams.get('channel');
         if (channelId) {
             const { data: membership } = await supabase
                 .from('channel_members')
