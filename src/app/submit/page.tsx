@@ -61,6 +61,23 @@ function SubmitForm() {
             return;
         }
 
+        // If posting to a channel, check membership
+        const channelId = searchParams.get('channel');
+        if (channelId) {
+            const { data: membership } = await supabase
+                .from('channel_members')
+                .select('role')
+                .eq('channel_id', channelId)
+                .eq('user_id', user.id)
+                .single();
+
+            if (!membership) {
+                setError('You must be a member of this channel to post.');
+                setLoading(false);
+                return;
+            }
+        }
+
         const { data, error: insertError } = await supabase
             .from('posts')
             .insert({
@@ -70,6 +87,7 @@ function SubmitForm() {
                 country_id: country.id,
                 user_id: user.id,
                 ai_model: aiModel || null,
+                channel_id: channelId || null,
             })
             .select()
             .single();

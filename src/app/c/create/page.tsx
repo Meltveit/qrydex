@@ -32,6 +32,7 @@ export default function CreateChannelPage() {
             return;
         }
 
+        // Create channel
         const { data, error: insertError } = await supabase
             .from('channels')
             .insert({
@@ -46,6 +47,23 @@ export default function CreateChannelPage() {
 
         if (insertError) {
             setError(insertError.message);
+            setLoading(false);
+            return;
+        }
+
+        // Auto-join creator as owner
+        const { error: memberError } = await supabase
+            .from('channel_members')
+            .insert({
+                channel_id: data.id,
+                user_id: user.id,
+                role: 'owner',
+            });
+
+        if (memberError) {
+            // If membership insert fails, delete the channel to maintain consistency
+            await supabase.from('channels').delete().eq('id', data.id);
+            setError('Failed to set up channel membership. Please try again.');
             setLoading(false);
             return;
         }

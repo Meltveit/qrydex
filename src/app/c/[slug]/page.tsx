@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { PostCard } from '@/components/posts/PostCard';
 import Link from 'next/link';
 import { ArrowLeft, Hash, Users, Settings } from 'lucide-react';
+import { JoinLeaveButton } from '@/components/channel/JoinLeaveButton';
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -110,17 +111,45 @@ export default async function ChannelDetailPage({ params }: Props) {
                             </div>
                         </div>
 
-                        {/* Settings button for owner */}
-                        {userRole === 'owner' && (
-                            <Link
-                                href={`/c/${slug}/settings`}
-                                className="flex items-center space-x-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                                <Settings className="w-4 h-4" />
-                                <span>Settings</span>
-                            </Link>
-                        )}
+                        <div className="flex items-center space-x-3">
+                            {user && (
+                                <>
+                                    <JoinLeaveButton
+                                        channelId={channel.id}
+                                        channelSlug={channel.slug}
+                                        isMember={!!userRole}
+                                        isOwner={userRole === 'owner'}
+                                    />
+                                    {userRole && (
+                                        <Link
+                                            href={`/submit?channel=${channel.id}`}
+                                            className="bg-neon-blue text-noir-bg font-bold px-6 py-2 rounded-lg hover:bg-neon-blue/90 transition-colors"
+                                        >
+                                            Post to Channel
+                                        </Link>
+                                    )}
+                                </>
+                            )}
+                            {(userRole === 'owner' || userRole === 'moderator') && (
+                                <Link
+                                    href={`/c/${slug}/settings`}
+                                    className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+                                >
+                                    <Settings className="w-5 h-5" />
+                                    <span>Settings</span>
+                                </Link>
+                            )}
+                        </div>
                     </div>
+
+                    {/* Non-member message */}
+                    {user && !userRole && (
+                        <div className="mt-4 bg-gray-800/30 border border-gray-700 rounded-lg p-4 text-center">
+                            <p className="text-gray-400">
+                                Join this channel to post and participate in discussions
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
 
