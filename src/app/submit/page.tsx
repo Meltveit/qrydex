@@ -106,7 +106,24 @@ function SubmitForm() {
             return;
         }
 
-        router.push(`/${countryCode}/${data.id}`);
+        // Redirect to appropriate page
+        if (channelId) {
+            // If posting to channel, get channel slug and redirect there
+            const { data: channelData } = await supabase
+                .from('channels')
+                .select('slug')
+                .eq('id', channelId)
+                .single();
+
+            if (channelData) {
+                router.push(`/c/${channelData.slug}`);
+            } else {
+                router.push(`/${countryCode}/${data.id}`);
+            }
+        } else {
+            // Regular country post
+            router.push(`/${countryCode}/${data.id}`);
+        }
     };
 
     return (

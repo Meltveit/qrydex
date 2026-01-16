@@ -1,18 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { Globe, Menu, X, Plus, LogIn } from 'lucide-react';
-import { useState, Suspense } from 'react';
+import { Globe, Menu, X, Plus, LogIn, Sun, Moon } from 'lucide-react';
+import { useState, Suspense, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { SearchBar } from '@/components/common/SearchBar';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useEffect } from 'react';
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
     const [user, setUser] = useState<any>(null);
+    const { theme, setTheme } = useTheme();
     const [profile, setProfile] = useState<any>(null);
     const supabase = createClient();
 
@@ -111,7 +112,18 @@ export function Header() {
                             </Link>
                         )}
 
-                        <ThemeToggle />
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                            className="p-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+                            aria-label="Toggle theme"
+                        >
+                            {theme === 'dark' ? (
+                                <Sun className="w-5 h-5" />
+                            ) : (
+                                <Moon className="w-5 h-5" />
+                            )}
+                        </button>
                     </nav>
 
                     {/* Mobile Menu Button */}
