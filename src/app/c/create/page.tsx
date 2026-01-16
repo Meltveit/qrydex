@@ -39,7 +39,7 @@ export default function CreateChannelPage() {
                 slug,
                 description,
                 is_nsfw: isNsfw,
-                created_by: user.id,
+                owner_id: user.id,
             })
             .select()
             .single();
