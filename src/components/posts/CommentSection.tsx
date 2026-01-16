@@ -79,12 +79,31 @@ export function CommentSection({ postId, comments: initialComments, user, postAu
         if (!newComment.trim()) return;
 
         setLoading(true);
+
+        // Optimistic update - add comment immediately
+        const optimisticComment: Comment = {
+            id: `temp-${Date.now()}`,
+            content: newComment,
+            created_at: new Date().toISOString(),
+            user_id: user.id,
+            parent_id: null,
+            author: {
+                username: user.user_metadata?.username || user.email?.split('@')[0] || 'user',
+                display_name: user.user_metadata?.display_name,
+                avatar_url: user.user_metadata?.avatar_url
+            },
+            replies: []
+        };
+
+        setComments(prev => [optimisticComment, ...prev]);
+        setNewComment('');
+
         try {
             const { data, error } = await supabase
                 .from('comments')
                 .insert({
                     post_id: postId,
-                    content: newComment,
+                    content: optimisticComment.content,
                     user_id: user.id
                 })
                 .select(`
@@ -98,18 +117,23 @@ export function CommentSection({ postId, comments: initialComments, user, postAu
 
             if (error) throw error;
 
-            setComments(prev => [{
-                id: data.id,
-                content: data.content,
-                created_at: data.created_at,
-                user_id: data.user_id,
-                parent_id: null,
-                author: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
-                replies: []
-            }, ...prev]);
-            setNewComment('');
+            // Replace optimistic comment with real one
+            setComments(prev => prev.map(c =>
+                c.id === optimisticComment.id ? {
+                    id: data.id,
+                    content: data.content,
+                    created_at: data.created_at,
+                    user_id: data.user_id,
+                    parent_id: null,
+                    author: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+                    replies: []
+                } : c
+            ));
         } catch (err) {
             console.error('Failed to post comment:', err);
+            // Remove optimistic comment on error
+            setComments(prev => prev.filter(c => c.id !== optimisticComment.id));
+            setNewComment(optimisticComment.content); // Restore text
         } finally {
             setLoading(false);
         }
@@ -123,12 +147,33 @@ export function CommentSection({ postId, comments: initialComments, user, postAu
         if (!replyContent.trim()) return;
 
         setLoading(true);
+
+        // Optimistic update - add reply immediately
+        const optimisticReply: Comment = {
+            id: `temp-${Date.now()}`,
+            content: replyContent,
+            created_at: new Date().toISOString(),
+            user_id: user.id,
+            parent_id: parentId,
+            author: {
+                username: user.user_metadata?.username || user.email?.split('@')[0] || 'user',
+                display_name: user.user_metadata?.display_name,
+                avatar_url: user.user_metadata?.avatar_url
+            },
+            replies: []
+        };
+
+        // Add to comments list
+        setComments(prev => [...prev, optimisticReply]);
+        setReplyContent('');
+        setReplyingTo(null);
+
         try {
             const { data, error } = await supabase
                 .from('comments')
                 .insert({
                     post_id: postId,
-                    content: replyContent,
+                    content: optimisticReply.content,
                     user_id: user.id,
                     parent_id: parentId,
                 })
@@ -144,12 +189,24 @@ export function CommentSection({ postId, comments: initialComments, user, postAu
 
             if (error) throw error;
 
-            // Refresh comments to show new reply
-            router.refresh();
-            setReplyContent('');
-            setReplyingTo(null);
+            // Replace optimistic reply with real one
+            setComments(prev => prev.map(c =>
+                c.id === optimisticReply.id ? {
+                    id: data.id,
+                    content: data.content,
+                    created_at: data.created_at,
+                    user_id: data.user_id,
+                    parent_id: data.parent_id,
+                    author: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+                    replies: []
+                } : c
+            ));
         } catch (err) {
             console.error('Failed to post reply:', err);
+            // Remove optimistic reply on error
+            setComments(prev => prev.filter(c => c.id !== optimisticReply.id));
+            setReplyContent(optimisticReply.content); // Restore text
+            setReplyingTo(parentId); // Restore reply state
         } finally {
             setLoading(false);
         }
