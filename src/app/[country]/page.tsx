@@ -69,13 +69,16 @@ export default async function CountryPage({ params, searchParams }: Props) {
         .from('posts')
         .select(`
             id,
+            short_id,
+            slug,
             title,
             content,
             type,
             created_at,
             likes_count,
             comments_count,
-            profiles:user_id (username, display_name, avatar_url)
+            profiles:user_id (username, display_name, avatar_url),
+            countries:country_id (code)
         `)
         .eq('country_id', country.id)
         .is('channel_id', null);
@@ -147,7 +150,7 @@ export default async function CountryPage({ params, searchParams }: Props) {
                                 post={{
                                     ...post,
                                     author: post.profiles,
-                                    channel: post.channels,
+                                    country_code: post.countries?.code || countryCode,
                                 }}
                             />
                         ))}

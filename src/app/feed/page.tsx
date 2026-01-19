@@ -42,24 +42,27 @@ export default async function FeedPage() {
     // Fetch posts from user's channels
     let posts: any[] = [];
     if (channelIds.length > 0) {
-        const { data } = await supabase
+        // Fetch posts
+        const { data: fetchedPosts } = await supabase
             .from('posts')
             .select(`
-                id,
-                title,
-                content,
-                type,
-                created_at,
-                likes_count,
-                comments_count,
-                country_code,
-                profiles:author_id (username, avatar_url),
-                channels:channel_id (name, slug)
-            `)
+            id,
+            short_id,
+            slug,
+            title,
+            content,
+            type,
+            created_at,
+            likes_count,
+            comments_count,
+            profiles:user_id (username, display_name, avatar_url),
+            countries:country_id (code, name, flag_emoji),
+            channels:channel_id (name, slug)
+        `)
             .in('channel_id', channelIds)
             .order('created_at', { ascending: false })
             .limit(50);
-        posts = data || [];
+        posts = fetchedPosts || [];
     }
 
     // Also get user's joined channels for sidebar
@@ -89,7 +92,7 @@ export default async function FeedPage() {
                             </Link>
                         </div>
 
-                        {posts.length > 0 ? (
+                        {posts && posts.length > 0 ? (
                             <div className="space-y-4">
                                 {posts.map((post: any) => (
                                     <PostCard
@@ -97,6 +100,7 @@ export default async function FeedPage() {
                                         post={{
                                             ...post,
                                             author: post.profiles,
+                                            country_code: post.countries?.code,
                                             channel: post.channels,
                                         }}
                                     />
