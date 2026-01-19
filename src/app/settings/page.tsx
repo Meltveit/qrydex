@@ -1,39 +1,39 @@
 import Link from 'next/link';
-import { User, Shield, Settings as SettingsIcon } from 'lucide-react';
-
-export const metadata = {
-    title: 'Settings - Qrydex',
-};
+import { User, Bell, Shield, Palette, ArrowLeft } from 'lucide-react';
 
 export default function SettingsPage() {
-    const settingsLinks = [
+    const settingsCategories = [
         {
-            href: '/settings/profile',
-            icon: User,
             title: 'Profile',
-            description: 'Update your username, display name, and bio',
+            description: 'Manage your profile information',
+            icon: User,
+            href: '/settings/profile',
         },
         {
-            href: '/settings/account',
-            icon: Shield,
             title: 'Account',
-            description: 'Manage your password and linked accounts',
+            description: 'Update your account settings',
+            icon: Shield,
+            href: '/settings/account',
         },
         {
-            href: '/settings/preferences',
-            icon: SettingsIcon,
             title: 'Preferences',
-            description: 'Theme, notifications, and content settings',
+            description: 'Customize your experience',
+            icon: Palette,
+            href: '/settings/preferences',
         },
     ];
 
     return (
         <div className="min-h-screen bg-noir-bg">
-            <div className="max-w-2xl mx-auto px-4 py-8">
+            <div className="max-w-4xl mx-auto px-4 py-8">
+                <Link href="/" className="inline-flex items-center text-gray-400 hover:text-white mb-6 transition-colors">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Home
+                </Link>
                 <h1 className="text-3xl font-bold text-white mb-8">Settings</h1>
 
                 <div className="space-y-4">
-                    {settingsLinks.map((link) => (
+                    {settingsCategories.map((link) => (
                         <Link
                             key={link.href}
                             href={link.href}

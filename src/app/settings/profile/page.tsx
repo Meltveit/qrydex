@@ -117,8 +117,8 @@ export default function ProfileSettingsPage() {
 
                     {message && (
                         <div className={`px-4 py-3 rounded-lg ${message.includes('Error')
-                                ? 'bg-red-500/10 border border-red-500/50 text-red-400'
-                                : 'bg-green-500/10 border border-green-500/50 text-green-400'
+                            ? 'bg-red-500/10 border border-red-500/50 text-red-400'
+                            : 'bg-green-500/10 border border-green-500/50 text-green-400'
                             }`}>
                             {message}
                         </div>

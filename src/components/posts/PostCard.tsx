@@ -21,6 +21,8 @@ function timeAgo(dateString: string) {
 interface PostCardProps {
     post: {
         id: string;
+        short_id?: string;
+        slug?: string;
         title: string;
         content: string;
         type: 'PROMPT' | 'REQUEST';
@@ -48,7 +50,9 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, showChannel = true }: PostCardProps) {
-    const postUrl = `/${post.country_code}/${post.id}`;
+    const postUrl = post.channel
+        ? `/c/${post.channel.slug}`
+        : `/${post.country_code || 'global'}/${post.short_id || post.id}${post.slug ? `/${post.slug}` : ''}`;
     const author = post.author || post.profiles;
 
     return (
@@ -66,14 +70,14 @@ export function PostCard({ post, showChannel = true }: PostCardProps) {
                     <span className="mr-1">Posted by</span>
                     <Link href={`/u/${author?.username || 'deleted'}`} className="hover:text-white transition-colors">
                         {author?.display_name || `u/${author?.username}` || 'deleted user'}
-                    </Link>
-                </span>
+                    </Link >
+                </span >
                 <span>•</span>
                 <span className="flex items-center">
                     <Clock className="w-3 h-3 mr-1" />
                     {timeAgo(post.created_at)}
                 </span>
-            </div>
+            </div >
 
             <div className="mb-2">
                 <span className={`text-xs font-bold px-2 py-0.5 rounded ${post.type === 'PROMPT'
@@ -103,6 +107,6 @@ export function PostCard({ post, showChannel = true }: PostCardProps) {
                     </Link>
                 </div>
             </div>
-        </article>
+        </article >
     );
 }

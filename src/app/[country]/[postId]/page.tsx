@@ -45,16 +45,38 @@ export default async function PostDetailPage({ params }: Props) {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Fetch post with author and country
-    const { data: post } = await supabase
-        .from('posts')
-        .select(`
-            *,
-            profiles:user_id (username, display_name, avatar_url),
-            countries:country_id (name, flag_emoji, code)
-        `)
-        .eq('id', postId)
-        .single();
+    // Fetch post - try short_id first, then fallback to UUID
+    let post;
+
+    // Try to find by short_id (8 chars = new style)
+    if (postId.length === 8) {
+        const { data } = await supabase
+            .from('posts')
+            .select(`
+                *,
+                profiles:user_id (username, display_name, avatar_url),
+                countries:country_id (code, name, flag_emoji),
+                channels:channel_id (id, name, slug)
+            `)
+            .eq('short_id', postId)
+            .single();
+        post = data;
+    }
+
+    // Fallback to UUID (backwards compatibility)
+    if (!post) {
+        const { data } = await supabase
+            .from('posts')
+            .select(`
+                *,
+                profiles:user_id (username, display_name, avatar_url),
+                countries:country_id (code, name, flag_emoji),
+                channels:channel_id (id, name, slug)
+            `)
+            .eq('id', postId)
+            .single();
+        post = data;
+    }
 
     if (!post) {
         return (
