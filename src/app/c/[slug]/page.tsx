@@ -3,6 +3,7 @@ import { PostCard } from '@/components/posts/PostCard';
 import Link from 'next/link';
 import { ArrowLeft, Hash, Users, Settings } from 'lucide-react';
 import { JoinLeaveButton } from '@/components/channel/JoinLeaveButton';
+import { notFound } from 'next/navigation';
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -28,30 +29,21 @@ export default async function ChannelDetailPage({ params }: Props) {
     const { slug } = await params;
     const supabase = await createClient();
 
-    // Fetch channel
+    // Fetch the channel
     const { data: channel } = await supabase
         .from('channels')
-        .select('*')
+        .select('*, member_count')
         .eq('slug', slug)
         .single();
 
     if (!channel) {
-        return (
-            <div className="min-h-screen bg-noir-bg flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-4xl font-bold text-white mb-4">Channel Not Found</h1>
-                    <p className="text-gray-400 mb-8">This channel doesn't exist.</p>
-                    <Link href="/c" className="text-neon-blue hover:underline">
-                        ← Browse Channels
-                    </Link>
-                </div>
-            </div>
-        );
+        return notFound();
     }
 
-    // Check if user is owner/moderator
+    // Check if user is a member and get their role
     const { data: { user } } = await supabase.auth.getUser();
     let userRole = null;
+    let isMember = false;
     if (user) {
         const { data: membership } = await supabase
             .from('channel_members')
@@ -59,7 +51,11 @@ export default async function ChannelDetailPage({ params }: Props) {
             .eq('channel_id', channel.id)
             .eq('user_id', user.id)
             .single();
-        userRole = membership?.role;
+
+        if (membership) {
+            userRole = membership.role;
+            isMember = true;
+        }
     }
 
     // Fetch posts in this channel
@@ -117,22 +113,22 @@ export default async function ChannelDetailPage({ params }: Props) {
                                     <JoinLeaveButton
                                         channelId={channel.id}
                                         channelSlug={channel.slug}
-                                        isMember={!!userRole}
-                                        isOwner={userRole === 'owner'}
+                                        isJoined={isMember}
+                                        userRole={userRole}
                                     />
-                                    {userRole && (
+                                    {isMember && (
                                         <Link
-                                            href={`/submit?channel=${channel.id}`}
+                                            href={`/c/${channel.slug}/submit`}
                                             className="bg-neon-blue text-noir-bg font-bold px-6 py-2 rounded-lg hover:bg-neon-blue/90 transition-colors"
                                         >
-                                            Post to Channel
+                                            Create Post
                                         </Link>
                                     )}
                                 </>
                             )}
                             {(userRole === 'owner' || userRole === 'moderator') && (
                                 <Link
-                                    href={`/c/${slug}/settings`}
+                                    href={`/c/${channel.slug}/settings`}
                                     className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
                                 >
                                     <Settings className="w-5 h-5" />

@@ -7,9 +7,14 @@ import Link from 'next/link';
 import { ArrowLeft, Send } from 'lucide-react';
 import { generateShortId, generateSlug } from '@/lib/slugs';
 
-function SubmitForm() {
+interface SubmitFormProps {
+    channelId?: string;
+    channelName?: string;
+}
+
+export function SubmitForm({ channelId: propChannelId, channelName: propChannelName }: SubmitFormProps = {}) {
     const searchParams = useSearchParams();
-    const [type, setType] = useState<'PROMPT' | 'REQUEST'>('PROMPT');
+    const [type, setType] = useState<'PROMPT' | 'REQUEST'>('REQUEST');
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [aiModel, setAiModel] = useState('');
@@ -59,11 +64,35 @@ function SubmitForm() {
         }
 
         // Get country_id from country code
-        const { data: country } = await supabase
-            .from('countries')
-            .select('id')
-            .eq('code', countryCode)
-            .single();
+        // For channel posts, use 'global' or first available country
+        let country;
+        if (isChannelPost) {
+            // Try 'global' first
+            const { data: globalCountry } = await supabase
+                .from('countries')
+                .select('id')
+                .eq('code', 'global')
+                .single();
+
+            if (globalCountry) {
+                country = globalCountry;
+            } else {
+                // Fallback: use first available country
+                const { data: firstCountry } = await supabase
+                    .from('countries')
+                    .select('id')
+                    .limit(1)
+                    .single();
+                country = firstCountry;
+            }
+        } else {
+            const { data: selectedCountry } = await supabase
+                .from('countries')
+                .select('id')
+                .eq('code', countryCode)
+                .single();
+            country = selectedCountry;
+        }
 
         if (!country) {
             setError('Invalid country selected');
