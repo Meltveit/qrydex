@@ -113,8 +113,8 @@ export default async function ChannelDetailPage({ params }: Props) {
                                     <JoinLeaveButton
                                         channelId={channel.id}
                                         channelSlug={channel.slug}
-                                        isJoined={isMember}
-                                        userRole={userRole}
+                                        isMember={isMember}
+                                        isOwner={userRole === 'owner'}
                                     />
                                     {isMember && (
                                         <Link
@@ -169,12 +169,14 @@ export default async function ChannelDetailPage({ params }: Props) {
                         <Hash className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                         <h2 className="text-xl font-bold text-white mb-2">No posts yet</h2>
                         <p className="text-gray-400 mb-6">Be the first to post in c/{channel.name}!</p>
-                        <Link
-                            href="/submit"
-                            className="inline-block bg-neon-blue text-noir-bg font-bold px-6 py-3 rounded-lg hover:bg-neon-blue/90 transition-colors"
-                        >
-                            Create Post
-                        </Link>
+                        {isMember && (
+                            <Link
+                                href={`/c/${channel.slug}/submit`}
+                                className="inline-block bg-neon-blue text-noir-bg font-bold px-6 py-3 rounded-lg hover:bg-neon-blue/90 transition-colors"
+                            >
+                                Create Post
+                            </Link>
+                        )}
                     </div>
                 )}
             </div>
