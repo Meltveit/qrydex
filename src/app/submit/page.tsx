@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { ArrowLeft, Send } from 'lucide-react';
+import { generateShortId, generateSlug } from '@/lib/slugs';
 
 function SubmitForm() {
     const searchParams = useSearchParams();
@@ -86,6 +87,10 @@ function SubmitForm() {
             }
         }
 
+        // Generate short ID and slug
+        const shortId = generateShortId();
+        const slug = generateSlug(title);
+
         const { data, error: insertError } = await supabase
             .from('posts')
             .insert({
@@ -96,6 +101,8 @@ function SubmitForm() {
                 user_id: user.id,
                 ai_model: aiModel || null,
                 channel_id: channelId || null,
+                short_id: shortId,
+                slug: slug,
             })
             .select()
             .single();
@@ -108,7 +115,7 @@ function SubmitForm() {
 
         // Redirect to appropriate page
         if (channelId) {
-            // If posting to channel, get channel slug and redirect there
+            // If posting to channel, redirect to channel page
             const { data: channelData } = await supabase
                 .from('channels')
                 .select('slug')
@@ -118,11 +125,27 @@ function SubmitForm() {
             if (channelData) {
                 router.push(`/c/${channelData.slug}`);
             } else {
-                router.push(`/${countryCode}/${data.id}`);
+                // Fallback: use short_id and slug for URL
+                const { data: postCountry } = await supabase
+                    .from('countries')
+                    .select('code')
+                    .eq('id', data.country_id)
+                    .single();
+                router.push(`/${postCountry?.code || 'global'}/${shortId}/${slug}`);
             }
         } else {
-            // Regular country post
-            router.push(`/${countryCode}/${data.id}`);
+            // Regular country post - use short_id and slug
+            const { data: postCountry } = await supabase
+                .from('countries')
+                .select('code')
+                .eq('id', data.country_id)
+                .single();
+
+            if (postCountry) {
+                router.push(`/${postCountry.code}/${shortId}/${slug}`);
+            } else {
+                router.push(`/global/${shortId}/${slug}`);
+            }
         }
     };
 

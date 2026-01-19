@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { PostCard } from '@/components/posts/PostCard';
 import Link from 'next/link';
+import { JoinCountryButton } from '@/components/country/JoinCountryButton';
 import { ArrowLeft, Globe, TrendingUp, Clock, Flame } from 'lucide-react';
 
 interface Props {
@@ -51,6 +52,19 @@ export default async function CountryPage({ params, searchParams }: Props) {
     }
 
     // Fetch posts for this country
+    // Check if user is subscribed
+    const { data: { user } } = await supabase.auth.getUser();
+    let isSubscribed = false;
+    if (user) {
+        const { data: subscription } = await supabase
+            .from('country_subscriptions')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('country_id', country.id)
+            .single();
+        isSubscribed = !!subscription;
+    }
+
     let query = supabase
         .from('posts')
         .select(`
@@ -61,10 +75,10 @@ export default async function CountryPage({ params, searchParams }: Props) {
             created_at,
             likes_count,
             comments_count,
-            profiles:user_id (username, display_name, avatar_url),
-            channels:channel_id (name, slug)
+            profiles:user_id (username, display_name, avatar_url)
         `)
-        .eq('country_id', country.id);
+        .eq('country_id', country.id)
+        .is('channel_id', null);
 
     // Apply sorting
     if (sort === 'new') {
