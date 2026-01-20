@@ -14,6 +14,7 @@ interface SubmitFormProps {
 
 export function SubmitForm({ channelId: propChannelId, channelName: propChannelName }: SubmitFormProps = {}) {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [type, setType] = useState<'PROMPT' | 'REQUEST'>('REQUEST');
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -22,11 +23,11 @@ export function SubmitForm({ channelId: propChannelId, channelName: propChannelN
     const [countries, setCountries] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const router = useRouter();
     const supabase = createClient();
 
-    // Check if posting to a channel
-    const channelId = searchParams.get('channel');
+    // Use prop channelId if provided, otherwise check URL
+    const channelId = propChannelId || searchParams.get('channel');
+    const channelName = propChannelName;
     const isChannelPost = !!channelId;
 
     useEffect(() => {
@@ -246,7 +247,7 @@ export function SubmitForm({ channelId: propChannelId, channelName: propChannelN
                         {isChannelPost && (
                             <div className="bg-neon-blue/10 border border-neon-blue/50 rounded-lg p-4">
                                 <p className="text-neon-blue text-sm font-medium">
-                                    📢 Posting to channel
+                                    📢 Posting to {channelName ? `c/${channelName}` : 'channel'}
                                 </p>
                             </div>
                         )}

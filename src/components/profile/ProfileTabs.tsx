@@ -25,6 +25,8 @@ export function ProfileTabs({ profileId }: ProfileTabsProps) {
                     .from('posts')
                     .select(`
                         id,
+                        short_id,
+                        slug,
                         title,
                         type,
                         likes_count,
@@ -42,7 +44,7 @@ export function ProfileTabs({ profileId }: ProfileTabsProps) {
                         id,
                         content,
                         created_at,
-                        posts:post_id (id, title, countries:country_id (code))
+                        posts:post_id (id, short_id, slug, title, countries:country_id (code))
                     `)
                     .eq('user_id', profileId)
                     .order('created_at', { ascending: false })
@@ -62,8 +64,8 @@ export function ProfileTabs({ profileId }: ProfileTabsProps) {
                 <button
                     onClick={() => setActiveTab('posts')}
                     className={`flex items-center space-x-2 pb-4 px-2 border-b-2 transition-colors ${activeTab === 'posts'
-                            ? 'border-neon-blue text-white'
-                            : 'border-transparent text-gray-400 hover:text-white'
+                        ? 'border-neon-blue text-white'
+                        : 'border-transparent text-gray-400 hover:text-white'
                         }`}
                 >
                     <FileText className="w-4 h-4" />
@@ -72,8 +74,8 @@ export function ProfileTabs({ profileId }: ProfileTabsProps) {
                 <button
                     onClick={() => setActiveTab('comments')}
                     className={`flex items-center space-x-2 pb-4 px-2 border-b-2 transition-colors ${activeTab === 'comments'
-                            ? 'border-neon-blue text-white'
-                            : 'border-transparent text-gray-400 hover:text-white'
+                        ? 'border-neon-blue text-white'
+                        : 'border-transparent text-gray-400 hover:text-white'
                         }`}
                 >
                     <MessageSquare className="w-4 h-4" />
@@ -91,15 +93,17 @@ export function ProfileTabs({ profileId }: ProfileTabsProps) {
                     <div className="space-y-4">
                         {posts.map((post) => {
                             const country = Array.isArray(post.countries) ? post.countries[0] : post.countries;
+                            const postId = post.short_id || post.id;
+                            const postSlug = post.slug ? `/${post.slug}` : '';
                             return (
                                 <Link
                                     key={post.id}
-                                    href={`/${country?.code}/${post.id}`}
+                                    href={`/${country?.code}/${postId}${postSlug}`}
                                     className="block bg-noir-panel border border-gray-800 rounded-lg p-4 hover:border-neon-blue transition-colors"
                                 >
                                     <span className={`text-xs font-bold px-2 py-0.5 rounded mr-2 ${post.type === 'PROMPT'
-                                            ? 'bg-neon-blue/20 text-neon-blue'
-                                            : 'bg-yellow-500/20 text-yellow-400'
+                                        ? 'bg-neon-blue/20 text-neon-blue'
+                                        : 'bg-yellow-500/20 text-yellow-400'
                                         }`}>
                                         {post.type}
                                     </span>
@@ -121,11 +125,13 @@ export function ProfileTabs({ profileId }: ProfileTabsProps) {
                         {comments.map((comment) => {
                             const post = Array.isArray(comment.posts) ? comment.posts[0] : comment.posts;
                             const country = post?.countries ? (Array.isArray(post.countries) ? post.countries[0] : post.countries) : null;
+                            const postId = post?.short_id || post?.id;
+                            const postSlug = post?.slug ? `/${post.slug}` : '';
                             return (
                                 <div key={comment.id} className="bg-noir-panel border border-gray-800 rounded-lg p-4">
                                     <p className="text-gray-300 text-sm mb-2">{comment.content}</p>
                                     <Link
-                                        href={`/${country?.code}/${post?.id}`}
+                                        href={`/${country?.code}/${postId}${postSlug}`}
                                         className="text-sm text-gray-500 hover:text-neon-blue"
                                     >
                                         on: {post?.title}
